@@ -135,38 +135,38 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .btn-sm{padding:6px 14px;font-size:12px}
 
 /* ── LAYOUT ── */
-.app{max-width:1320px;margin:0 auto;padding:0 2rem 5rem}
-.page-header{padding:2rem 0 1.5rem;display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
-.ph-left h1{font-size:28px;font-weight:800;color:var(--text);letter-spacing:-.6px;line-height:1.1}
+.app{max-width:1320px;margin:0 auto;padding:0 1.5rem 4rem}
+.page-header{padding:1.2rem 0 1rem;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.ph-left h1{font-size:20px;font-weight:800;color:var(--text);letter-spacing:-.4px;line-height:1.1}
 .ph-left h1 span{background:linear-gradient(90deg,#6366F1,#8B5CF6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.ph-left p{font-size:14px;color:var(--text2);margin-top:6px;font-weight:500}
-.ph-actions{display:flex;gap:10px;flex-wrap:wrap}
+.ph-left p{font-size:12px;color:var(--text2);margin-top:3px;font-weight:500}
+.ph-actions{display:flex;gap:8px;flex-wrap:wrap}
 
 /* ── STAT CARDS ── */
-.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:2rem}
-.scard{background:#fff;border-radius:var(--r-xl);padding:20px 22px 18px;border:1.5px solid transparent;
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:1.2rem}
+.scard{background:#fff;border-radius:var(--r-lg);padding:12px 14px 10px;border:1.5px solid transparent;
   box-shadow:var(--shadow-sm);transition:all .22s;position:relative;overflow:hidden}
-.scard:hover{transform:translateY(-3px);box-shadow:var(--shadow)}
-.scard::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;border-radius:var(--r-xl) var(--r-xl) 0 0}
+.scard:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+.scard::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:var(--r-lg) var(--r-lg) 0 0}
 .scard.indigo{border-color:rgba(99,102,241,.12)}.scard.indigo::before{background:linear-gradient(90deg,#6366F1,#8B5CF6)}
 .scard.green {border-color:rgba(5,150,105,.12)} .scard.green::before {background:linear-gradient(90deg,#059669,#10B981)}
 .scard.amber {border-color:rgba(217,119,6,.12)} .scard.amber::before {background:linear-gradient(90deg,#D97706,#F59E0B)}
 .scard.red   {border-color:rgba(220,38,38,.12)}  .scard.red::before   {background:linear-gradient(90deg,#DC2626,#EF4444)}
 .scard.sky   {border-color:rgba(2,132,199,.12)}  .scard.sky::before   {background:linear-gradient(90deg,#0284C7,#0EA5E9)}
-.sc-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
-.sc-icon{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px}
+.sc-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.sc-icon{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px}
 .scard.indigo .sc-icon{background:var(--indigo-bg);color:var(--indigo)}
 .scard.green  .sc-icon{background:var(--green-bg); color:var(--green)}
 .scard.amber  .sc-icon{background:var(--amber-bg); color:var(--amber)}
 .scard.red    .sc-icon{background:var(--red-bg);   color:var(--red)}
 .scard.sky    .sc-icon{background:var(--sky-bg);   color:var(--sky)}
-.sc-trend{font-size:11px;font-weight:700;padding:3px 9px;border-radius:99px}
+.sc-trend{font-size:10px;font-weight:700;padding:2px 6px;border-radius:99px}
 .sc-trend.up{background:var(--green-bg);color:var(--green-txt)}
 .sc-trend.dn{background:var(--red-bg);  color:var(--red-txt)}
-.sc-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:5px}
-.sc-value{font-size:28px;font-weight:800;color:var(--text);letter-spacing:-.8px;line-height:1}
-.sc-sub{font-size:12px;color:var(--text2);margin-top:5px;font-weight:500}
-.sc-bar{height:5px;background:var(--bg2);border-radius:99px;margin-top:14px;overflow:hidden}
+.sc-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}
+.sc-value{font-size:18px;font-weight:800;color:var(--text);letter-spacing:-.5px;line-height:1}
+.sc-sub{font-size:10px;color:var(--text2);margin-top:3px;font-weight:500}
+.sc-bar{height:4px;background:var(--bg2);border-radius:99px;margin-top:8px;overflow:hidden}
 .sc-fill{height:100%;border-radius:99px;transition:width .7s cubic-bezier(.4,0,.2,1)}
 .scard.green .sc-fill{background:linear-gradient(90deg,#059669,#10B981)}
 .scard.amber .sc-fill{background:linear-gradient(90deg,#D97706,#EF4444)}
@@ -467,7 +467,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 
   <div class="nav-right">
     <div class="sync-chip"><span class="sdot" id="sdot"></span><span id="slbl">–</span></div>
-    <span style="font-size:12px;font-weight:600;color:var(--text2)" id="navMonth"></span>
     <div class="user-chip" onclick="window._doSignOut()">
       <div class="user-avatar" id="userAvatar">?</div>
       <span id="userName">Admin</span>
@@ -480,8 +479,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 <div class="app">
   <div class="page-header">
     <div class="ph-left">
-      <h1>Apartment <span>Management</span></h1>
-      <p id="phSub">Loading your society data…</p>
+      <h1 id="phTitle"><span>Loading…</span></h1>
     </div>
     <div class="ph-actions" id="phAct"></div>
   </div>
@@ -819,8 +817,9 @@ function rStats() {
   const oi=issues.filter(i=>i.status==='open').length;
   const ip=issues.filter(i=>i.status==='in-progress').length;
 
-  document.getElementById('phSub').textContent=`${all.length} flats across ${bks().length} blocks · ${new Date().toLocaleDateString('en-IN',{month:'long',year:'numeric'})}`;
   document.getElementById('openCnt').textContent=oi;
+  // Set society name as page title
+  document.getElementById('phTitle').innerHTML = `<span>${APT_NAME||'My Society'}</span>`;
   document.getElementById('phAct').innerHTML=`
     <button class="btn btn-indigo"  onclick="window._oA()"><i class="ti ti-plus"></i> Add Payment</button>
     <button class="btn btn-white"   onclick="window._oRI()"><i class="ti ti-urgent"></i> Raise Issue</button>
@@ -1342,7 +1341,6 @@ window._wizLaunch = async function() {
   }
 };
 async function boot(){
-  document.getElementById('navMonth').textContent=new Date().toLocaleDateString('en-IN',{month:'long',year:'numeric'});
   buildMonthSelect();
   try{
     // Load apartment config
