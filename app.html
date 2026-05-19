@@ -75,6 +75,8 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .nav-name-wrap{display:flex;align-items:center;gap:6px}
 .nav-name{font-size:17px;font-weight:800;color:var(--text);letter-spacing:-.3px}
 .nav-name em{font-style:normal;color:var(--indigo)}
+.flat-count-badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:99px;
+  background:var(--indigo-bg);color:var(--indigo);border:1px solid var(--indigo-glow);white-space:nowrap}
 
 .nav-pills{display:none} /* tabs moved below stats */
 
@@ -454,6 +456,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
     <div class="nav-logo"><i class="ti ti-building-community"></i></div>
     <div class="nav-name-wrap">
       <span class="nav-name" id="aptNameDisplay">Gate<em>book</em></span>
+      <span class="flat-count-badge" id="flatCountBadge" style="display:none"></span>
     </div>
   </div>
 
@@ -469,12 +472,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 
 <!-- APP -->
 <div class="app">
-  <div class="page-header">
-    <div class="ph-left">
-      <h1 id="phTitle"><span>Loading…</span></h1>
-    </div>
-    <div class="ph-actions" id="phAct"></div>
-  </div>
+  <div class="ph-actions" id="phAct" style="margin:1rem 0 0.5rem"></div>
 
   <div class="stats-row" id="statsRow"></div>
 
@@ -793,8 +791,9 @@ function rStats() {
   const ip=issues.filter(i=>i.status==='in-progress').length;
 
   document.getElementById('openCnt').textContent=oi;
-  // Set society name as page title
-  document.getElementById('phTitle').innerHTML = `<span>${APT_NAME||'My Society'}</span>`;
+  // Update flat count badge in navbar
+  const badge=document.getElementById('flatCountBadge');
+  if(badge){badge.textContent=`${all.length} flats`;badge.style.display='';}
   document.getElementById('phAct').innerHTML=`
     <button class="btn btn-indigo"  onclick="window._oA()"><i class="ti ti-plus"></i> Add Payment</button>
     <button class="btn btn-white"   onclick="window._oRI()"><i class="ti ti-urgent"></i> Raise Issue</button>
@@ -821,11 +820,6 @@ function rStats() {
       <div class="sc-top"><div class="sc-icon"><i class="ti ti-tool"></i></div><span class="sc-trend dn">${ip} in progress</span></div>
       <div class="sc-label">Open Issues</div><div class="sc-value">${oi}</div>
       <div class="sc-sub">${issues.filter(i=>i.status==='resolved').length} resolved</div>
-    </div>
-    <div class="scard sky">
-      <div class="sc-top"><div class="sc-icon"><i class="ti ti-building"></i></div><span class="sc-trend up">${bks().length} blocks</span></div>
-      <div class="sc-label">Total Flats</div><div class="sc-value">${all.length}</div>
-      <div class="sc-sub">Managed in society</div>
     </div>
   `;
 }
@@ -950,6 +944,22 @@ function oFl(fid) {
       <div class="eamt">${inr(e.amt)}</div></div>`).join('')
     :`<div class="eempty"><i class="ti ti-inbox"></i>No payments recorded yet.</div>`;
   document.getElementById('mdC').innerHTML=`
+    <div class="fg2" style="margin-bottom:14px">
+      <div class="fg" style="margin-bottom:0">
+        <label style="font-size:11px;font-weight:800;color:var(--text2);text-transform:uppercase;letter-spacing:.6px">Owner Name</label>
+        <input type="text" id="edOwner" value="${f.owner||''}" placeholder="Owner name" style="background:var(--surface2);border:1.5px solid var(--border2);color:var(--text);font-family:var(--font);font-size:13px;font-weight:600;border-radius:var(--r-md);padding:9px 13px;outline:none;width:100%;margin-top:6px"/>
+      </div>
+      <div class="fg" style="margin-bottom:0">
+        <label style="font-size:11px;font-weight:800;color:var(--text2);text-transform:uppercase;letter-spacing:.6px">Monthly Due (₹)</label>
+        <input type="number" id="edDue" value="${f.due||''}" placeholder="e.g. 2000" min="0" style="background:var(--surface2);border:1.5px solid var(--border2);color:var(--text);font-family:var(--font);font-size:13px;font-weight:600;border-radius:var(--r-md);padding:9px 13px;outline:none;width:100%;margin-top:6px"/>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;margin-bottom:16px">
+      <button class="btn btn-white btn-sm" onclick="window._saveFlat('${fid}')">
+        <i class="ti ti-device-floppy"></i> Save Changes
+      </button>
+    </div>
+    <div style="height:1px;background:var(--border2);margin-bottom:16px"></div>
     <div class="dm">
       <div class="dm-card"><div class="dm-label">Paid</div><div class="dm-value" style="color:var(--green)">${inr(f.paid)}</div></div>
       <div class="dm-card"><div class="dm-label">Balance</div><div class="dm-value" style="color:${bal>0?'var(--red)':'var(--green)'}">${inr(bal)}</div></div>
@@ -966,6 +976,24 @@ function oFl(fid) {
   document.getElementById('flatM').classList.add('open');
 }
 const cM=()=>document.getElementById('flatM').classList.remove('open');
+
+async function saveFlat(fid) {
+  const owner = document.getElementById('edOwner').value.trim();
+  const due   = parseInt(document.getElementById('edDue').value)||0;
+  const btn   = event.currentTarget;
+  btn.disabled=true;btn.innerHTML='<i class="ti ti-loader"></i> Saving…';
+  sync('saving');
+  try {
+    await updateDoc(flatRef(fid),{owner,due});
+    sync('live');toast('Flat updated ✓');
+    // refresh modal header
+    document.getElementById('mdT').textContent=`${fid} — ${owner||'(No owner)'}`;
+    btn.disabled=false;btn.innerHTML='<i class="ti ti-device-floppy"></i> Save Changes';
+  } catch(e) {
+    console.error(e);sync('error');toast('Save failed.','error');
+    btn.disabled=false;btn.innerHTML='<i class="ti ti-device-floppy"></i> Save Changes';
+  }
+}
 
 /* ════════════════════════════════
    ADD EXPENSE MODAL
@@ -1008,13 +1036,13 @@ async function sE(){
 ════════════════════════════════ */
 function oAF(){
   document.getElementById('nB').innerHTML=bks().map(b=>`<option value="${b}">Block ${b}</option>`).join('');
-  document.getElementById('nI').value='';document.getElementById('nO').value='';document.getElementById('nD').value='5000';
+  document.getElementById('nI').value='';document.getElementById('nO').value='';document.getElementById('nD').value='';
   document.getElementById('flatAddM').classList.add('open');
 }
 const cAF=()=>document.getElementById('flatAddM').classList.remove('open');
 async function sNF(){
   const block=document.getElementById('nB').value,id=document.getElementById('nI').value.trim().toUpperCase();
-  const owner=document.getElementById('nO').value.trim(),due=parseInt(document.getElementById('nD').value)||5000;
+  const owner=document.getElementById('nO').value.trim(),due=parseInt(document.getElementById('nD').value)||0;
   if(!id){toast('Enter a flat number.','error');return;}
   if(!owner){toast('Enter owner name.','error');return;}
   if(flats.has(id)){toast(`Flat ${id} already exists.`,'error');return;}
@@ -1187,7 +1215,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){cM();cA();cAF();cRI
    WINDOW EXPOSE
 ════════════════════════════════ */
 window._sB   =b=>{AB=b;rBTabs();rBlock();};
-window._oFl  =oFl;  window._cM=cM;
+window._oFl  =oFl;  window._cM=cM; window._saveFlat=saveFlat;
 window._oA   =oA;   window._oAFor=oAFor; window._cA=cA; window._sE=sE;
 window._oAF  =oAF;  window._cAF=cAF;    window._sNF=sNF;
 window._oRI  =oRI;  window._cRI=cRI;    window._sI=sI;
@@ -1300,7 +1328,7 @@ window._wizLaunch = async function() {
       for(let fl=1; fl<=b.floors; fl++) {
         for(let f=1; f<=b.flatsPerFloor; f++) {
           const fid = `${b.name}-${fl}${String(f).padStart(2,'0')}`;
-          await setDoc(flatRef(fid), { block:b.name, floor:fl, owner:'', due:5000, paid:0, month:AM });
+          await setDoc(flatRef(fid), { block:b.name, floor:fl, owner:'', due:0, paid:0, month:AM });
         }
       }
     }
