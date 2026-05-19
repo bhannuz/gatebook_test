@@ -332,9 +332,9 @@ window.goNext = function(from) {
     const n = document.getElementById('aptName').value.trim();
     if (!n) { toast('Please enter your apartment name.','error'); return; }
     renderBlockRows();
+    updatePreview();
     setStep(2);
   } else if (from === 2) {
-    if (blocks.some(b=>!b.name.trim())) { toast('Every block needs a name.','error'); return; }
     buildConfirm();
     setStep(3);
   }
@@ -343,8 +343,9 @@ window.goNext = function(from) {
 /* ── Block config ── */
 window.addBlock = function() {
   const letters = 'ABCDEFGHIJKLMNOP';
-  blocks.push({ name: letters[blocks.length] || String(blocks.length+1), floors:4, flatsPerFloor:4 });
+  blocks.push({ name: letters[blocks.length] || String(blocks.length+1), floors:4, flatsPerFloor:2 });
   renderBlockRows();
+  updatePreview();
 };
 
 function renderBlockRows() {
@@ -379,9 +380,11 @@ window.updatePreview = function() {
   blocks.forEach(b=>{
     const cnt = b.floors*(b.flatsPerFloor||1);
     total+=cnt;
-    lines.push(`<strong>Block ${b.name||'?'}</strong> — ${b.floors} floor${b.floors!==1?'s':''}, ${b.flatsPerFloor} flat${b.flatsPerFloor!==1?'s':''}/floor = ${cnt} flats`);
+    const label = b.name.trim() ? `Block ${b.name}` : 'Building';
+    lines.push(`<strong>${label}</strong> — ${b.floors} floor${b.floors!==1?'s':''}, ${b.flatsPerFloor} flat${b.flatsPerFloor!==1?'s':''}/floor = <strong>${cnt} flats</strong>`);
   });
-  document.getElementById('blockPreview').innerHTML = lines.join('<br>')+`<br><strong>Total: ${total} flats</strong> will be created`;
+  document.getElementById('blockPreview').innerHTML =
+    lines.join('<br>') + `<br><br>🏠 <strong>Total: ${total} flat${total!==1?'s':''}</strong> will be created`;
 };
 
 function buildConfirm() {
@@ -391,10 +394,12 @@ function buildConfirm() {
   let html = `<strong>${aptName}</strong><br>Admin: ${adminName} (${adminEmail})<br><br>`;
   blocks.forEach(b=>{
     const cnt = b.floors*b.flatsPerFloor;
-    html += `🏢 <strong>Block ${b.name}</strong>: ${b.floors} floors × ${b.flatsPerFloor} flats = ${cnt} flats<br>`;
+    const label = b.name.trim() ? `Block ${b.name}` : 'Building';
+    const prefix = b.name.trim() ? `${b.name}-` : '';
+    html += `🏢 <strong>${label}</strong>: ${b.floors} floors × ${b.flatsPerFloor} flats = ${cnt} flats<br>`;
     for(let fl=1;fl<=b.floors;fl++){
       const ids=[];
-      for(let f=1;f<=b.flatsPerFloor;f++) ids.push(`${b.name}-${fl}${String(f).padStart(2,'0')}`);
+      for(let f=1;f<=b.flatsPerFloor;f++) ids.push(`${prefix}${fl}${String(f).padStart(2,'0')}`);
       html+=`&nbsp;&nbsp;&nbsp;Floor ${fl}: ${ids.join(', ')}<br>`;
     }
   });
@@ -433,11 +438,12 @@ window.doLaunch = async function() {
 
     // 3. Create all flats under apartments/{uid}/flats/{flatId}
     for (const b of blocks) {
+      const prefix = b.name.trim() ? `${b.name}-` : '';
       for (let fl=1; fl<=b.floors; fl++) {
         for (let f=1; f<=b.flatsPerFloor; f++) {
-          const fid = `${b.name}-${fl}${String(f).padStart(2,'0')}`;
+          const fid = `${prefix}${fl}${String(f).padStart(2,'0')}`;
           await setDoc(doc(db,'apartments',uid,'flats',fid),{
-            block:b.name, floor:fl, owner:'', due:5000, paid:0, month:AM,
+            block:b.name.trim()||'', floor:fl, owner:'', due:5000, paid:0, month:AM,
           });
         }
       }
