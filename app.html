@@ -83,16 +83,20 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   border:none;border-bottom:2px solid var(--indigo);background:transparent;
   outline:none;width:160px;font-family:var(--font);padding:0 2px}
 
-.nav-pills{display:flex;gap:4px;background:var(--surface3);border:1px solid var(--border2);border-radius:var(--r-md);padding:4px}
-.nav-pill{padding:7px 18px;border-radius:var(--r-sm);font-size:13px;font-weight:600;
+.nav-pills{display:none} /* tabs moved below stats */
+
+/* ── View tabs (Payments / Issues) below stats ── */
+.view-tabs{display:flex;gap:0;background:var(--surface3);border:1px solid var(--border2);
+  border-radius:var(--r-md);padding:4px;margin-bottom:1.4rem;width:fit-content}
+.vtab{padding:6px 16px;border-radius:var(--r-sm);font-size:12px;font-weight:700;
   color:var(--text2);cursor:pointer;border:none;background:transparent;
-  font-family:var(--font);transition:all .2s;display:flex;align-items:center;gap:6px}
-.nav-pill i{font-size:16px}
-.nav-pill.active{background:#fff;color:var(--indigo);box-shadow:var(--shadow-sm)}
-.nav-pill:hover:not(.active){color:var(--text);background:rgba(255,255,255,0.6)}
-.nav-pill .nbadge{font-size:10px;padding:1px 7px;border-radius:99px;font-weight:700;
+  font-family:var(--font);transition:all .2s;display:flex;align-items:center;gap:5px}
+.vtab i{font-size:14px}
+.vtab.active{background:#fff;color:var(--indigo);box-shadow:var(--shadow-sm)}
+.vtab:hover:not(.active){color:var(--text);background:rgba(255,255,255,0.6)}
+.vtab-badge{font-size:10px;padding:1px 6px;border-radius:99px;font-weight:700;
   background:var(--red-bg);color:var(--red);border:1px solid var(--red-border)}
-.nav-pill.active .nbadge{background:var(--indigo-bg);color:var(--indigo);border-color:var(--indigo-glow)}
+.vtab.active .vtab-badge{background:var(--indigo-bg);color:var(--indigo);border-color:var(--indigo-glow)}
 
 .nav-right{display:flex;align-items:center;gap:10px}
 .sync-chip{display:flex;align-items:center;gap:6px;padding:5px 12px;
@@ -180,15 +184,15 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .sw .ctrl{width:100%;padding-left:38px}
 
 /* ── BLOCK TABS ── */
-.btabs{display:flex;gap:10px;margin-bottom:1.5rem;flex-wrap:wrap}
-.btab{display:flex;align-items:center;gap:8px;padding:9px 20px;background:#fff;
-  border:1.5px solid var(--border2);border-radius:var(--r-lg);
-  font-size:13px;font-weight:700;color:var(--text2);cursor:pointer;font-family:var(--font);
+.btabs{display:flex;gap:6px;margin-bottom:1.2rem;flex-wrap:wrap}
+.btab{display:flex;align-items:center;gap:5px;padding:5px 12px;background:#fff;
+  border:1.5px solid var(--border2);border-radius:var(--r-md);
+  font-size:11px;font-weight:700;color:var(--text2);cursor:pointer;font-family:var(--font);
   transition:all .2s;box-shadow:var(--shadow-sm)}
 .btab:hover:not(.active){border-color:var(--border3);color:var(--text);box-shadow:var(--shadow)}
 .btab.active{background:linear-gradient(135deg,#6366F1,#8B5CF6);border-color:transparent;color:#fff;
-  box-shadow:0 4px 16px rgba(99,102,241,0.30)}
-.btab-badge{font-size:11px;padding:2px 9px;border-radius:99px;font-weight:700}
+  box-shadow:0 4px 14px rgba(99,102,241,0.28)}
+.btab-badge{font-size:10px;padding:1px 6px;border-radius:99px;font-weight:700}
 .btab.active .btab-badge{background:rgba(255,255,255,0.22);color:#fff}
 .btab:not(.active) .btab-badge{background:var(--surface3);color:var(--text2)}
 
@@ -369,7 +373,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 /* ── Responsive ── */
 @media(max-width:700px){
   .navbar{padding:0 1rem}.app{padding:0 1rem 3rem}
-  .nav-pills{display:none}.fg2{grid-template-columns:1fr}
+  .fg2{grid-template-columns:1fr}
   .dm{grid-template-columns:1fr 1fr}
   .fgrid{grid-template-columns:repeat(auto-fill,minmax(165px,1fr))}
   .icard{grid-template-columns:5px 1fr}.iright{display:none}
@@ -461,16 +465,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
     </div>
   </div>
 
-  <div class="nav-pills" id="navPills">
-    <button class="nav-pill active" data-v="payments" onclick="switchView('payments')">
-      <i class="ti ti-credit-card"></i> Payments
-    </button>
-    <button class="nav-pill" data-v="issues" onclick="switchView('issues')">
-      <i class="ti ti-alert-circle"></i> Issues
-      <span class="nbadge" id="openCnt">0</span>
-    </button>
-  </div>
-
   <div class="nav-right">
     <div class="sync-chip"><span class="sdot" id="sdot"></span><span id="slbl">–</span></div>
     <span style="font-size:12px;font-weight:600;color:var(--text2)" id="navMonth"></span>
@@ -493,6 +487,17 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   </div>
 
   <div class="stats-row" id="statsRow"></div>
+
+  <!-- VIEW TABS -->
+  <div class="view-tabs" id="viewTabs">
+    <button class="vtab active" data-v="payments" onclick="switchView('payments')">
+      <i class="ti ti-credit-card"></i> Payments
+    </button>
+    <button class="vtab" data-v="issues" onclick="switchView('issues')">
+      <i class="ti ti-alert-circle"></i> Issues
+      <span class="vtab-badge" id="openCnt">0</span>
+    </button>
+  </div>
 
   <!-- PAYMENTS VIEW -->
   <div id="pView">
@@ -818,7 +823,6 @@ function rStats() {
   document.getElementById('openCnt').textContent=oi;
   document.getElementById('phAct').innerHTML=`
     <button class="btn btn-indigo"  onclick="window._oA()"><i class="ti ti-plus"></i> Add Payment</button>
-    <button class="btn btn-white"   onclick="window._oAF()"><i class="ti ti-home-plus"></i> New Flat</button>
     <button class="btn btn-white"   onclick="window._oRI()"><i class="ti ti-urgent"></i> Raise Issue</button>
   `;
   document.getElementById('statsRow').innerHTML=`
@@ -946,7 +950,7 @@ function switchView(v) {
   AV=v;
   document.getElementById('pView').style.display=v==='payments'?'block':'none';
   document.getElementById('iView').style.display=v==='issues'?'block':'none';
-  document.querySelectorAll('.nav-pill').forEach(p=>p.classList.toggle('active',p.dataset.v===v));
+  document.querySelectorAll('.vtab').forEach(p=>p.classList.toggle('active',p.dataset.v===v));
 }
 function fIss(f) {
   IF=f;
