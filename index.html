@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>ResidentHub — Sign In</title>
+<title>Gatebook — Sign In</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
@@ -33,7 +33,8 @@ body{font-family:var(--font);background:linear-gradient(135deg,#EEF2FF 0%,#F0F9F
   padding:40px 44px;width:min(440px,100%);
   box-shadow:var(--shadow-xl);border:1.5px solid var(--border2);
 }
-.brand{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:32px}
+.brand{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:32px;flex-direction:column}
+.brand-inner{display:flex;align-items:center;gap:12px}
 .brand-logo{
   width:52px;height:52px;border-radius:16px;
   background:linear-gradient(135deg,#6366F1,#8B5CF6);
@@ -41,8 +42,9 @@ body{font-family:var(--font);background:linear-gradient(135deg,#EEF2FF 0%,#F0F9F
   font-size:24px;color:#fff;
   box-shadow:0 8px 24px rgba(99,102,241,0.35);
 }
-.brand-name{font-size:22px;font-weight:800;color:var(--text);letter-spacing:-.4px}
+.brand-name{font-size:26px;font-weight:800;color:var(--text);letter-spacing:-.6px}
 .brand-name em{font-style:normal;color:var(--indigo)}
+.brand-tag{font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.8px;text-transform:uppercase;text-align:center}
 
 .card-title{font-size:20px;font-weight:800;color:var(--text);letter-spacing:-.3px;margin-bottom:6px}
 .card-sub{font-size:13px;color:var(--text2);font-weight:500;margin-bottom:28px;line-height:1.6}
@@ -125,7 +127,7 @@ body{font-family:var(--font);background:linear-gradient(135deg,#EEF2FF 0%,#F0F9F
   animation:loPulse 2s ease-in-out infinite;
 }
 @keyframes loPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
-.lo-title{font-size:22px;font-weight:800;color:var(--text);letter-spacing:-.4px}
+.lo-title{font-size:26px;font-weight:800;color:var(--text);letter-spacing:-.5px}
 .lo-title span{background:linear-gradient(90deg,#6366F1,#8B5CF6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .lo-sub{font-size:13px;color:var(--text2)}
 .lo-bar{width:200px;height:4px;background:var(--surface3);border-radius:99px;overflow:hidden}
@@ -138,8 +140,8 @@ body{font-family:var(--font);background:linear-gradient(135deg,#EEF2FF 0%,#F0F9F
 <!-- Loading overlay (shown while checking auth state) -->
 <div id="pageLoad">
   <div class="lo-card">
-    <div class="lo-icon"><i class="ti ti-building-community"></i></div>
-    <div class="lo-title">Resident<span>Hub</span></div>
+    <div class="lo-icon"><i class="ti ti-book-2"></i></div>
+    <div class="lo-title">Gate<span>book</span></div>
     <div class="lo-sub">Checking authentication…</div>
     <div class="lo-bar"><div class="lo-fill"></div></div>
   </div>
@@ -147,8 +149,11 @@ body{font-family:var(--font);background:linear-gradient(135deg,#EEF2FF 0%,#F0F9F
 
 <div class="card" id="mainCard" style="display:none">
   <div class="brand">
-    <div class="brand-logo"><i class="ti ti-building-community"></i></div>
-    <div class="brand-name">Resident<em>Hub</em></div>
+    <div class="brand-inner">
+      <div class="brand-logo"><i class="ti ti-book-2"></i></div>
+      <div class="brand-name">Gate<em>book</em></div>
+    </div>
+    <div class="brand-tag">Smart Society Management</div>
   </div>
 
   <div class="tabs">
@@ -159,7 +164,7 @@ body{font-family:var(--font);background:linear-gradient(135deg,#EEF2FF 0%,#F0F9F
   <!-- ── LOGIN FORM ── -->
   <div id="loginForm">
     <div class="card-title">Welcome back</div>
-    <div class="card-sub">Sign in to your society dashboard.</div>
+    <div class="card-sub">Sign in to your <strong>Gatebook</strong> society dashboard.</div>
 
     <div class="alert" id="loginAlert"><i class="ti ti-alert-circle"></i><span id="loginAlertMsg"></span></div>
 
