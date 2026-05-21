@@ -105,7 +105,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 
 /* User chip */
 .user-chip{display:flex;align-items:center;gap:8px;padding:5px 10px;
-  border-radius:99px;background:var(--surface);border:1.5px solid var(--border2);
+  border-radius:99px;background:var(--surface);border:1px solid var(--border2);
   font-size:12px;font-weight:600;color:var(--text2);box-shadow:var(--shadow-sm);cursor:pointer;
   transition:all .15s}
 .user-chip:hover{border-color:var(--border3);background:var(--surface2)}
@@ -218,6 +218,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .fc-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:5px;gap:4px}
 .fc-num{font-size:11px;font-weight:800;color:var(--text)}
 .fc-owner{font-size:9px;color:var(--text2);margin-top:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:80px;font-weight:500}
+.fc-type{font-size:8px;font-weight:700;padding:1px 4px;border-radius:99px;display:inline-block;margin-top:1px}
 .fc-type.owner{background:var(--indigo-bg);color:var(--indigo)}
 .fc-type.tenant{background:var(--amber-bg);color:var(--amber)}
 .fc-indicator{width:20px;height:20px;border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px}
@@ -243,7 +244,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .empty-grid{grid-column:1/-1;text-align:center;padding:4rem 0;color:var(--text2)}
 .empty-grid i{font-size:44px;display:block;margin-bottom:12px;color:var(--muted)}
 
-/* ── COMPLAINTS / ISSUES ── */
+/* ── ISSUES ── */
 .iss-toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;flex-wrap:wrap;gap:10px}
 .iss-filters{display:flex;gap:6px;flex-wrap:wrap}
 .iff{padding:6px 16px;border-radius:99px;font-size:12px;font-weight:700;border:1.5px solid var(--border2);
@@ -326,6 +327,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   box-shadow:var(--shadow-xl);animation:mIn .22s cubic-bezier(.34,1.4,.64,1)}
 @keyframes mIn{from{opacity:0;transform:translateY(18px) scale(.96)}to{opacity:1;transform:none}}
 .mhead{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;gap:12px}
+.micon{width:48px;height:48px;border-radius:14px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:22px}
 .micon.pay   {background:linear-gradient(135deg,rgba(99,102,241,.12),rgba(139,92,246,.08));color:var(--indigo)}
 .micon.issue {background:linear-gradient(135deg,rgba(220,38,38,.10),rgba(217,119,6,.07));color:var(--red)}
 .micon.flat  {background:linear-gradient(135deg,rgba(5,150,105,.10),rgba(2,132,199,.07));color:var(--green)}
@@ -401,7 +403,8 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   display:flex;align-items:center;justify-content:center;transition:all .15s;padding:0;margin-bottom:1px}
 .wiz-rm:hover{background:var(--red);color:#fff}
 
-/* ── VEHICLES VIEW STYLE OVERRIDES ── */
+
+/* ── VEHICLES TAB ── */
 .veh-toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;flex-wrap:wrap;gap:10px}
 .veh-sum{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:1.4rem}
 .vscard{background:#fff;border-radius:var(--r-lg);padding:14px 16px;border:1.5px solid var(--border);box-shadow:var(--shadow-sm);display:flex;align-items:center;gap:12px}
@@ -418,9 +421,14 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .veh-table td{padding:10px 14px;font-size:13px;font-weight:600;color:var(--text);border-bottom:1px solid var(--border);vertical-align:middle}
 .veh-table tr:last-child td{border-bottom:none}
 .veh-table tr:hover td{background:var(--surface2)}
+.vbadge{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:99px;font-size:11px;font-weight:700}
+.vbadge.tw{background:var(--indigo-bg);color:var(--indigo);border:1px solid var(--indigo-glow)}
+.vbadge.fw{background:var(--green-bg);color:var(--green-txt);border:1px solid var(--green-border)}
+.vbadge.none{background:var(--surface3);color:var(--muted);border:1px solid var(--border2)}
 .veh-search-row{display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap}
+.micon.veh{background:linear-gradient(135deg,rgba(2,132,199,.12),rgba(8,145,178,.08));color:var(--sky)}
 
-/* ── PRESIDENT VIEW ── */
+/* ── PRESIDENT / FUND TAB ── */
 .pres-banner{background:linear-gradient(135deg,#6366F1 0%,#8B5CF6 100%);border-radius:var(--r-xl);padding:20px 24px;color:#fff;display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:1.4rem;flex-wrap:wrap;box-shadow:0 6px 24px rgba(99,102,241,.28)}
 .pres-info{display:flex;align-items:center;gap:14px}
 .pres-avatar{width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;flex-shrink:0;border:2px solid rgba(255,255,255,.5)}
@@ -446,8 +454,21 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .exp-row-date{font-size:11px;color:var(--muted);margin-top:2px}
 .exp-row-note{font-size:11px;color:var(--text2);margin-top:1px;font-style:italic}
 .exp-row-amt{font-size:14px;font-weight:800;color:var(--text);white-space:nowrap}
+.exp-row-status{font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;white-space:nowrap}
+.exp-row-status.approved{background:var(--green-bg);color:var(--green-txt);border:1px solid var(--green-border)}
+.exp-row-status.pending{background:var(--amber-bg);color:var(--amber-txt);border:1px solid var(--amber-border)}
+.exp-row-status.rejected{background:var(--red-bg);color:var(--red-txt);border:1px solid var(--red-border)}
 .exp-empty{text-align:center;padding:36px;color:var(--muted)}
 .exp-empty i{font-size:36px;display:block;margin-bottom:8px}
+.micon.pres{background:linear-gradient(135deg,rgba(99,102,241,.12),rgba(139,92,246,.08));color:var(--indigo)}
+.cat-icon-map-maintenance{background:var(--indigo-bg);color:var(--indigo)}
+.cat-icon-map-water{background:var(--sky-bg);color:var(--sky)}
+.cat-icon-map-electricity{background:var(--amber-bg);color:var(--amber)}
+.cat-icon-map-security{background:var(--red-bg);color:var(--red)}
+.cat-icon-map-cleaning{background:var(--green-bg);color:var(--green)}
+.cat-icon-map-lift{background:var(--purple-bg);color:var(--purple)}
+.cat-icon-map-other{background:var(--surface3);color:var(--text2)}
+
 
 /* ════════════ INLINE SVG CHARTS ════════════ */
 .chart-wrap{
@@ -476,12 +497,30 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .chart-toggle.on{border-color:var(--indigo);color:var(--indigo);background:var(--indigo-bg)}
 .chart-toggle i{font-size:13px}
 
+/* ── Responsive ── */
+@media(max-width:700px){
+  .navbar{padding:0 1rem}.app{padding:0 1rem 3rem}
+  .fg2{grid-template-columns:1fr}
+  .dm{grid-template-columns:1fr 1fr}
+  .fgrid{grid-template-columns:repeat(auto-fill,minmax(165px,1fr))}
+  .icard{grid-template-columns:5px 1fr}.iright{display:none}
+  .user-chip span{display:none}
+}
+
 /* ── Residents tab ── */
 .rff{padding:6px 14px;border-radius:99px;font-size:12px;font-weight:700;border:1.5px solid var(--border2);
   background:#fff;color:var(--text2);cursor:pointer;font-family:var(--font);transition:all .2s;display:flex;align-items:center;gap:5px}
 .rff i{font-size:12px}
 .rff.active{border-color:var(--indigo);background:var(--indigo-bg);color:var(--indigo)}
 .rff:hover:not(.active){border-color:var(--border3);color:var(--text)}
+.res-sum-chip{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:700;
+  padding:4px 10px;border-radius:99px;background:var(--surface3);color:var(--text2);border:1.5px solid var(--border2)}
+.res-sum-chip.owner{background:var(--indigo-bg);color:var(--indigo);border-color:var(--indigo-glow)}
+.res-sum-chip.tenant{background:var(--amber-bg);color:var(--amber);border-color:rgba(217,119,6,.3)}
+.res-sum-chip.vacant{background:var(--surface3);color:var(--muted)}
+.res-sum-chip.veh{background:var(--sky-bg);color:var(--sky);border-color:rgba(2,132,199,.2)}
+/* ── Category manager ── */
+.cat-row{display:flex;align-items:center;gap:8px}
 </style>
 </head>
 <body>
@@ -525,7 +564,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
       <div style="text-align:center;margin-bottom:28px">
         <div style="width:64px;height:64px;border-radius:18px;margin:0 auto 14px;background:linear-gradient(135deg,#6366F1,#8B5CF6);display:flex;align-items:center;justify-content:center;font-size:28px;color:#fff;box-shadow:0 8px 24px rgba(99,102,241,.3)"><i class="ti ti-building"></i></div>
         <h2 style="font-size:22px;font-weight:800;color:var(--text);margin-bottom:6px">Configure Blocks & Floors</h2>
-        <p style="font-size:13px;color:var(--text2);font-weight:500">Add one block or multiple. Each block can have a different layout strategy.</p>
+        <p style="font-size:13px;color:var(--text2);font-weight:500">Add one block or multiple. Each block can have a different number of floors and flats per floor.</p>
       </div>
       <div id="wBlocks"></div>
       <button style="display:flex;align-items:center;gap:6px;padding:8px 16px;border:1.5px dashed var(--border3);border-radius:var(--r-md);background:transparent;color:var(--text2);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);transition:all .15s;margin-top:4px" onclick="window._wizAddBlock()"><i class="ti ti-plus"></i> Add another block</button>
@@ -540,7 +579,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
       <div style="text-align:center;margin-bottom:28px">
         <div style="width:64px;height:64px;border-radius:18px;margin:0 auto 14px;background:linear-gradient(135deg,#059669,#10B981);display:flex;align-items:center;justify-content:center;font-size:28px;color:#fff;box-shadow:0 8px 24px rgba(5,150,105,.3)"><i class="ti ti-rocket"></i></div>
         <h2 style="font-size:22px;font-weight:800;color:var(--text);margin-bottom:6px">Ready to Launch!</h2>
-        <p style="font-size:13px;color:var(--text2);font-weight:500">Review your setup structure before parsing system tables.</p>
+        <p style="font-size:13px;color:var(--text2);font-weight:500">Review your setup. We'll create all your flats automatically.</p>
       </div>
       <div style="background:var(--surface2);border:1.5px solid var(--border2);border-radius:var(--r-lg);padding:16px;font-size:14px;color:var(--text2);font-weight:500;line-height:1.8" id="wConfirm"></div>
       <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:24px;padding-top:18px;border-top:1.5px solid var(--border2)">
@@ -634,9 +673,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
       </button>
     </div>
     <div class="iss-list" id="iList"></div>
-  </div>
-
-  <div id="resView" style="display:none">
+  </div><div id="resView" style="display:none">
     <div class="mem-toolbar" style="flex-wrap:wrap;gap:10px">
       <div class="mem-filters" id="rFil">
         <button class="rff active" data-t="all"    onclick="window.fRes('all')"><i class="ti ti-users"></i> All</button>
@@ -652,19 +689,17 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
           <option value="both">Has Both</option>
           <option value="none">No Vehicles</option>
         </select>
-        <div class="sw" style="min-width:200px"><i class="ti ti-search"></i><input class="ctrl" type="text" id="resQ" placeholder="Search name, flat…" oninput="rResidents()"/></div>
+        <div class="sw" style="min-width:200px">
+          <i class="ti ti-search"></i>
+          <input class="ctrl" type="text" id="resQ" placeholder="Search name, flat…" oninput="rResidents()"/>
+        </div>
       </div>
     </div>
     <div id="resSummary" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px"></div>
     <div id="resList"></div>
-  </div>
-
-  <div id="presView" style="display:none">
+  </div><div id="presView" style="display:none">
     <div id="presBanner"></div>
     <div class="fund-row" id="fundRow"></div>
-    
-    <div id="categoryHistorySection"></div>
-
     <div class="chart-wrap" id="presChartWrap">
       <div class="chart-title"><i class="ti ti-chart-bar"></i>Monthly Society Expenses — Last 12 Months</div>
       <svg class="chart-svg" id="presChartSvg" height="140" viewBox="0 0 500 140" preserveAspectRatio="none"></svg>
@@ -681,16 +716,12 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
             <i class="ti ti-chart-bar"></i> Chart
           </button>
         </div>
-        <button class="btn btn-indigo" onclick="window._oPresExp()"><i class="ti ti-plus"></i> Add Expense</button>
+        <button class="btn btn-indigo btn-sm" onclick="window._oPresExp()"><i class="ti ti-plus"></i> Add Expense</button>
       </div>
       <div id="presExpList"></div>
     </div>
-  </div>
-
-</div>
-</div>
-
-<div class="mbg" id="flatM">
+  </div></div>
+</div><div class="mbg" id="flatM">
   <div class="modal">
     <div class="mhead">
       <div style="display:flex;align-items:center;gap:12px">
@@ -713,14 +744,23 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
       <button class="mclose" onclick="window._closeCatManager()"><i class="ti ti-x"></i></button>
     </div>
     <div id="catMgrList" style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;max-height:320px;overflow-y:auto"></div>
-    <button onclick="window._addCatRow()" style="width:100%;padding:8px;border:2px dashed var(--border2);border-radius:var(--r-md);background:transparent;color:var(--text2);font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .15s;margin-bottom:16px" onmouseover="this.style.borderColor='var(--indigo)';this.style.color='var(--indigo)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text2)'"><i class="ti ti-plus"></i> Add Category</button>
+    <button onclick="window._addCatRow()"
+      style="width:100%;padding:8px;border:2px dashed var(--border2);border-radius:var(--r-md);
+        background:transparent;color:var(--text2);font-family:var(--font);font-size:13px;
+        font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;
+        transition:all .15s;margin-bottom:16px"
+      onmouseover="this.style.borderColor='var(--indigo)';this.style.color='var(--indigo)'"
+      onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text2)'">
+      <i class="ti ti-plus"></i> Add Category
+    </button>
     <div class="mactions">
       <button class="btn btn-white" onclick="window._closeCatManager()">Cancel</button>
-      <button class="btn btn-indigo" id="catSaveBtn" onclick="window._saveCatManager()"><i class="ti ti-device-floppy"></i> Save</button>
+      <button class="btn btn-indigo" id="catSaveBtn" onclick="window._saveCatManager()">
+        <i class="ti ti-device-floppy"></i> Save
+      </button>
     </div>
   </div>
 </div>
-
 <div class="mbg" id="addM">
   <div class="modal">
     <div class="mhead">
@@ -735,17 +775,25 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
       <div class="fg"><label>Flat No.</label><select id="fF"></select></div>
     </div>
     <div class="fg2">
-      <div class="fg"><label>Category</label><select id="fC"><option>Maintenance</option></select></div>
+      <div class="fg"><label>Category</label>
+        <select id="fC">
+          <option>Maintenance</option>
+        </select>
+      </div>
       <div class="fg"><label>Amount (₹)</label><input type="number" id="fA" placeholder="0" min="1"/></div>
     </div>
     <div class="fg2">
       <div class="fg"><label>Date</label><input type="date" id="fD"/></div>
-      <div class="fg"><label>Payment Status</label><select id="fS"><option value="paid">✅ Paid</option><option value="partial">⚠️ Partial</option><option value="pending">❌ Pending</option></select></div>
+      <div class="fg"><label>Payment Status</label>
+        <select id="fS"><option value="paid">✅ Paid</option><option value="partial">⚠️ Partial</option><option value="pending">❌ Pending</option></select>
+      </div>
     </div>
     <div class="fg"><label>Note (optional)</label><input type="text" id="fN" placeholder="e.g. UPI transfer, cheque no. 1234…"/></div>
     <div class="mactions">
       <button class="btn btn-white" onclick="window._cA()">Cancel</button>
-      <button class="btn btn-indigo" id="svBtn" onclick="window._sE()"><i class="ti ti-device-floppy"></i><span id="svLbl">Save Payment</span></button>
+      <button class="btn btn-indigo" id="svBtn" onclick="window._sE()">
+        <i class="ti ti-device-floppy"></i><span id="svLbl">Save Payment</span>
+      </button>
     </div>
   </div>
 </div>
@@ -806,11 +854,13 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
       <div class="fg"><label>Block</label><select id="iBl"></select></div>
       <div class="fg"><label>Flat No. (optional)</label><input type="text" id="iFl" placeholder="e.g. A-101 or blank"/></div>
     </div>
-    <div class="fg"><label>Description *</label><textarea id="iDe" placeholder="Describe the issue clearly…"></textarea></div>
+    <div class="fg"><label>Description *</label><textarea id="iDe" placeholder="Describe the issue clearly — what happened, since when, how severe is it…"></textarea></div>
     <div class="fg"><label>Your Name / Flat No. *</label><input type="text" id="iRe" placeholder="e.g. Ramesh Kumar / A-101"/></div>
     <div class="mactions">
       <button class="btn btn-white" onclick="window._cRI()">Cancel</button>
-      <button class="btn btn-indigo" id="issBtn" onclick="window._sI()"><i class="ti ti-send"></i><span id="issBtnL">Submit Complaint</span></button>
+      <button class="btn btn-indigo" id="issBtn" onclick="window._sI()">
+        <i class="ti ti-send"></i><span id="issBtnL">Submit Complaint</span>
+      </button>
     </div>
   </div>
 </div>
@@ -843,12 +893,18 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
       <div class="fg"><label>🏍 2-Wheelers (count)</label><input type="number" id="veh2w" min="0" max="10" placeholder="0"/></div>
       <div class="fg"><label>🚗 4-Wheelers (count)</label><input type="number" id="veh4w" min="0" max="10" placeholder="0"/></div>
     </div>
-    <div class="fg"><label>Vehicle Numbers (comma separated)</label><input type="text" id="vehNums" placeholder="e.g. MH12AB1234"/></div>
-    <div class="fg"><label>Parking Slot(s)</label><input type="text" id="vehSlot" placeholder="e.g. B1, B2"/></div>
+    <div class="fg"><label>Vehicle Numbers (comma separated)</label>
+      <input type="text" id="vehNums" placeholder="e.g. MH12AB1234, KA01CD5678"/>
+    </div>
+    <div class="fg"><label>Parking Slot(s)</label>
+      <input type="text" id="vehSlot" placeholder="e.g. B1, B2"/>
+    </div>
     <div class="mactions">
       <button class="btn btn-white" onclick="window._cVehM()">Cancel</button>
       <button class="btn btn-red btn-sm" id="vehDelBtn" onclick="window._delVeh()" style="display:none"><i class="ti ti-trash"></i> Clear</button>
-      <button class="btn btn-indigo" id="vehSaveBtn" onclick="window._sVeh()"><i class="ti ti-device-floppy"></i><span id="vehSaveLbl">Save Vehicles</span></button>
+      <button class="btn btn-indigo" id="vehSaveBtn" onclick="window._sVeh()">
+        <i class="ti ti-device-floppy"></i><span id="vehSaveLbl">Save Vehicles</span>
+      </button>
     </div>
   </div>
 </div>
@@ -869,7 +925,9 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
     <div class="fg"><label>Phone</label><input type="text" id="presPhone" placeholder="Contact number"/></div>
     <div class="mactions">
       <button class="btn btn-white" onclick="window._cPresM()">Cancel</button>
-      <button class="btn btn-indigo" id="presSaveBtn" onclick="window._sPres()"><i class="ti ti-crown"></i><span id="presSaveLbl">Elect President</span></button>
+      <button class="btn btn-indigo" id="presSaveBtn" onclick="window._sPres()">
+        <i class="ti ti-crown"></i><span id="presSaveLbl">Elect President</span>
+      </button>
     </div>
   </div>
 </div>
@@ -885,7 +943,13 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
     </div>
     <div class="fg"><label>Expense Title *</label><input type="text" id="peTitle" placeholder="e.g. Generator repair"/></div>
     <div class="fg2">
-      <div class="fg"><label>Category *</label><select id="peCat"></select></div>
+      <div class="fg"><label>Category *</label>
+        <select id="peCat">
+          <option>Maintenance</option><option>Water</option><option>Electricity</option>
+          <option>Security</option><option>Cleaning</option><option>Lift</option>
+          <option>Gardening</option><option>Painting</option><option>Other</option>
+        </select>
+      </div>
       <div class="fg"><label>Amount (₹) *</label><input type="number" id="peAmt" placeholder="0" min="1"/></div>
     </div>
     <div class="fg2">
@@ -896,7 +960,9 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
     <div class="fg"><label>Notes</label><input type="text" id="peNote" placeholder="Additional details…"/></div>
     <div class="mactions">
       <button class="btn btn-white" onclick="window._cPresExp()">Cancel</button>
-      <button class="btn btn-indigo" id="peBtn" onclick="window._sPresExp()"><i class="ti ti-device-floppy"></i><span id="peLbl">Save Expense</span></button>
+      <button class="btn btn-indigo" id="peBtn" onclick="window._sPresExp()">
+        <i class="ti ti-device-floppy"></i><span id="peLbl">Save Expense</span>
+      </button>
     </div>
   </div>
 </div>
@@ -949,11 +1015,11 @@ const sexpRef     = id => doc(db, 'apartments', UID, 'soc_expenses', id);
 const flats  = new Map();
 const exps   = new Map();
 const issues = [];
-const vehicles = new Map();
-const socExps  = [];
 
 let AB='', FS='all', SQ='', RTF='all', FLF='all', MF='all', AM=new Date().toISOString().slice(0,7), AV='payments', IF='all';
 let eu=null, iu=null, vu=null, pu=null;
+const vehicles = new Map();
+const socExps  = [];
 let president  = null;
 let APT_NAME = 'Gatebook';
 
@@ -995,14 +1061,20 @@ function refreshAPP() {
   };
 }
 
+/* ── Cleaned Month list configuration logic engine ── */
 function buildMonthSelect() {
   const sel = document.getElementById('mf');
+  if (!sel) return;
   const opts = [];
-  for (let i=0; i<12; i++) {
-    const d = new Date(); d.setMonth(d.getMonth()-i);
-    const val = d.toISOString().slice(0,7);
-    const lbl = d.toLocaleDateString('en-IN',{month:'long',year:'numeric'});
-    opts.push(`<option value="${val}"${val===AM?' selected':''}>${lbl}</option>`);
+  
+  // Pivot calculations directly on the real-world execution month context
+  const currentRealDate = new Date();
+  
+  for (let i = 0; i < 12; i++) {
+    const d = new Date(currentRealDate.getFullYear(), currentRealDate.getMonth() - i, 1);
+    const val = d.toISOString().slice(0, 7); // Format layout: YYYY-MM
+    const lbl = d.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+    opts.push(`<option value="${val}"${val === AM ? ' selected' : ''}>${lbl}</option>`);
   }
   sel.innerHTML = opts.join('');
 }
@@ -1038,11 +1110,10 @@ function rStats() {
   document.getElementById('openCnt').textContent=oi;
   const badge=document.getElementById('flatCountBadge');
   if(badge){badge.textContent=`${all.length} flats`;badge.style.display='';}
-
   document.getElementById('phAct').innerHTML=`
-    <button class="btn btn-indigo" onclick="window._oA()"><i class="ti ti-plus"></i> Add Payment</button>
-    <button class="btn btn-white" onclick="window._oPresExp()"><i class="ti ti-receipt"></i> Add Expense</button>
-    <button class="btn btn-white" onclick="window._oRI()"><i class="ti ti-urgent"></i> Raise Issue</button>
+    <button class="btn btn-indigo"  onclick="window._oA()"><i class="ti ti-plus"></i> Add Payment</button>
+    <button class="btn btn-white"   onclick="window._oPresExp()"><i class="ti ti-receipt"></i> Add Expense</button>
+    <button class="btn btn-white"   onclick="window._oRI()"><i class="ti ti-urgent"></i> Raise Issue</button>
   `;
   document.getElementById('statsRow').innerHTML=`
     <div class="scard indigo">
@@ -1090,19 +1161,60 @@ function oFl(fid) {
       </div></div>`).join('')
     :`<div class="eempty"><i class="ti ti-inbox"></i>No payments recorded yet.</div>`;
   document.getElementById('mdC').innerHTML=`
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:10px">
-      <div class="fg" style="margin-bottom:0"><label>Resident Name</label><input type="text" id="edOwner" value="${f.owner||''}" placeholder="Name" onblur="window._autoSaveFlat('${fid}')"/></div>
-      <div class="fg" style="margin-bottom:0"><label>Resident Type</label><select id="edType" onchange="window._autoSaveFlat('${fid}');window._toggleOwnerFields(this.value)"><option value="owner" ${(f.resType||'owner')==='owner'?'selected':''}>🏠 Owner</option><option value="tenant" ${f.resType==='tenant'?'selected':''}>🔑 Tenant</option></select></div>
-      <div class="fg" style="margin-bottom:0"><label>Monthly Due (₹)</label><input type="number" id="edDue" value="${f.due||''}" placeholder="0" min="0" onblur="window._autoSaveFlat('${fid}')"/></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px">
+      <div class="fg" style="margin-bottom:0">
+        <label style="font-size:10px;font-weight:800;color:var(--text2);text-transform:uppercase;letter-spacing:.6px">Resident Name</label>
+        <input type="text" id="edOwner" value="${f.owner||''}" placeholder="Name"
+          style="background:var(--surface2);border:1.5px solid var(--border2);color:var(--text);font-family:var(--font);font-size:13px;font-weight:600;border-radius:var(--r-md);padding:8px 10px;outline:none;width:100%;margin-top:4px;transition:border-color .15s"
+          onfocus="this.style.borderColor='var(--indigo)'"
+          onblur="this.style.borderColor='var(--border2)';window._autoSaveFlat('${fid}')"/>
+      </div>
+      <div class="fg" style="margin-bottom:0">
+        <label style="font-size:10px;font-weight:800;color:var(--text2);text-transform:uppercase;letter-spacing:.6px">Resident Type</label>
+        <select id="edType" onchange="window._autoSaveFlat('${fid}');window._toggleOwnerFields(this.value)"
+          style="background:var(--surface2);border:1.5px solid var(--border2);color:var(--text);font-family:var(--font);font-size:13px;font-weight:600;border-radius:var(--r-md);padding:8px 10px;outline:none;width:100%;margin-top:4px">
+          <option value="owner" ${(f.resType||'owner')==='owner'?'selected':''}>🏠 Owner</option>
+          <option value="tenant" ${f.resType==='tenant'?'selected':''}>🔑 Tenant</option>
+        </select>
+      </div>
+      <div class="fg" style="margin-bottom:0">
+        <label style="font-size:10px;font-weight:800;color:var(--text2);text-transform:uppercase;letter-spacing:.6px">Monthly Due (₹)</label>
+        <input type="number" id="edDue" value="${f.due||''}" placeholder="0" min="0"
+          style="background:var(--surface2);border:1.5px solid var(--border2);color:var(--text);font-family:var(--font);font-size:13px;font-weight:600;border-radius:var(--r-md);padding:8px 10px;outline:none;width:100%;margin-top:4px;transition:border-color .15s"
+          onfocus="this.style.borderColor='var(--indigo)'"
+          onblur="this.style.borderColor='var(--border2)';window._autoSaveFlat('${fid}')"/>
+      </div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
-      <div class="fg" style="margin-bottom:0"><label>📅 Move-In Date</label><input type="date" id="edMoveIn" value="${f.moveIn||''}" onchange="window._autoSaveFlat('${fid}')"/></div>
-      <div class="fg" style="margin-bottom:0"><label>🚪 Move-Out Date</label><input type="date" id="edMoveOut" value="${f.moveOut||''}" onchange="window._autoSaveFlat('${fid}')"/></div>
+      <div class="fg" style="margin-bottom:0">
+        <label style="font-size:10px;font-weight:800;color:var(--text2);text-transform:uppercase;letter-spacing:.6px">📅 Move-In Date</label>
+        <input type="date" id="edMoveIn" value="${f.moveIn||''}"
+          style="background:var(--surface2);border:1.5px solid var(--border2);color:var(--text);font-family:var(--font);font-size:13px;font-weight:600;border-radius:var(--r-md);padding:8px 10px;outline:none;width:100%;margin-top:4px"
+          onchange="window._autoSaveFlat('${fid}')"/>
+      </div>
+      <div class="fg" style="margin-bottom:0">
+        <label style="font-size:10px;font-weight:800;color:var(--text2);text-transform:uppercase;letter-spacing:.6px">🚪 Move-Out Date <span style="font-weight:500;text-transform:none;font-size:9px">(if vacated)</span></label>
+        <input type="date" id="edMoveOut" value="${f.moveOut||''}"
+          style="background:var(--surface2);border:1.5px solid var(--border2);color:var(--text);font-family:var(--font);font-size:13px;font-weight:600;border-radius:var(--r-md);padding:8px 10px;outline:none;width:100%;margin-top:4px"
+          onchange="window._autoSaveFlat('${fid}')"/>
+      </div>
     </div>
     <div id="ownerSection" style="display:${f.resType==='tenant'?'grid':'none'};grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;background:var(--amber-bg);border:1.5px solid var(--amber-border);border-radius:var(--r-md);padding:12px">
       <div style="grid-column:1/-1;font-size:10px;font-weight:800;color:var(--amber);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">🏠 Flat Owner Details</div>
-      <div class="fg" style="margin-bottom:0"><label>Owner Name</label><input type="text" id="edOwnerName" value="${f.ownerName||''}" placeholder="Owner's name" onblur="window._autoSaveFlat('${fid}')"/></div>
-      <div class="fg" style="margin-bottom:0"><label>Owner Phone</label><input type="tel" id="edOwnerPhone" value="${f.ownerPhone||''}" placeholder="Owner's contact" onblur="window._autoSaveFlat('${fid}')"/></div>
+      <div class="fg" style="margin-bottom:0">
+        <label style="font-size:10px;font-weight:800;color:var(--text2);text-transform:uppercase;letter-spacing:.6px">Owner Name</label>
+        <input type="text" id="edOwnerName" value="${f.ownerName||''}" placeholder="Owner's name"
+          style="background:#fff;border:1.5px solid var(--border2);color:var(--text);font-family:var(--font);font-size:13px;font-weight:600;border-radius:var(--r-md);padding:8px 10px;outline:none;width:100%;margin-top:4px"
+          onfocus="this.style.borderColor='var(--amber)'"
+          onblur="this.style.borderColor='var(--border2)';window._autoSaveFlat('${fid}')"/>
+      </div>
+      <div class="fg" style="margin-bottom:0">
+        <label style="font-size:10px;font-weight:800;color:var(--text2);text-transform:uppercase;letter-spacing:.6px">Owner Phone</label>
+        <input type="tel" id="edOwnerPhone" value="${f.ownerPhone||''}" placeholder="Owner's contact"
+          style="background:#fff;border:1.5px solid var(--border2);color:var(--text);font-family:var(--font);font-size:13px;font-weight:600;border-radius:var(--r-md);padding:8px 10px;outline:none;width:100%;margin-top:4px"
+          onfocus="this.style.borderColor='var(--amber)'"
+          onblur="this.style.borderColor='var(--border2)';window._autoSaveFlat('${fid}')"/>
+      </div>
     </div>
     <div style="height:1px;background:var(--border2);margin-bottom:14px"></div>
     <div class="dm">
@@ -1112,7 +1224,9 @@ function oFl(fid) {
     </div>
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:9px">
       <div class="etitle" style="margin-bottom:0"><i class="ti ti-list"></i>Payment History</div>
-      <button class="chart-toggle" id="flatChartToggle" onclick="window._toggleFlatChart('${fid}')"><i class="ti ti-chart-bar"></i> Show Chart</button>
+      <button class="chart-toggle" id="flatChartToggle" onclick="window._toggleFlatChart('${f.flatId}')">
+        <i class="ti ti-chart-bar"></i> Show Chart
+      </button>
     </div>
     <div class="chart-wrap" id="flatChartWrap">
       <div class="chart-title"><i class="ti ti-chart-bar"></i>Last 12 Months — Paid vs Due</div>
@@ -1125,7 +1239,9 @@ function oFl(fid) {
     <div class="elist">${rows}</div>
     ${ex.length?`<div class="etotal"><span class="etotal-label">Total Expenses</span><span class="etotal-val">${inr(tot)}</span></div>`:''}
     <div class="mactions">
-      <button class="btn btn-indigo btn-sm" onclick="window._cM();window._oAFor('${f.block}','${f.flatId}')"><i class="ti ti-plus"></i> Add Payment</button>
+      <button class="btn btn-indigo btn-sm" onclick="window._cM();window._oAFor('${f.block}','${f.flatId}')">
+        <i class="ti ti-plus"></i> Add Payment
+      </button>
     </div>`;
   document.getElementById('flatM').classList.add('open');
 }
@@ -1199,7 +1315,7 @@ async function sE(){
     if(s==='paid')np=f.due;else if(s==='partial')np=Math.min(f.paid+amt,f.due-1);
     await updateDoc(flatRef(fid),{paid:np});
     sync('live');cA();toast('Payment saved ✓');
-  }catch(e){console.error(e);sync('error');toast('Save failed.','error');}
+  }catch(e){console.error(e);sync('error');toast('Save failed. Check console.','error');}
   finally{btn.disabled=false;document.getElementById('svLbl').textContent='Save Payment';}
 }
 
@@ -1217,7 +1333,7 @@ async function sNF(){
   if(flats.has(id)){toast(`Flat ${id} already exists.`,'error');return;}
   sync('saving');
   try{
-    await setDoc(flatRef(id),{block,owner,resType:'owner',due,paid:0,month:AM});
+    await setDoc(flatRef(id),{block,owner,resType:'owner',due:0,paid:0,month:AM});
     sync('live');cAF();toast(`Flat ${id} registered ✓`);AB=block;rBTabs();rBlock();
   }catch(e){console.error(e);sync('error');toast('Failed to register flat.','error');}
 }
@@ -1226,9 +1342,15 @@ function oRI(){
   ['iT','iDe','iFl','iRe'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('iP').value='medium';
   document.getElementById('iBl').innerHTML=bks().map(b=>`<option value="${b}">Block ${b}</option>`).join('')+'<option value="Common">Common Area</option>';
+  const btn=document.getElementById('issBtn');btn.disabled=false;
+  document.getElementById('issBtnL').textContent='Submit Complaint';
   document.getElementById('rIM').classList.add('open');
 }
-function cRI(){document.getElementById('rIM').classList.remove('open');}
+function cRI(){
+  document.getElementById('rIM').classList.remove('open');
+  document.getElementById('issBtn').disabled=false;
+  document.getElementById('issBtnL').textContent='Submit Complaint';
+}
 async function sI(){
   const title=document.getElementById('iT').value.trim();
   const cat=document.getElementById('iCa').value;
@@ -1252,7 +1374,10 @@ async function sI(){
       createdAt:serverTimestamp(),
     });
     sync('live');cRI();toast('Issue submitted ✓');switchView('issues');
-  }catch(e){console.error(e);sync('error');toast('Failed to submit.','error');btn.disabled=false;document.getElementById('issBtnL').textContent='Submit Complaint';}
+  }catch(e){
+    console.error(e);sync('error');toast('Failed to submit. Try again.','error');
+    btn.disabled=false;document.getElementById('issBtnL').textContent='Submit Complaint';
+  }
 }
 
 function oID(id){
@@ -1324,11 +1449,12 @@ function listenFlats(){
       document.getElementById('lo').style.display  = 'none';
       document.getElementById('app').style.display = '';
     }
-    try { refreshAPP(); rAll(); } catch(e) { console.error(e); }
+    try { refreshAPP(); rAll(); } catch(e) { console.error('rAll error:', e); }
     sync('live');
   },e=>{
-    console.error(e);
-    document.getElementById('loSub').textContent='⚠ Firebase connectivity error.';
+    console.error('Flats listener error:',e);
+    sync('error');
+    document.getElementById('loSub').textContent='⚠ Firebase connection failed. Check console.';
   });
 }
 
@@ -1357,8 +1483,8 @@ function listenVehicles(){
   vu=onSnapshot(vehColl(),snap=>{
     vehicles.clear();
     snap.forEach(d=>vehicles.set(d.id,{...d.data()}));
-    rAll();
-  },e=>console.error(e));
+    rStats();
+  },e=>console.error('veh listener',e));
 }
 
 function listenSocExp(){
@@ -1367,9 +1493,9 @@ function listenSocExp(){
   pu=onSnapshot(q,snap=>{
     socExps.length=0;
     snap.forEach(d=>socExps.push({id:d.id,...d.data()}));
-    rAll();
+    if(document.getElementById('presView').style.display!=='none')rPresident();
   },()=>{
-    pu=onSnapshot(sexpColl(),snap=>{socExps.length=0;snap.forEach(d=>socExps.push({id:d.id,...d.data()}));rAll();});
+    pu=onSnapshot(sexpColl(),snap=>{socExps.length=0;snap.forEach(d=>socExps.push({id:d.id,...d.data()}));if(document.getElementById('presView').style.display!=='none')rPresident();});
   });
 }
 
@@ -1381,18 +1507,20 @@ function switchView(v) {
   document.getElementById('resView').style.display  = v==='residents' ? 'block' : 'none';
   document.getElementById('presView').style.display = v==='president' ? 'block' : 'none';
   document.querySelectorAll('.vtab').forEach(p => p.classList.toggle('active', p.dataset.v===v));
-  if(v==='residents') rResidents();
-  if(v==='president') rPresident();
+  if(v==='residents') try{ rResidents(); } catch(e){ console.error(e); }
+  if(v==='president') try{ rPresident(); } catch(e){ console.error(e); }
 }
 
 function rAll(){
   refreshAPP();
   rStats();
-  rBTabs();
-  rBlock();
-  rIssues();
-  if(document.getElementById('resView').style.display!=='none') rResidents();
-  if(document.getElementById('presView').style.display!=='none') rPresident();
+  try{ rBTabs(); } catch(e){ console.error('rBTabs',e); }
+  try{ rBlock(); } catch(e){ console.error('rBlock',e); }
+  try{ rIssues(); } catch(e){ console.error('rIssues',e); }
+  const rv=document.getElementById('resView');
+  if(rv && rv.style.display!=='none') try{ rResidents(); } catch(e){ console.error('rResidents',e); }
+  const p=document.getElementById('presView');
+  if(p && p.style.display!=='none') try{ rPresident(); } catch(e){ console.error('rPresident',e); }
 }
 
 document.getElementById('sf').addEventListener('change',e=>{FS=e.target.value;rBlock();});
@@ -1400,10 +1528,11 @@ document.getElementById('rtf').addEventListener('change',e=>{RTF=e.target.value;
 document.getElementById('flf').addEventListener('change',e=>{FLF=e.target.value;rBlock();});
 document.getElementById('qi').addEventListener('input', e=>{SQ=e.target.value.toLowerCase().trim();rBlock();});
 document.getElementById('mf').addEventListener('change',e=>{AM=e.target.value;listenExp();});
-
 ['flatM','addM','flatAddM','rIM','idM','vehM','presM','presExpM'].forEach(id=>{
   const el=document.getElementById(id);if(!el)return;
-  el.addEventListener('click',e=>{if(e.target.id===id){cM();cA();cAF();cRI();cID();cVehM();cPresM();cPresExp();}});
+  el.addEventListener('click',e=>{
+    if(e.target.id===id){cM();cA();cAF();cRI();cID();cVehM();cPresM();cPresExp();}
+  });
 });
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){cM();cA();cAF();cRI();cID();cVehM();cPresM();cPresExp();}});
 
@@ -1430,8 +1559,11 @@ window.rPresident = rPresident;
 window.fIss = fIss;
 
 let WIZ_BLOCKS = [{ name:'A', floors:4, flatsPerFloor:4 }];
+
 function wizSetStep(n) {
-  [0,1,2].forEach(i => { document.getElementById('ws'+i).style.display = i===n ? '' : 'none'; });
+  [0,1,2].forEach(i => {
+    document.getElementById('ws'+i).style.display = i===n ? '' : 'none';
+  });
   const dots = document.getElementById('wizDots').children;
   [0,1,2].forEach(i => {
     const d = dots[i];
@@ -1446,38 +1578,49 @@ function wizRenderBlocks() {
     <div class="wiz-block-row">
       <div>
         <label>Block Name</label>
-        <input type="text" value="${b.name}" maxlength="3" oninput="WIZ_BLOCKS[${i}].name=this.value.toUpperCase();wizUpdatePreview()"/>
+        <input type="text" value="${b.name}" maxlength="3" placeholder="A"
+          oninput="WIZ_BLOCKS[${i}].name=this.value.toUpperCase();wizUpdatePreview()"/>
       </div>
       <div>
         <label>Floors</label>
-        <input type="number" value="${b.floors}" min="1" max="50" oninput="WIZ_BLOCKS[${i}].floors=parseInt(this.value)||1;wizUpdatePreview()"/>
+        <input type="number" value="${b.floors}" min="1" max="50"
+          oninput="WIZ_BLOCKS[${i}].floors=parseInt(this.value)||1;wizUpdatePreview()"/>
       </div>
       <div>
         <label>Flats / Floor</label>
-        <input type="number" value="${b.flatsPerFloor}" min="1" max="20" oninput="WIZ_BLOCKS[${i}].flatsPerFloor=parseInt(this.value)||1;wizUpdatePreview()"/>
+        <input type="number" value="${b.flatsPerFloor}" min="1" max="20"
+          oninput="WIZ_BLOCKS[${i}].flatsPerFloor=parseInt(this.value)||1;wizUpdatePreview()"/>
       </div>
-      ${WIZ_BLOCKS.length > 1 ? `<button class="wiz-rm" onclick="wizRemoveBlock(${i})"><i class="ti ti-trash"></i></button>` : '<div></div>'}
+      ${WIZ_BLOCKS.length > 1
+        ? `<button class="wiz-rm" onclick="wizRemoveBlock(${i})"><i class="ti ti-trash"></i></button>`
+        : '<div></div>'}
     </div>`).join('');
   wizUpdatePreview();
 }
+
 function wizRemoveBlock(i) { WIZ_BLOCKS.splice(i,1); wizRenderBlocks(); }
+
 window.WIZ_BLOCKS = WIZ_BLOCKS;
 window.wizUpdatePreview = function() {
   let total=0, lines=[];
   WIZ_BLOCKS.forEach(b => {
     const cnt = b.floors * (b.flatsPerFloor||1);
     total += cnt;
-    lines.push(`<strong>Block ${b.name||'?'}</strong> — ${b.floors} floors, ${b.flatsPerFloor} flats/floor = ${cnt} flats`);
+    lines.push(`<strong>Block ${b.name||'?'}</strong> — ${b.floors} floor${b.floors!==1?'s':''}, ${b.flatsPerFloor} flat${b.flatsPerFloor!==1?'s':''}/floor = ${cnt} flats`);
   });
-  document.getElementById('wPreview').innerHTML = lines.join('<br>') + `<br><strong>Total: ${total} flats</strong> will be created`;
+  const p = document.getElementById('wPreview');
+  if(p) p.innerHTML = lines.join('<br>') + `<br><strong>Total: ${total} flats</strong> will be created`;
 };
 window.wizRemoveBlock = wizRemoveBlock;
+
 window._wizAddBlock = function() {
   const letters = 'ABCDEFGHIJKLMNOP';
   WIZ_BLOCKS.push({ name: letters[WIZ_BLOCKS.length] || String(WIZ_BLOCKS.length+1), floors:4, flatsPerFloor:4 });
   wizRenderBlocks();
 };
+
 window._wizBack = n => wizSetStep(n-1);
+
 window._wizNext = function(from) {
   if(from === 0) {
     const n = document.getElementById('wAptName').value.trim();
@@ -1490,11 +1633,20 @@ window._wizNext = function(from) {
     let html = `<strong>${APT_NAME}</strong><br><br>`;
     WIZ_BLOCKS.forEach(b => {
       html += `🏢 <strong>Block ${b.name}</strong>: ${b.floors} floors × ${b.flatsPerFloor} flats = ${b.floors*b.flatsPerFloor} flats<br>`;
+      for(let fl=1; fl<=Math.min(b.floors,3); fl++) {
+        const ids=[];
+        for(let f=1; f<=b.flatsPerFloor; f++) ids.push(`${b.name}-${fl}${String(f).padStart(2,'0')}`);
+        html+=`&nbsp;&nbsp;&nbsp;Floor ${fl}: ${ids.join(', ')}<br>`;
+      }
+      if(b.floors>3) html += `&nbsp;&nbsp;&nbsp;… and ${b.floors-3} more floor${b.floors-3!==1?'s':''}<br>`;
     });
+    const tot = WIZ_BLOCKS.reduce((s,b)=>s+b.floors*b.flatsPerFloor,0);
+    html += `<br><strong>Total: ${tot} flats</strong> will be auto-created.`;
     document.getElementById('wConfirm').innerHTML = html;
     wizSetStep(2);
   }
 };
+
 window._wizLaunch = async function() {
   const btn = document.getElementById('wLaunchBtn');
   btn.disabled = true;
@@ -1510,10 +1662,40 @@ window._wizLaunch = async function() {
       }
     }
     document.getElementById('setupWiz').style.display = 'none';
-    boot();
+    document.getElementById('lo').style.display = '';
+    listenFlats(); listenExp(); listenIssues(); listenVehicles(); listenSocExp(); listenCategories();
     toast(`${APT_NAME} launched ✓`);
-  } catch(e) { console.error(e); toast('Launch failed.','error'); btn.disabled = false; }
+  } catch(e) {
+    console.error(e);
+    toast('Launch failed. Check console.','error');
+    btn.disabled = false;
+    document.getElementById('wLaunchLbl').textContent = ' Launch App';
+  }
 };
+
+function switchView(v) {
+  AV = v;
+  refreshAPP();
+  document.getElementById('pView').style.display    = v==='payments'  ? 'block' : 'none';
+  document.getElementById('iView').style.display    = v==='issues'    ? 'block' : 'none';
+  document.getElementById('resView').style.display  = v==='residents' ? 'block' : 'none';
+  document.getElementById('presView').style.display = v==='president' ? 'block' : 'none';
+  document.querySelectorAll('.vtab').forEach(p => p.classList.toggle('active', p.dataset.v===v));
+  if(v==='residents') try{ rResidents(); } catch(e){ console.error(e); }
+  if(v==='president') try{ rPresident(); } catch(e){ console.error(e); }
+}
+
+function rAll(){
+  refreshAPP();
+  rStats();
+  try{ rBTabs(); } catch(e){ console.error('rBTabs',e); }
+  try{ rBlock(); } catch(e){ console.error('rBlock',e); }
+  try{ rIssues(); } catch(e){ console.error('rIssues',e); }
+  const rv=document.getElementById('resView');
+  if(rv && rv.style.display!=='none') try{ rResidents(); } catch(e){ console.error('rResidents',e); }
+  const p=document.getElementById('presView');
+  if(p && p.style.display!=='none') try{ rPresident(); } catch(e){ console.error('rPresident',e); }
+}
 
 async function boot(){
   refreshAPP();
@@ -1526,13 +1708,19 @@ async function boot(){
     const snap = await getDocs(flatsColl());
     if(snap.empty){
       document.getElementById('lo').style.display = 'none';
-      document.getElementById('setupWiz').style.display = 'flex';
-      if(aptDoc.exists() && aptDoc.data().name) document.getElementById('wAptName').value = aptDoc.data().name;
+      const wiz = document.getElementById('setupWiz');
+      wiz.style.display = 'flex';
+      if(aptDoc.exists() && aptDoc.data().name){
+        document.getElementById('wAptName').value = aptDoc.data().name;
+      }
       wizSetStep(0);
     } else {
       listenFlats(); listenExp(); listenIssues(); listenVehicles(); listenSocExp(); listenCategories();
     }
-  }catch(err){ console.error(err); }
+  }catch(err){
+    console.error('Boot error:',err);
+    document.getElementById('loSub').textContent='⚠ Firebase connection failed. Check console.';
+  }
 }
 
 function lastNMonths(n=12) {
@@ -1543,7 +1731,10 @@ function lastNMonths(n=12) {
   }
   return months;
 }
-function shortMonth(ym) { return new Date(ym+'-01').toLocaleDateString('en-IN',{month:'short'}); }
+function shortMonth(ym) {
+  const d = new Date(ym+'-01');
+  return d.toLocaleDateString('en-IN',{month:'short'});
+}
 
 function renderBarChart(svgId, data, maxVal=0) {
   const svg = document.getElementById(svgId); if (!svg) return;
@@ -1558,48 +1749,73 @@ function renderBarChart(svgId, data, maxVal=0) {
     const yv = (actualMax/4)*i, y = padT + yScale(yv);
     const label = yv >= 1000 ? '₹'+(yv/1000).toFixed(0)+'k' : yv > 0 ? '₹'+Math.round(yv) : '0';
     out += `<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="#E5E7EB" stroke-width="1"/>`;
-    out += `<text x="${padL-4}" y="${y+3}" text-anchor="end" font-size="7" fill="#A5A8D0">${label}</text>`;
+    out += `<text x="${padL-4}" y="${y+3}" text-anchor="end" font-size="7" fill="#A5A8D0" font-family="Plus Jakarta Sans,sans-serif">${label}</text>`;
   }
   data.forEach((group, gi) => {
     const groupX = padL + gi*groupW + (groupW - barsPerGroup*barW - (barsPerGroup-1)*gap)/2;
     group.bars.forEach((bar, bi) => {
       const bh = Math.max(2, (bar.val/actualMax)*chartH), bx = groupX + bi*(barW+gap), by = padT + chartH - bh;
-      out += `<rect x="${bx.toFixed(1)}" y="${by.toFixed(1)}" width="${barW}" height="${bh.toFixed(1)}" rx="2" fill="${bar.color}"><title>${bar.title}</title></rect>`;
+      const rx = Math.min(3, barW/2);
+      out += `<rect x="${bx.toFixed(1)}" y="${by.toFixed(1)}" width="${barW}" height="${bh.toFixed(1)}" rx="${rx}" fill="${bar.color}" opacity="0.9"><title>${group.label}: ${bar.title}</title></rect>`;
     });
-    out += `<text x="${(padL + gi*groupW + groupW/2).toFixed(1)}" y="${H-padB+10}" text-anchor="middle" font-size="7.5" fill="#A5A8D0">${group.label}</text>`;
+    const lx = padL + gi*groupW + groupW/2;
+    out += `<text x="${lx.toFixed(1)}" y="${H-padB+10}" text-anchor="middle" font-size="7.5" fill="#A5A8D0" font-family="Plus Jakarta Sans,sans-serif">${group.label}</text>`;
   });
   svg.innerHTML = out;
 }
 
+let _flatChartFid = null;
 let _flatChartVisible = false;
+
+function buildFlatChart(fid) {
+  _flatChartFid = fid; const months = lastNMonths(12);
+  const data = months.map(m => {
+    const flatSnap = flats.get(fid);
+    const flatDue  = (flatSnap && flatSnap.month===m) ? (flatSnap.due||0) : 0;
+    const flatPaid = (flatSnap && flatSnap.month===m) ? (flatSnap.paid||0) : 0;
+    const monthExps = (exps.get(fid)||[]).filter(e=>e.month===m);
+    const expPaid   = monthExps.reduce((s,e)=>s+e.amt,0);
+    const paid = flatSnap && flatSnap.month===m ? flatPaid : expPaid;
+    const due  = flatSnap && flatSnap.month===m ? flatDue  : 0;
+    return { label: shortMonth(m), bars: [{ val: due, color: '#E5E7EB', title: `Due: ₹${due.toLocaleString('en-IN')}` }, { val: paid, color: '#059669', title: `Paid: ₹${paid.toLocaleString('en-IN')}` }] };
+  });
+  renderBarChart('flatChartSvg', data);
+}
+
 window._toggleFlatChart = function(fid) {
   _flatChartVisible = !_flatChartVisible;
   const wrap = document.getElementById('flatChartWrap'), toggle = document.getElementById('flatChartToggle');
+  if (!wrap || !toggle) return;
   if (_flatChartVisible) {
-    wrap.classList.add('visible'); toggle.innerHTML = '<i class="ti ti-chart-bar"></i> Hide Chart';
-    const data = lastNMonths(12).map(m => {
-      const fSnap = flats.get(fid), monthExps = (exps.get(fid)||[]).filter(e=>e.month===m);
-      const paid = fSnap && fSnap.month===m ? fSnap.paid : monthExps.reduce((s,e)=>s+e.amt,0);
-      const due = fSnap && fSnap.month===m ? fSnap.due : 0;
-      return { label: shortMonth(m), bars: [{ val: due, color: '#E5E7EB', title: `Due: ₹${due}` }, { val: paid, color: '#059669', title: `Paid: ₹${paid}` }] };
-    });
-    renderBarChart('flatChartSvg', data);
-  } else { wrap.classList.remove('visible'); toggle.innerHTML = '<i class="ti ti-chart-bar"></i> Show Chart'; }
+    wrap.classList.add('visible'); toggle.classList.add('on'); toggle.innerHTML = '<i class="ti ti-chart-bar"></i> Hide Chart'; buildFlatChart(fid);
+  } else {
+    wrap.classList.remove('visible'); toggle.classList.remove('on'); toggle.innerHTML = '<i class="ti ti-chart-bar"></i> Show Chart';
+  }
 };
 
 let _presChartVisible = false;
+function buildPresChart() {
+  const months = lastNMonths(12);
+  const data = months.map(m => {
+    const mExps = socExps.filter(e => e.month === m);
+    const total = mExps.reduce((s,e)=>s+(e.amt||0), 0);
+    const approved = mExps.filter(e=>e.status==='approved').reduce((s,e)=>s+(e.amt||0), 0);
+    return { label: shortMonth(m), bars: [{ val: total, color: '#6366F1', title: `Total: ₹${total.toLocaleString('en-IN')}` }, { val: approved, color: '#A7F3D0', title: `Approved: ₹${approved.toLocaleString('en-IN')}` }] };
+  });
+  renderBarChart('presChartSvg', data);
+}
+
 window._togglePresChart = function() {
   _presChartVisible = !_presChartVisible;
   const wrap = document.getElementById('presChartWrap'), toggle = document.getElementById('presChartToggle');
+  if (!wrap || !toggle) return;
   if (_presChartVisible) {
-    wrap.classList.add('visible'); toggle.innerHTML = '<i class="ti ti-chart-bar"></i> Hide';
-    const data = lastNMonths(12).map(m => {
-      const mExps = socExps.filter(e => e.month === m);
-      return { label: shortMonth(m), bars: [{ val: mExps.reduce((s,e)=>s+e.amt,0), color: '#6366F1', title: 'Total' }, { val: mExps.filter(e=>e.status==='approved').reduce((s,e)=>s+e.amt,0), color: '#A7F3D0', title: 'Approved' }] };
-    });
-    renderBarChart('presChartSvg', data);
-  } else { wrap.classList.remove('visible'); toggle.innerHTML = '<i class="ti ti-chart-bar"></i> Chart'; }
+    wrap.classList.add('visible'); toggle.classList.add('on'); toggle.innerHTML = '<i class="ti ti-chart-bar"></i> Hide'; buildPresChart();
+  } else {
+    wrap.classList.remove('visible'); toggle.classList.remove('on'); toggle.innerHTML = '<i class="ti ti-chart-bar"></i> Chart';
+  }
 };
+const _origRAll = typeof rAll === 'function' ? rAll : null;
 </script>
 </body>
 </html>
