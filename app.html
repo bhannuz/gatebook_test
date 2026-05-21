@@ -80,7 +80,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 
 .nav-pills{display:none}
 
-/* ── View tabs ── */
+/* ── View tabs (Payments / Issues) below stats ── */
 .view-tabs{display:flex;gap:0;background:var(--surface3);border:1px solid var(--border2);
   border-radius:var(--r-md);padding:4px;margin-bottom:1.4rem;width:fit-content}
 .vtab{padding:6px 16px;border-radius:var(--r-sm);font-size:12px;font-weight:700;
@@ -143,7 +143,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   box-shadow:var(--shadow-sm);transition:all .22s;position:relative;overflow:hidden}
 .scard:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
 .scard::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:var(--r-lg) var(--r-lg) 0 0}
-.scard.indigo{border-color:rgba(99,102,241,.12)}.scard.indigo::before{background:linear-gradient(90deg,#6366F1,#8B5CF6)}
+.scard.indigo">border-color:rgba(99,102,241,.12)}.scard.indigo::before{background:linear-gradient(90deg,#6366F1,#8B5CF6)}
 .scard.green {border-color:rgba(5,150,105,.12)} .scard.green::before {background:linear-gradient(90deg,#059669,#10B981)}
 .scard.amber {border-color:rgba(217,119,6,.12)} .scard.amber::before {background:linear-gradient(90deg,#D97706,#F59E0B)}
 .scard.red   {border-color:rgba(220,38,38,.12)}  .scard.red::before   {background:linear-gradient(90deg,#DC2626,#EF4444)}
@@ -404,7 +404,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .wiz-rm:hover{background:var(--red);color:#fff}
 
 
-/* ── VEHICLES TAB ── */
+/* ── VEHICLES VIEW STYLE OVERRIDES ── */
 .veh-toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;flex-wrap:wrap;gap:10px}
 .veh-sum{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:1.4rem}
 .vscard{background:#fff;border-radius:var(--r-lg);padding:14px 16px;border:1.5px solid var(--border);box-shadow:var(--shadow-sm);display:flex;align-items:center;gap:12px}
@@ -428,7 +428,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .veh-search-row{display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap}
 .micon.veh{background:linear-gradient(135deg,rgba(2,132,199,.12),rgba(8,145,178,.08));color:var(--sky)}
 
-/* ── PRESIDENT / FUND TAB ── */
+/* ── PRESIDENT VIEW ── */
 .pres-banner{background:linear-gradient(135deg,#6366F1 0%,#8B5CF6 100%);border-radius:var(--r-xl);padding:20px 24px;color:#fff;display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:1.4rem;flex-wrap:wrap;box-shadow:0 6px 24px rgba(99,102,241,.28)}
 .pres-info{display:flex;align-items:center;gap:14px}
 .pres-avatar{width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;flex-shrink:0;border:2px solid rgba(255,255,255,.5)}
@@ -564,7 +564,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
       <div style="text-align:center;margin-bottom:28px">
         <div style="width:64px;height:64px;border-radius:18px;margin:0 auto 14px;background:linear-gradient(135deg,#6366F1,#8B5CF6);display:flex;align-items:center;justify-content:center;font-size:28px;color:#fff;box-shadow:0 8px 24px rgba(99,102,241,.3)"><i class="ti ti-building"></i></div>
         <h2 style="font-size:22px;font-weight:800;color:var(--text);margin-bottom:6px">Configure Blocks & Floors</h2>
-        <p style="font-size:13px;color:var(--text2);font-weight:500">Add one block or multiple. Each block can have a different number of floors and flats per floor.</p>
+        <p style="font-size:13px;color:var(--text2);font-weight:500">Add one block or multiple. Each block can have a different layout strategy.</p>
       </div>
       <div id="wBlocks"></div>
       <button style="display:flex;align-items:center;gap:6px;padding:8px 16px;border:1.5px dashed var(--border3);border-radius:var(--r-md);background:transparent;color:var(--text2);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);transition:all .15s;margin-top:4px" onclick="window._wizAddBlock()"><i class="ti ti-plus"></i> Add another block</button>
@@ -579,7 +579,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
       <div style="text-align:center;margin-bottom:28px">
         <div style="width:64px;height:64px;border-radius:18px;margin:0 auto 14px;background:linear-gradient(135deg,#059669,#10B981);display:flex;align-items:center;justify-content:center;font-size:28px;color:#fff;box-shadow:0 8px 24px rgba(5,150,105,.3)"><i class="ti ti-rocket"></i></div>
         <h2 style="font-size:22px;font-weight:800;color:var(--text);margin-bottom:6px">Ready to Launch!</h2>
-        <p style="font-size:13px;color:var(--text2);font-weight:500">Review your setup. We'll create all your flats automatically.</p>
+        <p style="font-size:13px;color:var(--text2);font-weight:500">Review your setup structure before parsing system tables.</p>
       </div>
       <div style="background:var(--surface2);border:1.5px solid var(--border2);border-radius:var(--r-lg);padding:16px;font-size:14px;color:var(--text2);font-weight:500;line-height:1.8" id="wConfirm"></div>
       <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:24px;padding-top:18px;border-top:1.5px solid var(--border2)">
@@ -673,7 +673,9 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
       </button>
     </div>
     <div class="iss-list" id="iList"></div>
-  </div><div id="resView" style="display:none">
+  </div>
+
+  <div id="resView" style="display:none">
     <div class="mem-toolbar" style="flex-wrap:wrap;gap:10px">
       <div class="mem-filters" id="rFil">
         <button class="rff active" data-t="all"    onclick="window.fRes('all')"><i class="ti ti-users"></i> All</button>
@@ -689,17 +691,19 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
           <option value="both">Has Both</option>
           <option value="none">No Vehicles</option>
         </select>
-        <div class="sw" style="min-width:200px">
-          <i class="ti ti-search"></i>
-          <input class="ctrl" type="text" id="resQ" placeholder="Search name, flat…" oninput="rResidents()"/>
-        </div>
+        <div class="sw" style="min-width:200px"><i class="ti ti-search"></i><input class="ctrl" type="text" id="resQ" placeholder="Search name, flat…" oninput="rResidents()"/></div>
       </div>
     </div>
     <div id="resSummary" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px"></div>
     <div id="resList"></div>
-  </div><div id="presView" style="display:none">
+  </div>
+
+  <div id="presView" style="display:none">
     <div id="presBanner"></div>
     <div class="fund-row" id="fundRow"></div>
+    
+    <div id="categoryHistorySection"></div>
+
     <div class="chart-wrap" id="presChartWrap">
       <div class="chart-title"><i class="ti ti-chart-bar"></i>Monthly Society Expenses — Last 12 Months</div>
       <svg class="chart-svg" id="presChartSvg" height="140" viewBox="0 0 500 140" preserveAspectRatio="none"></svg>
@@ -720,8 +724,12 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
       </div>
       <div id="presExpList"></div>
     </div>
-  </div></div>
-</div><div class="mbg" id="flatM">
+  </div>
+
+</div>
+</div>
+
+<div class="mbg" id="flatM">
   <div class="modal">
     <div class="mhead">
       <div style="display:flex;align-items:center;gap:12px">
@@ -744,23 +752,14 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
       <button class="mclose" onclick="window._closeCatManager()"><i class="ti ti-x"></i></button>
     </div>
     <div id="catMgrList" style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;max-height:320px;overflow-y:auto"></div>
-    <button onclick="window._addCatRow()"
-      style="width:100%;padding:8px;border:2px dashed var(--border2);border-radius:var(--r-md);
-        background:transparent;color:var(--text2);font-family:var(--font);font-size:13px;
-        font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;
-        transition:all .15s;margin-bottom:16px"
-      onmouseover="this.style.borderColor='var(--indigo)';this.style.color='var(--indigo)'"
-      onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text2)'">
-      <i class="ti ti-plus"></i> Add Category
-    </button>
+    <button onclick="window._addCatRow()" style="width:100%;padding:8px;border:2px dashed var(--border2);border-radius:var(--r-md);background:transparent;color:var(--text2);font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .15s;margin-bottom:16px" onmouseover="this.style.borderColor='var(--indigo)';this.style.color='var(--indigo)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text2)'"><i class="ti ti-plus"></i> Add Category</button>
     <div class="mactions">
       <button class="btn btn-white" onclick="window._closeCatManager()">Cancel</button>
-      <button class="btn btn-indigo" id="catSaveBtn" onclick="window._saveCatManager()">
-        <i class="ti ti-device-floppy"></i> Save
-      </button>
+      <button class="btn btn-indigo" id="catSaveBtn" onclick="window._saveCatManager()"><i class="ti ti-device-floppy"></i> Save</button>
     </div>
   </div>
 </div>
+
 <div class="mbg" id="addM">
   <div class="modal">
     <div class="mhead">
@@ -775,25 +774,17 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
       <div class="fg"><label>Flat No.</label><select id="fF"></select></div>
     </div>
     <div class="fg2">
-      <div class="fg"><label>Category</label>
-        <select id="fC">
-          <option>Maintenance</option>
-        </select>
-      </div>
+      <div class="fg"><label>Category</label><select id="fC"><option>Maintenance</option></select></div>
       <div class="fg"><label>Amount (₹)</label><input type="number" id="fA" placeholder="0" min="1"/></div>
     </div>
     <div class="fg2">
       <div class="fg"><label>Date</label><input type="date" id="fD"/></div>
-      <div class="fg"><label>Payment Status</label>
-        <select id="fS"><option value="paid">✅ Paid</option><option value="partial">⚠️ Partial</option><option value="pending">❌ Pending</option></select>
-      </div>
+      <div class="fg"><label>Payment Status</label><select id="fS"><option value="paid">✅ Paid</option><option value="partial">⚠️ Partial</option><option value="pending">❌ Pending</option></select></div>
     </div>
     <div class="fg"><label>Note (optional)</label><input type="text" id="fN" placeholder="e.g. UPI transfer, cheque no. 1234…"/></div>
     <div class="mactions">
       <button class="btn btn-white" onclick="window._cA()">Cancel</button>
-      <button class="btn btn-indigo" id="svBtn" onclick="window._sE()">
-        <i class="ti ti-device-floppy"></i><span id="svLbl">Save Payment</span>
-      </button>
+      <button class="btn btn-indigo" id="svBtn" onclick="window._sE()"><i class="ti ti-device-floppy"></i><span id="svLbl">Save Payment</span></button>
     </div>
   </div>
 </div>
@@ -854,13 +845,11 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
       <div class="fg"><label>Block</label><select id="iBl"></select></div>
       <div class="fg"><label>Flat No. (optional)</label><input type="text" id="iFl" placeholder="e.g. A-101 or blank"/></div>
     </div>
-    <div class="fg"><label>Description *</label><textarea id="iDe" placeholder="Describe the issue clearly — what happened, since when, how severe is it…"></textarea></div>
+    <div class="fg"><label>Description *</label><textarea id="iDe" placeholder="Describe the issue clearly…"></textarea></div>
     <div class="fg"><label>Your Name / Flat No. *</label><input type="text" id="iRe" placeholder="e.g. Ramesh Kumar / A-101"/></div>
     <div class="mactions">
       <button class="btn btn-white" onclick="window._cRI()">Cancel</button>
-      <button class="btn btn-indigo" id="issBtn" onclick="window._sI()">
-        <i class="ti ti-send"></i><span id="issBtnL">Submit Complaint</span>
-      </button>
+      <button class="btn btn-indigo" id="issBtn" onclick="window._sI()"><i class="ti ti-send"></i><span id="issBtnL">Submit Complaint</span></button>
     </div>
   </div>
 </div>
@@ -893,18 +882,12 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
       <div class="fg"><label>🏍 2-Wheelers (count)</label><input type="number" id="veh2w" min="0" max="10" placeholder="0"/></div>
       <div class="fg"><label>🚗 4-Wheelers (count)</label><input type="number" id="veh4w" min="0" max="10" placeholder="0"/></div>
     </div>
-    <div class="fg"><label>Vehicle Numbers (comma separated)</label>
-      <input type="text" id="vehNums" placeholder="e.g. MH12AB1234, KA01CD5678"/>
-    </div>
-    <div class="fg"><label>Parking Slot(s)</label>
-      <input type="text" id="vehSlot" placeholder="e.g. B1, B2"/>
-    </div>
+    <div class="fg"><label>Vehicle Numbers (comma separated)</label><input type="text" id="vehNums" placeholder="e.g. MH12AB1234"/></div>
+    <div class="fg"><label>Parking Slot(s)</label><input type="text" id="vehSlot" placeholder="e.g. B1, B2"/></div>
     <div class="mactions">
       <button class="btn btn-white" onclick="window._cVehM()">Cancel</button>
       <button class="btn btn-red btn-sm" id="vehDelBtn" onclick="window._delVeh()" style="display:none"><i class="ti ti-trash"></i> Clear</button>
-      <button class="btn btn-indigo" id="vehSaveBtn" onclick="window._sVeh()">
-        <i class="ti ti-device-floppy"></i><span id="vehSaveLbl">Save Vehicles</span>
-      </button>
+      <button class="btn btn-indigo" id="vehSaveBtn" onclick="window._sVeh()"><i class="ti ti-device-floppy"></i><span id="vehSaveLbl">Save Vehicles</span></button>
     </div>
   </div>
 </div>
@@ -925,9 +908,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
     <div class="fg"><label>Phone</label><input type="text" id="presPhone" placeholder="Contact number"/></div>
     <div class="mactions">
       <button class="btn btn-white" onclick="window._cPresM()">Cancel</button>
-      <button class="btn btn-indigo" id="presSaveBtn" onclick="window._sPres()">
-        <i class="ti ti-crown"></i><span id="presSaveLbl">Elect President</span>
-      </button>
+      <button class="btn btn-indigo" id="presSaveBtn" onclick="window._sPres()"><i class="ti ti-crown"></i><span id="presSaveLbl">Elect President</span></button>
     </div>
   </div>
 </div>
@@ -943,13 +924,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
     </div>
     <div class="fg"><label>Expense Title *</label><input type="text" id="peTitle" placeholder="e.g. Generator repair"/></div>
     <div class="fg2">
-      <div class="fg"><label>Category *</label>
-        <select id="peCat">
-          <option>Maintenance</option><option>Water</option><option>Electricity</option>
-          <option>Security</option><option>Cleaning</option><option>Lift</option>
-          <option>Gardening</option><option>Painting</option><option>Other</option>
-        </select>
-      </div>
+      <div class="fg"><label>Category *</label><select id="peCat"></select></div>
       <div class="fg"><label>Amount (₹) *</label><input type="number" id="peAmt" placeholder="0" min="1"/></div>
     </div>
     <div class="fg2">
@@ -960,9 +935,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
     <div class="fg"><label>Notes</label><input type="text" id="peNote" placeholder="Additional details…"/></div>
     <div class="mactions">
       <button class="btn btn-white" onclick="window._cPresExp()">Cancel</button>
-      <button class="btn btn-indigo" id="peBtn" onclick="window._sPresExp()">
-        <i class="ti ti-device-floppy"></i><span id="peLbl">Save Expense</span>
-      </button>
+      <button class="btn btn-indigo" id="peBtn" onclick="window._sPresExp()"><i class="ti ti-device-floppy"></i><span id="peLbl">Save Expense</span></button>
     </div>
   </div>
 </div>
@@ -1015,11 +988,11 @@ const sexpRef     = id => doc(db, 'apartments', UID, 'soc_expenses', id);
 const flats  = new Map();
 const exps   = new Map();
 const issues = [];
+const vehicles = new Map();
+const socExps  = [];
 
 let AB='', FS='all', SQ='', RTF='all', FLF='all', MF='all', AM=new Date().toISOString().slice(0,7), AV='payments', IF='all';
 let eu=null, iu=null, vu=null, pu=null;
-const vehicles = new Map();
-const socExps  = [];
 let president  = null;
 let APT_NAME = 'Gatebook';
 
@@ -1061,18 +1034,15 @@ function refreshAPP() {
   };
 }
 
-/* ── Cleaned Month list configuration logic engine ── */
 function buildMonthSelect() {
   const sel = document.getElementById('mf');
   if (!sel) return;
   const opts = [];
-  
-  // Pivot calculations directly on the real-world execution month context
   const currentRealDate = new Date();
   
   for (let i = 0; i < 12; i++) {
     const d = new Date(currentRealDate.getFullYear(), currentRealDate.getMonth() - i, 1);
-    const val = d.toISOString().slice(0, 7); // Format layout: YYYY-MM
+    const val = d.toISOString().slice(0, 7);
     const lbl = d.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
     opts.push(`<option value="${val}"${val === AM ? ' selected' : ''}>${lbl}</option>`);
   }
@@ -1087,14 +1057,17 @@ function applyAptName(name) {
 
 function sync(s) {
   const d=document.getElementById('sdot'),l=document.getElementById('slbl');
-  if(!d)return; d.className='sdot '+s; l.textContent={live:'Live',saving:'Saving…',error:'Error'}[s];
+  if(!d)return;
+  d.className='sdot '+s;
+  l.textContent={live:'Live',saving:'Saving…',error:'Error'}[s];
 }
 
 function toast(msg, t='success') {
   const el=document.getElementById('toast');
   document.getElementById('tMsg').textContent=msg;
   document.getElementById('tIco').className=t==='success'?'ti ti-circle-check':'ti ti-alert-circle';
-  el.className=t+' show'; setTimeout(()=>el.className='',3200);
+  el.className=t+' show';
+  setTimeout(()=>el.className='',3200);
 }
 
 function rStats() {
@@ -1110,10 +1083,11 @@ function rStats() {
   document.getElementById('openCnt').textContent=oi;
   const badge=document.getElementById('flatCountBadge');
   if(badge){badge.textContent=`${all.length} flats`;badge.style.display='';}
+
   document.getElementById('phAct').innerHTML=`
-    <button class="btn btn-indigo"  onclick="window._oA()"><i class="ti ti-plus"></i> Add Payment</button>
-    <button class="btn btn-white"   onclick="window._oPresExp()"><i class="ti ti-receipt"></i> Add Expense</button>
-    <button class="btn btn-white"   onclick="window._oRI()"><i class="ti ti-urgent"></i> Raise Issue</button>
+    <button class="btn btn-indigo" onclick="window._oA()"><i class="ti ti-plus"></i> Add Payment</button>
+    <button class="btn btn-white" onclick="window._oPresExp()"><i class="ti ti-receipt"></i> Add Expense</button>
+    <button class="btn btn-white" onclick="window._oRI()"><i class="ti ti-urgent"></i> Raise Issue</button>
   `;
   document.getElementById('statsRow').innerHTML=`
     <div class="scard indigo">
@@ -1141,8 +1115,6 @@ function rStats() {
   `;
 }
 
-window.switchView=switchView;
-
 function oFl(fid) {
   const f=flats.get(fid);if(!f)return;
   const s=st(f),bal=f.due-f.paid,ex=fex(fid),tot=ex.reduce((a,e)=>a+e.amt,0);
@@ -1160,60 +1132,44 @@ function oFl(fid) {
           onblur="window._saveExpAmt('${e.expId}',this.value,'${fid}')"/>
       </div></div>`).join('')
     :`<div class="eempty"><i class="ti ti-inbox"></i>No payments recorded yet.</div>`;
+  
   document.getElementById('mdC').innerHTML=`
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px">
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:10px">
       <div class="fg" style="margin-bottom:0">
-        <label style="font-size:10px;font-weight:800;color:var(--text2);text-transform:uppercase;letter-spacing:.6px">Resident Name</label>
-        <input type="text" id="edOwner" value="${f.owner||''}" placeholder="Name"
-          style="background:var(--surface2);border:1.5px solid var(--border2);color:var(--text);font-family:var(--font);font-size:13px;font-weight:600;border-radius:var(--r-md);padding:8px 10px;outline:none;width:100%;margin-top:4px;transition:border-color .15s"
-          onfocus="this.style.borderColor='var(--indigo)'"
-          onblur="this.style.borderColor='var(--border2)';window._autoSaveFlat('${fid}')"/>
+        <label>Resident Name</label>
+        <input type="text" id="edOwner" value="${f.owner||''}" placeholder="Name" onblur="window._autoSaveFlat('${fid}')"/>
       </div>
       <div class="fg" style="margin-bottom:0">
-        <label style="font-size:10px;font-weight:800;color:var(--text2);text-transform:uppercase;letter-spacing:.6px">Resident Type</label>
-        <select id="edType" onchange="window._autoSaveFlat('${fid}');window._toggleOwnerFields(this.value)"
-          style="background:var(--surface2);border:1.5px solid var(--border2);color:var(--text);font-family:var(--font);font-size:13px;font-weight:600;border-radius:var(--r-md);padding:8px 10px;outline:none;width:100%;margin-top:4px">
+        <label>Resident Type</label>
+        <select id="edType" onchange="window._autoSaveFlat('${fid}');window._toggleOwnerFields(this.value)">
           <option value="owner" ${(f.resType||'owner')==='owner'?'selected':''}>🏠 Owner</option>
           <option value="tenant" ${f.resType==='tenant'?'selected':''}>🔑 Tenant</option>
         </select>
       </div>
       <div class="fg" style="margin-bottom:0">
-        <label style="font-size:10px;font-weight:800;color:var(--text2);text-transform:uppercase;letter-spacing:.6px">Monthly Due (₹)</label>
-        <input type="number" id="edDue" value="${f.due||''}" placeholder="0" min="0"
-          style="background:var(--surface2);border:1.5px solid var(--border2);color:var(--text);font-family:var(--font);font-size:13px;font-weight:600;border-radius:var(--r-md);padding:8px 10px;outline:none;width:100%;margin-top:4px;transition:border-color .15s"
-          onfocus="this.style.borderColor='var(--indigo)'"
-          onblur="this.style.borderColor='var(--border2)';window._autoSaveFlat('${fid}')"/>
+        <label>Monthly Due (₹)</label>
+        <input type="number" id="edDue" value="${f.due||''}" placeholder="0" min="0" onblur="window._autoSaveFlat('${fid}')"/>
       </div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
       <div class="fg" style="margin-bottom:0">
-        <label style="font-size:10px;font-weight:800;color:var(--text2);text-transform:uppercase;letter-spacing:.6px">📅 Move-In Date</label>
-        <input type="date" id="edMoveIn" value="${f.moveIn||''}"
-          style="background:var(--surface2);border:1.5px solid var(--border2);color:var(--text);font-family:var(--font);font-size:13px;font-weight:600;border-radius:var(--r-md);padding:8px 10px;outline:none;width:100%;margin-top:4px"
-          onchange="window._autoSaveFlat('${fid}')"/>
+        <label>📅 Move-In Date</label>
+        <input type="date" id="edMoveIn" value="${f.moveIn||''}" onchange="window._autoSaveFlat('${fid}')"/>
       </div>
       <div class="fg" style="margin-bottom:0">
-        <label style="font-size:10px;font-weight:800;color:var(--text2);text-transform:uppercase;letter-spacing:.6px">🚪 Move-Out Date <span style="font-weight:500;text-transform:none;font-size:9px">(if vacated)</span></label>
-        <input type="date" id="edMoveOut" value="${f.moveOut||''}"
-          style="background:var(--surface2);border:1.5px solid var(--border2);color:var(--text);font-family:var(--font);font-size:13px;font-weight:600;border-radius:var(--r-md);padding:8px 10px;outline:none;width:100%;margin-top:4px"
-          onchange="window._autoSaveFlat('${fid}')"/>
+        <label>🚪 Move-Out Date</label>
+        <input type="date" id="edMoveOut" value="${f.moveOut||''}" onchange="window._autoSaveFlat('${fid}')"/>
       </div>
     </div>
     <div id="ownerSection" style="display:${f.resType==='tenant'?'grid':'none'};grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;background:var(--amber-bg);border:1.5px solid var(--amber-border);border-radius:var(--r-md);padding:12px">
       <div style="grid-column:1/-1;font-size:10px;font-weight:800;color:var(--amber);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">🏠 Flat Owner Details</div>
       <div class="fg" style="margin-bottom:0">
-        <label style="font-size:10px;font-weight:800;color:var(--text2);text-transform:uppercase;letter-spacing:.6px">Owner Name</label>
-        <input type="text" id="edOwnerName" value="${f.ownerName||''}" placeholder="Owner's name"
-          style="background:#fff;border:1.5px solid var(--border2);color:var(--text);font-family:var(--font);font-size:13px;font-weight:600;border-radius:var(--r-md);padding:8px 10px;outline:none;width:100%;margin-top:4px"
-          onfocus="this.style.borderColor='var(--amber)'"
-          onblur="this.style.borderColor='var(--border2)';window._autoSaveFlat('${fid}')"/>
+        <label>Owner Name</label>
+        <input type="text" id="edOwnerName" value="${f.ownerName||''}" placeholder="Owner's name" onblur="window._autoSaveFlat('${fid}')"/>
       </div>
       <div class="fg" style="margin-bottom:0">
-        <label style="font-size:10px;font-weight:800;color:var(--text2);text-transform:uppercase;letter-spacing:.6px">Owner Phone</label>
-        <input type="tel" id="edOwnerPhone" value="${f.ownerPhone||''}" placeholder="Owner's contact"
-          style="background:#fff;border:1.5px solid var(--border2);color:var(--text);font-family:var(--font);font-size:13px;font-weight:600;border-radius:var(--r-md);padding:8px 10px;outline:none;width:100%;margin-top:4px"
-          onfocus="this.style.borderColor='var(--amber)'"
-          onblur="this.style.borderColor='var(--border2)';window._autoSaveFlat('${fid}')"/>
+        <label>Owner Phone</label>
+        <input type="tel" id="edOwnerPhone" value="${f.ownerPhone||''}" placeholder="Owner's contact" onblur="window._autoSaveFlat('${fid}')"/>
       </div>
     </div>
     <div style="height:1px;background:var(--border2);margin-bottom:14px"></div>
@@ -1224,9 +1180,7 @@ function oFl(fid) {
     </div>
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:9px">
       <div class="etitle" style="margin-bottom:0"><i class="ti ti-list"></i>Payment History</div>
-      <button class="chart-toggle" id="flatChartToggle" onclick="window._toggleFlatChart('${f.flatId}')">
-        <i class="ti ti-chart-bar"></i> Show Chart
-      </button>
+      <button class="chart-toggle" id="flatChartToggle" onclick="window._toggleFlatChart('${fid}')"><i class="ti ti-chart-bar"></i> Show Chart</button>
     </div>
     <div class="chart-wrap" id="flatChartWrap">
       <div class="chart-title"><i class="ti ti-chart-bar"></i>Last 12 Months — Paid vs Due</div>
@@ -1239,9 +1193,7 @@ function oFl(fid) {
     <div class="elist">${rows}</div>
     ${ex.length?`<div class="etotal"><span class="etotal-label">Total Expenses</span><span class="etotal-val">${inr(tot)}</span></div>`:''}
     <div class="mactions">
-      <button class="btn btn-indigo btn-sm" onclick="window._cM();window._oAFor('${f.block}','${f.flatId}')">
-        <i class="ti ti-plus"></i> Add Payment
-      </button>
+      <button class="btn btn-indigo btn-sm" onclick="window._cM();window._oAFor('${f.block}','${f.flatId}')"><i class="ti ti-plus"></i> Add Payment</button>
     </div>`;
   document.getElementById('flatM').classList.add('open');
 }
@@ -1499,230 +1451,6 @@ function listenSocExp(){
   });
 }
 
-function switchView(v) {
-  AV = v;
-  refreshAPP();
-  document.getElementById('pView').style.display    = v==='payments'  ? 'block' : 'none';
-  document.getElementById('iView').style.display    = v==='issues'    ? 'block' : 'none';
-  document.getElementById('resView').style.display  = v==='residents' ? 'block' : 'none';
-  document.getElementById('presView').style.display = v==='president' ? 'block' : 'none';
-  document.querySelectorAll('.vtab').forEach(p => p.classList.toggle('active', p.dataset.v===v));
-  if(v==='residents') try{ rResidents(); } catch(e){ console.error(e); }
-  if(v==='president') try{ rPresident(); } catch(e){ console.error(e); }
-}
-
-function rAll(){
-  refreshAPP();
-  rStats();
-  try{ rBTabs(); } catch(e){ console.error('rBTabs',e); }
-  try{ rBlock(); } catch(e){ console.error('rBlock',e); }
-  try{ rIssues(); } catch(e){ console.error('rIssues',e); }
-  const rv=document.getElementById('resView');
-  if(rv && rv.style.display!=='none') try{ rResidents(); } catch(e){ console.error('rResidents',e); }
-  const p=document.getElementById('presView');
-  if(p && p.style.display!=='none') try{ rPresident(); } catch(e){ console.error('rPresident',e); }
-}
-
-document.getElementById('sf').addEventListener('change',e=>{FS=e.target.value;rBlock();});
-document.getElementById('rtf').addEventListener('change',e=>{RTF=e.target.value;rBlock();});
-document.getElementById('flf').addEventListener('change',e=>{FLF=e.target.value;rBlock();});
-document.getElementById('qi').addEventListener('input', e=>{SQ=e.target.value.toLowerCase().trim();rBlock();});
-document.getElementById('mf').addEventListener('change',e=>{AM=e.target.value;listenExp();});
-['flatM','addM','flatAddM','rIM','idM','vehM','presM','presExpM'].forEach(id=>{
-  const el=document.getElementById(id);if(!el)return;
-  el.addEventListener('click',e=>{
-    if(e.target.id===id){cM();cA();cAF();cRI();cID();cVehM();cPresM();cPresExp();}
-  });
-});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){cM();cA();cAF();cRI();cID();cVehM();cPresM();cPresExp();}});
-
-window._sB = b => { AB=b; FLF='all'; const flf=document.getElementById('flf'); if(flf)flf.value='all'; refreshAPP(); rBTabs(); rBlock(); };
-window._oFl  =oFl;  window._cM=cM;
-window._autoSaveFlat=autoSaveFlat;
-window._toggleOwnerFields=toggleOwnerFields;
-window._saveExpAmt=saveExpAmt;
-window._oA   =oA;   window._oAFor=oAFor; window._cA=cA; window._sE=sE;
-window._oAF  =oAF;  window._cAF=cAF;    window._sNF=sNF;
-window._oRI  =oRI;  window._cRI=cRI;    window._sI=sI;
-window._oID  =oID;  window._cID=cID;    window._uIS=uIS;
-window.fRes = fRes; window.rResidents = rResidents;
-window._openCatManager  = openCatManager;
-window._closeCatManager = closeCatManager;
-window._saveCatManager  = saveCatManager;
-window._addCatRow = addCatRow;
-window._delCat    = delCatRow;
-window._fillCatSelect = fillCatSelect;
-window._oPresM   = oPresM;  window._cPresM  = cPresM;  window._sPres   = sPres;
-window._oPresExp = oPresExp; window._cPresExp= cPresExp; window._sPresExp= sPresExp;
-window._updSEStatus = updSEStatus; window._delSE = delSE;
-window.rPresident = rPresident;
-window.fIss = fIss;
-
-let WIZ_BLOCKS = [{ name:'A', floors:4, flatsPerFloor:4 }];
-
-function wizSetStep(n) {
-  [0,1,2].forEach(i => {
-    document.getElementById('ws'+i).style.display = i===n ? '' : 'none';
-  });
-  const dots = document.getElementById('wizDots').children;
-  [0,1,2].forEach(i => {
-    const d = dots[i];
-    if(i < n)       d.style.cssText = 'width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0';
-    else if(i === n) d.style.cssText = 'width:24px;height:8px;border-radius:99px;background:var(--indigo);flex-shrink:0';
-    else             d.style.cssText = 'width:8px;height:8px;border-radius:50%;background:var(--surface3);flex-shrink:0';
-  });
-}
-
-function wizRenderBlocks() {
-  document.getElementById('wBlocks').innerHTML = WIZ_BLOCKS.map((b,i) => `
-    <div class="wiz-block-row">
-      <div>
-        <label>Block Name</label>
-        <input type="text" value="${b.name}" maxlength="3" placeholder="A"
-          oninput="WIZ_BLOCKS[${i}].name=this.value.toUpperCase();wizUpdatePreview()"/>
-      </div>
-      <div>
-        <label>Floors</label>
-        <input type="number" value="${b.floors}" min="1" max="50"
-          oninput="WIZ_BLOCKS[${i}].floors=parseInt(this.value)||1;wizUpdatePreview()"/>
-      </div>
-      <div>
-        <label>Flats / Floor</label>
-        <input type="number" value="${b.flatsPerFloor}" min="1" max="20"
-          oninput="WIZ_BLOCKS[${i}].flatsPerFloor=parseInt(this.value)||1;wizUpdatePreview()"/>
-      </div>
-      ${WIZ_BLOCKS.length > 1
-        ? `<button class="wiz-rm" onclick="wizRemoveBlock(${i})"><i class="ti ti-trash"></i></button>`
-        : '<div></div>'}
-    </div>`).join('');
-  wizUpdatePreview();
-}
-
-function wizRemoveBlock(i) { WIZ_BLOCKS.splice(i,1); wizRenderBlocks(); }
-
-window.WIZ_BLOCKS = WIZ_BLOCKS;
-window.wizUpdatePreview = function() {
-  let total=0, lines=[];
-  WIZ_BLOCKS.forEach(b => {
-    const cnt = b.floors * (b.flatsPerFloor||1);
-    total += cnt;
-    lines.push(`<strong>Block ${b.name||'?'}</strong> — ${b.floors} floor${b.floors!==1?'s':''}, ${b.flatsPerFloor} flat${b.flatsPerFloor!==1?'s':''}/floor = ${cnt} flats`);
-  });
-  const p = document.getElementById('wPreview');
-  if(p) p.innerHTML = lines.join('<br>') + `<br><strong>Total: ${total} flats</strong> will be created`;
-};
-window.wizRemoveBlock = wizRemoveBlock;
-
-window._wizAddBlock = function() {
-  const letters = 'ABCDEFGHIJKLMNOP';
-  WIZ_BLOCKS.push({ name: letters[WIZ_BLOCKS.length] || String(WIZ_BLOCKS.length+1), floors:4, flatsPerFloor:4 });
-  wizRenderBlocks();
-};
-
-window._wizBack = n => wizSetStep(n-1);
-
-window._wizNext = function(from) {
-  if(from === 0) {
-    const n = document.getElementById('wAptName').value.trim();
-    if(!n) { toast('Please enter your apartment name.','error'); return; }
-    APT_NAME = n; applyAptName(n);
-    wizRenderBlocks();
-    wizSetStep(1);
-  } else if(from === 1) {
-    if(WIZ_BLOCKS.some(b=>!b.name.trim())) { toast('Every block needs a name.','error'); return; }
-    let html = `<strong>${APT_NAME}</strong><br><br>`;
-    WIZ_BLOCKS.forEach(b => {
-      html += `🏢 <strong>Block ${b.name}</strong>: ${b.floors} floors × ${b.flatsPerFloor} flats = ${b.floors*b.flatsPerFloor} flats<br>`;
-      for(let fl=1; fl<=Math.min(b.floors,3); fl++) {
-        const ids=[];
-        for(let f=1; f<=b.flatsPerFloor; f++) ids.push(`${b.name}-${fl}${String(f).padStart(2,'0')}`);
-        html+=`&nbsp;&nbsp;&nbsp;Floor ${fl}: ${ids.join(', ')}<br>`;
-      }
-      if(b.floors>3) html += `&nbsp;&nbsp;&nbsp;… and ${b.floors-3} more floor${b.floors-3!==1?'s':''}<br>`;
-    });
-    const tot = WIZ_BLOCKS.reduce((s,b)=>s+b.floors*b.flatsPerFloor,0);
-    html += `<br><strong>Total: ${tot} flats</strong> will be auto-created.`;
-    document.getElementById('wConfirm').innerHTML = html;
-    wizSetStep(2);
-  }
-};
-
-window._wizLaunch = async function() {
-  const btn = document.getElementById('wLaunchBtn');
-  btn.disabled = true;
-  document.getElementById('wLaunchLbl').textContent = ' Creating…';
-  try {
-    await setDoc(aptDocRef(), { name: APT_NAME, blocks: WIZ_BLOCKS }, { merge: true });
-    for(const b of WIZ_BLOCKS) {
-      for(let fl=1; fl<=b.floors; fl++) {
-        for(let f=1; f<=b.flatsPerFloor; f++) {
-          const fid = `${b.name}-${fl}${String(f).padStart(2,'0')}`;
-          await setDoc(flatRef(fid), { block:b.name, floor:fl, owner:'', resType:'owner', due:0, paid:0, month:AM });
-        }
-      }
-    }
-    document.getElementById('setupWiz').style.display = 'none';
-    document.getElementById('lo').style.display = '';
-    listenFlats(); listenExp(); listenIssues(); listenVehicles(); listenSocExp(); listenCategories();
-    toast(`${APT_NAME} launched ✓`);
-  } catch(e) {
-    console.error(e);
-    toast('Launch failed. Check console.','error');
-    btn.disabled = false;
-    document.getElementById('wLaunchLbl').textContent = ' Launch App';
-  }
-};
-
-function switchView(v) {
-  AV = v;
-  refreshAPP();
-  document.getElementById('pView').style.display    = v==='payments'  ? 'block' : 'none';
-  document.getElementById('iView').style.display    = v==='issues'    ? 'block' : 'none';
-  document.getElementById('resView').style.display  = v==='residents' ? 'block' : 'none';
-  document.getElementById('presView').style.display = v==='president' ? 'block' : 'none';
-  document.querySelectorAll('.vtab').forEach(p => p.classList.toggle('active', p.dataset.v===v));
-  if(v==='residents') try{ rResidents(); } catch(e){ console.error(e); }
-  if(v==='president') try{ rPresident(); } catch(e){ console.error(e); }
-}
-
-function rAll(){
-  refreshAPP();
-  rStats();
-  try{ rBTabs(); } catch(e){ console.error('rBTabs',e); }
-  try{ rBlock(); } catch(e){ console.error('rBlock',e); }
-  try{ rIssues(); } catch(e){ console.error('rIssues',e); }
-  const rv=document.getElementById('resView');
-  if(rv && rv.style.display!=='none') try{ rResidents(); } catch(e){ console.error('rResidents',e); }
-  const p=document.getElementById('presView');
-  if(p && p.style.display!=='none') try{ rPresident(); } catch(e){ console.error('rPresident',e); }
-}
-
-async function boot(){
-  refreshAPP();
-  buildMonthSelect();
-  try{
-    const aptDoc = await getDoc(aptDocRef());
-    if(aptDoc.exists() && aptDoc.data().name) applyAptName(aptDoc.data().name);
-    if(aptDoc.exists() && aptDoc.data().president) president=aptDoc.data().president;
-
-    const snap = await getDocs(flatsColl());
-    if(snap.empty){
-      document.getElementById('lo').style.display = 'none';
-      const wiz = document.getElementById('setupWiz');
-      wiz.style.display = 'flex';
-      if(aptDoc.exists() && aptDoc.data().name){
-        document.getElementById('wAptName').value = aptDoc.data().name;
-      }
-      wizSetStep(0);
-    } else {
-      listenFlats(); listenExp(); listenIssues(); listenVehicles(); listenSocExp(); listenCategories();
-    }
-  }catch(err){
-    console.error('Boot error:',err);
-    document.getElementById('loSub').textContent='⚠ Firebase connection failed. Check console.';
-  }
-}
-
 function lastNMonths(n=12) {
   const months = [];
   for (let i=n-1; i>=0; i--) {
@@ -1816,6 +1544,42 @@ window._togglePresChart = function() {
   }
 };
 const _origRAll = typeof rAll === 'function' ? rAll : null;
+
+// Handle missing/stubbed function variants from external hooks
+function oVehM() {}
+function oVehFor() {}
+function cVehM() {}
+function sVeh() {}
+function delVeh() {}
+
+/* Bind layout listeners safely after logic configurations initialization */
+window.switchView = switchView;
+
+async function boot(){
+  refreshAPP();
+  buildMonthSelect();
+  try{
+    const aptDoc = await getDoc(aptDocRef());
+    if(aptDoc.exists() && aptDoc.data().name) applyAptName(aptDoc.data().name);
+    if(aptDoc.exists() && aptDoc.data().president) president=aptDoc.data().president;
+
+    const snap = await getDocs(flatsColl());
+    if(snap.empty){
+      document.getElementById('lo').style.display = 'none';
+      const wiz = document.getElementById('setupWiz');
+      wiz.style.display = 'flex';
+      if(aptDoc.exists() && aptDoc.data().name){
+        document.getElementById('wAptName').value = aptDoc.data().name;
+      }
+      wizSetStep(0);
+    } else {
+      listenFlats(); listenExp(); listenIssues(); listenVehicles(); listenSocExp(); listenCategories();
+    }
+  }catch(err){
+    console.error('Boot error:',err);
+    document.getElementById('loSub').textContent='⚠ Firebase connection failed. Check console.';
+  }
+}
 </script>
 </body>
 </html>
