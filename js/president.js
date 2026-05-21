@@ -53,23 +53,29 @@ export function rPresident() {
       </div>`;
   }
 
-  const totalSocExp = socExps.reduce((s, e) => s + e.amt, 0);
+  // Filter society expenses for the current month select metric view
+  const currentMonthExps = socExps.filter(e => e.month === AM);
+  const totalSocExp = currentMonthExps.reduce((s, e) => s + e.amt, 0);
   const totalFlats  = [...flats.values()].filter(f => f.month === AM).length;
   const perFlat     = totalFlats > 0 ? Math.round(totalSocExp / totalFlats) : 0;
+  const approvedAmt = currentMonthExps.filter(e => e.status === 'approved').reduce((s, e) => s + e.amt, 0);
 
   document.getElementById('fundRow').innerHTML = `
-    <div class="fcard2"><div class="fcard2-label">Total Society Expenses</div><div class="fcard2-val">${inr(totalSocExp)}</div><div class="fcard2-sub">${socExps.length} transactions</div></div>
-    <div class="fcard2"><div class="fcard2-label">This Month</div><div class="fcard2-val">${inr(socExps.filter(e => e.month === AM).reduce((s,e) => s+e.amt, 0))}</div><div class="fcard2-sub">${AM}</div></div>
+    <div class="fcard2"><div class="fcard2-label">Total Society Expenses</div><div class="fcard2-val">${inr(socExps.reduce((s, e) => s + e.amt, 0))}</div><div class="fcard2-sub">${socExps.length} transactions overall</div></div>
+    <div class="fcard2"><div class="fcard2-label">This Month Expenses</div><div class="fcard2-val">${inr(totalSocExp)}</div><div class="fcard2-sub">For ${AM}</div></div>
     <div class="fcard2"><div class="fcard2-label">Per Flat (avg)</div><div class="fcard2-val">${inr(perFlat)}</div><div class="fcard2-sub">across ${totalFlats} flats</div></div>
-    <div class="fcard2"><div class="fcard2-label">Approved</div><div class="fcard2-val">${inr(socExps.filter(e=>e.status==='approved').reduce((s,e)=>s+e.amt,0))}</div><div class="fcard2-sub">${socExps.filter(e=>e.status==='approved').length} approved</div></div>
+    <div class="fcard2"><div class="fcard2-label">Approved (Month)</div><div class="fcard2-val">${inr(approvedAmt)}</div><div class="fcard2-sub">${currentMonthExps.filter(e=>e.status==='approved').length} approved</div></div>
   `;
 
-  if (!socExps.length) {
-    document.getElementById('presExpList').innerHTML = `<div class="exp-empty"><i class="ti ti-receipt-off"></i>No society expenses recorded yet.</div>`;
+  // Render the history category structural metric view breakdown
+  renderCategoryHistoryBreakdown(socExps, inr);
+
+  if (!currentMonthExps.length) {
+    document.getElementById('presExpList').innerHTML = `<div class="exp-empty"><i class="ti ti-receipt-off"></i>No society expenses recorded for ${AM}.</div>`;
     return;
   }
 
-  document.getElementById('presExpList').innerHTML = socExps.map(e => {
+  document.getElementById('presExpList').innerHTML = currentMonthExps.map(e => {
     const icon = CAT_ICONS[e.cat] || 'ti-clipboard';
     const bg   = CAT_BG[e.cat]   || 'var(--surface3)';
     const clr  = CAT_CLR[e.cat]  || 'var(--text2)';
@@ -95,6 +101,64 @@ export function rPresident() {
       </button>
     </div>`;
   }).join('');
+}
+
+/* ── Historical Category Summary Aggregator ── */
+function renderCategoryHistoryBreakdown(socExps, inr) {
+  const container = document.getElementById('categoryHistorySection');
+  if (!container) return;
+
+  if (!socExps.length) {
+    container.innerHTML = '';
+    return;
+  }
+
+  // Calculate distinct history aggregations across entire array ledger
+  const catTotals = {};
+  let absoluteMax = 0;
+
+  socExps.forEach(e => {
+    const category = e.cat || 'Other';
+    catTotals[category] = (catTotals[category] || 0) + (e.amt || 0);
+  });
+
+  const sortedCategories = Object.entries(catTotals).sort((a, b) => b[1] - a[1]);
+  if (sortedCategories.length > 0) absoluteMax = sortedCategories[0][1];
+
+  let html = `
+    <div style="background:#fff; border:1.5px solid var(--border2); border-radius:var(--r-xl); padding:18px; margin-bottom:1.4rem; box-shadow:var(--shadow-sm);">
+      <div class="exp-list-title" style="margin-bottom:14px; font-size:13px; font-weight:800; color:var(--text); display:flex; align-items:center; gap:6px;">
+        <i class="ti ti-tags" style="color:var(--indigo)"></i> Historical Expenditure by Category (All-Time History)
+      </div>
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:14px;">
+  `;
+
+  html += sortedCategories.map(([cat, total]) => {
+    const pct = absoluteMax > 0 ? Math.round((total / absoluteMax) * 100) : 0;
+    const icon = CAT_ICONS[cat] || 'ti-clipboard';
+    const bg   = CAT_BG[cat]   || 'var(--surface3)';
+    const clr  = CAT_CLR[cat]  || 'var(--text2)';
+
+    return `
+      <div style="display:flex; align-items:center; gap:12px; background:var(--surface2); border:1px solid var(--border); padding:10px; border-radius:var(--r-md);">
+        <div class="exp-row-icon" style="background:${bg}; color:${clr}; width:32px; height:32px; font-size:15px; border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+          <i class="ti ${icon}"></i>
+        </div>
+        <div style="flex:1; min-width:0;">
+          <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:700; margin-bottom:4px;">
+            <span style="color:var(--text); text-overflow:ellipsis; overflow:hidden; white-space:nowrap;">${cat}</span>
+            <span style="color:var(--text); font-weight:800;">${inr(total)}</span>
+          </div>
+          <div style="height:5px; background:var(--bg2); border-radius:99px; overflow:hidden;">
+            <div style="height:100%; background:${clr}; width:${pct}%; border-radius:99px; transition:width 0.4s ease;"></div>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  html += `</div></div>`;
+  container.innerHTML = html;
 }
 
 export function oPresM() {
@@ -138,7 +202,6 @@ export async function sPres() {
 export function oPresExp() {
   ['peTitle','peAmt','pePaidBy','peVendor','peNote'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('peDate').value = new Date().toISOString().split('T')[0];
-  // Fill category dropdown from shared categories
   const cats = (window.APP?.categories) || ['Maintenance','Water','Electricity','Parking','Lift','Security','Cleaning','Other'];
   const sel = document.getElementById('peCat');
   if (sel) {
@@ -199,5 +262,4 @@ export async function delSE(id) {
   } catch(e) { console.error(e); sync('error'); toast('Delete failed.', 'error'); }
 }
 
-// Convenience: open Add Expense modal (alias used in phAct button)
 export { oPresExp as oAddSocExp };
