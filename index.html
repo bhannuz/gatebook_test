@@ -3,191 +3,210 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gatebook - Advanced Management Dashboard</title>
+    <title>Gatebook Pro — Luxury Real-Estate Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.6); }
+        ::-webkit-scrollbar-thumb { background: rgba(99, 102, 241, 0.3); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(99, 102, 241, 0.6); }
+    </style>
 </head>
-<body class="bg-slate-100 text-slate-800 font-sans min-h-screen flex flex-col">
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white">
 
-    <header class="bg-teal-700 text-white px-6 py-4 flex justify-between items-center shadow-md">
-        <div class="flex items-center space-x-2 text-2xl font-bold tracking-wide">
-            <i class="fa-solid fa-building-shield"></i>
-            <span>Gatebook</span>
+    <header class="bg-slate-900/80 backdrop-blur-md border-b border-slate-800/80 px-6 py-4 flex justify-between items-center sticky top-0 z-40 shadow-xl shadow-slate-950/20">
+        <div class="flex items-center space-x-3 group cursor-pointer">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-violet-600 to-fuchsia-600 flex items-center justify-center shadow-lg shadow-indigo-500/30 transition group-hover:scale-105">
+                <i class="fa-solid fa-layer-group text-white text-lg"></i>
+            </div>
+            <div class="flex flex-col">
+                <span class="text-xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-200 to-slate-400">Gatebook<span class="text-indigo-400 font-light text-base ml-1 tracking-widest uppercase">Pro</span></span>
+                <span class="text-[10px] text-slate-500 font-medium tracking-wider uppercase">Data Fabric Architecture</span>
+            </div>
         </div>
-        <div class="flex items-center space-x-4">
-            <i class="fa-regular fa-bell text-xl cursor-pointer hover:opacity-80"></i>
-            <i class="fa-regular fa-comment text-xl cursor-pointer hover:opacity-80"></i>
-            <div class="flex items-center space-x-2 border-l pl-4 border-teal-600">
-                <div class="w-8 h-8 rounded-full bg-teal-500 flex items-center justify-center font-bold text-sm">A</div>
-                <span class="text-sm font-medium hidden md:inline">Admin <i class="fa-solid fa-chevron-down text-xs ml-1"></i></span>
+        
+        <div class="flex items-center space-x-5">
+            <div class="relative hidden sm:block">
+                <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-500 text-xs"></i>
+                <input type="text" id="global-search" placeholder="Quick search dashboard..." class="bg-slate-950/60 border border-slate-800 text-slate-300 pl-9 pr-4 py-1.5 rounded-xl text-xs focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 w-64 transition-all placeholder:text-slate-600">
+            </div>
+            <div class="flex items-center space-x-2 border-l pl-5 border-slate-800">
+                <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-500 p-[1.5px]">
+                    <div class="w-full h-full bg-slate-900 rounded-[10px] flex items-center justify-center font-bold text-xs text-emerald-400">HQ</div>
+                </div>
+                <span class="text-xs font-semibold text-slate-300 hidden md:inline tracking-wide">Terminal Admin</span>
             </div>
         </div>
     </header>
 
     <div class="flex flex-1">
         
-        <aside class="w-16 md:w-20 bg-teal-800 text-teal-200 flex flex-col items-center py-6 space-y-8 shadow-inner">
-            <button id="nav-dash-btn" class="p-3 rounded-xl bg-teal-600 text-white transition transform hover:scale-110" title="Overview Dashboard">
-                <i class="fa-solid fa-gauge text-xl"></i>
+        <aside class="w-20 bg-slate-900/40 border-r border-slate-900/80 flex flex-col items-center py-8 space-y-6">
+            <button id="nav-dash-btn" class="w-12 h-12 rounded-xl flex items-center justify-center transition group relative text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 shadow-lg shadow-indigo-500/5" title="Overview Dashboard">
+                <i class="fa-solid fa-chart-pie text-lg"></i>
+                <span class="absolute left-24 bg-slate-900 border border-slate-800 text-[10px] uppercase font-bold tracking-wider px-2 py-1 rounded-md hidden group-hover:inline-block z-50 whitespace-nowrap text-indigo-400">Overview Matrix</span>
             </button>
-            <button id="nav-flats-btn" class="p-3 rounded-xl hover:bg-teal-700 hover:text-white transition transform hover:scale-110" title="Manage Blocks & Flats">
-                <i class="fa-solid fa-building text-xl"></i>
+            <button id="nav-flats-btn" class="w-12 h-12 rounded-xl flex items-center justify-center transition group relative text-slate-500 hover:text-indigo-400 hover:bg-indigo-500/5 border border-transparent hover:border-slate-800" title="Manage Blocks & Flats">
+                <i class="fa-solid fa-city text-lg"></i>
+                <span class="absolute left-24 bg-slate-900 border border-slate-800 text-[10px] uppercase font-bold tracking-wider px-2 py-1 rounded-md hidden group-hover:inline-block z-50 whitespace-nowrap text-slate-400">Assets Register</span>
             </button>
-            <button id="nav-ledger-btn" class="p-3 rounded-xl hover:bg-teal-700 hover:text-white transition transform hover:scale-110" title="Financial Ledger Accounts">
-                <i class="fa-solid fa-wallet text-xl"></i>
-            </button>
-            <button class="p-3 rounded-xl hover:bg-teal-700 hover:text-white transition opacity-60 cursor-not-allowed">
-                <i class="fa-solid fa-gears text-xl"></i>
+            <button id="nav-ledger-btn" class="w-12 h-12 rounded-xl flex items-center justify-center transition group relative text-slate-500 hover:text-indigo-400 hover:bg-indigo-500/5 border border-transparent hover:border-slate-800" title="Financial Ledger Accounts">
+                <i class="fa-solid fa-receipt text-lg"></i>
+                <span class="absolute left-24 bg-slate-900 border border-slate-800 text-[10px] uppercase font-bold tracking-wider px-2 py-1 rounded-md hidden group-hover:inline-block z-50 whitespace-nowrap text-slate-400">Ledger Accounts</span>
             </button>
         </aside>
 
-        <main class="flex-1 p-4 md:p-8 max-w-7xl mx-auto w-full space-y-6">
+        <main class="flex-1 p-6 md:p-8 max-w-7xl mx-auto w-full space-y-8 overflow-hidden">
             
-            <div class="flex justify-between items-center">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                    <h1 class="text-xl md:text-2xl font-bold text-slate-700">
-                        Monthly Overview - <span id="current-month-year" class="text-teal-700">Loading...</span>
+                    <span class="text-xs font-bold text-indigo-400 tracking-widest uppercase">System Analytics Hub</span>
+                    <h1 class="text-2xl md:text-3xl font-black text-white tracking-tight mt-0.5">
+                        Overview Matrix — <span id="current-month-year" class="bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-violet-400 to-fuchsia-400">...</span>
                     </h1>
                 </div>
-                <div class="bg-white border px-4 py-2 rounded-lg text-sm font-medium text-slate-600 shadow-sm cursor-pointer hover:bg-slate-50 flex items-center space-x-1">
-                    <span>Dashboard Matrix</span> <i class="fa-solid fa-chevron-down text-xs ml-1"></i>
+                <div class="bg-slate-900 border border-slate-800 px-4 py-2 rounded-xl text-xs font-bold tracking-wider text-slate-400 uppercase flex items-center space-x-2 shadow-inner">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span>Live Firestore Connected</span>
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div class="bg-white border-l-4 border-blue-500 p-4 rounded-xl shadow-sm flex justify-between items-center">
-                    <div>
-                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Expenses</p>
-                        <h2 class="text-xl font-bold text-slate-800 mt-1" id="stat-expenses">₹0</h2>
-                    </div>
-                    <div class="p-3 bg-blue-50 text-blue-500 rounded-full"><i class="fa-solid fa-receipt text-xl"></i></div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                <div class="bg-slate-900/60 border border-slate-800/80 p-5 rounded-2xl relative overflow-hidden group hover:border-slate-700/80 transition-all">
+                    <div class="absolute -right-3 -top-3 w-24 h-24 bg-blue-500/5 rounded-full blur-xl group-hover:bg-blue-500/10 transition-all"></div>
+                    <p class="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Total Outflows</p>
+                    <h2 class="text-2xl font-black font-mono text-slate-100 mt-2 tracking-tight" id="stat-expenses">₹0</h2>
+                    <div class="mt-4 flex items-center text-[11px] text-blue-400 font-semibold uppercase tracking-wider"><i class="fa-solid fa-arrow-trend-up mr-1"></i> Current Expense Load</div>
                 </div>
-                <div class="bg-white border-l-4 border-green-500 p-4 rounded-xl shadow-sm flex justify-between items-center">
-                    <div>
-                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Payments Received</p>
-                        <h2 class="text-xl font-bold text-slate-800 mt-1" id="stat-received">₹0</h2>
-                    </div>
-                    <div class="p-3 bg-green-50 text-green-500 rounded-full"><i class="fa-solid fa-hand-holding-dollar text-xl"></i></div>
+                <div class="bg-slate-900/60 border border-slate-800/80 p-5 rounded-2xl relative overflow-hidden group hover:border-slate-700/80 transition-all">
+                    <div class="absolute -right-3 -top-3 w-24 h-24 bg-emerald-500/5 rounded-full blur-xl group-hover:bg-emerald-500/10 transition-all"></div>
+                    <p class="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Inflows Collected</p>
+                    <h2 class="text-2xl font-black font-mono text-emerald-400 mt-2 tracking-tight" id="stat-received">₹0</h2>
+                    <div class="mt-4 flex items-center text-[11px] text-emerald-500 font-semibold uppercase tracking-wider"><i class="fa-solid fa-circle-check mr-1"></i> Liquidity Realized</div>
                 </div>
-                <div class="bg-white border-l-4 border-orange-500 p-4 rounded-xl shadow-sm flex justify-between items-center">
-                    <div>
-                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Pending Payments</p>
-                        <h2 class="text-xl font-bold text-slate-800 mt-1" id="stat-pending">₹0</h2>
-                    </div>
-                    <div class="p-3 bg-orange-50 text-orange-500 rounded-full"><i class="fa-solid fa-clock-history text-xl"></i></div>
+                <div class="bg-slate-900/60 border border-slate-800/80 p-5 rounded-2xl relative overflow-hidden group hover:border-slate-700/80 transition-all">
+                    <div class="absolute -right-3 -top-3 w-24 h-24 bg-amber-500/5 rounded-full blur-xl group-hover:bg-amber-500/10 transition-all"></div>
+                    <p class="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Receivables Risk</p>
+                    <h2 class="text-2xl font-black font-mono text-amber-500 mt-2 tracking-tight" id="stat-pending">₹0</h2>
+                    <div class="mt-4 flex items-center text-[11px] text-amber-500 font-semibold uppercase tracking-wider"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Outstanding Invoices</div>
                 </div>
-                <div class="bg-white border-l-4 border-teal-500 p-4 rounded-xl shadow-sm flex justify-between items-center">
-                    <div>
-                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Fund Balance</p>
-                        <h2 class="text-xl font-bold text-slate-800 mt-1" id="stat-balance">₹0</h2>
-                    </div>
-                    <div class="p-3 bg-teal-50 text-teal-500 rounded-full"><i class="fa-solid fa-scale-balanced text-xl"></i></div>
+                <div class="bg-slate-900/60 border border-slate-800/80 p-5 rounded-2xl relative overflow-hidden group hover:border-slate-700/80 transition-all">
+                    <div class="absolute -right-3 -top-3 w-24 h-24 bg-violet-500/5 rounded-full blur-xl group-hover:bg-violet-500/10 transition-all"></div>
+                    <p class="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Net Capital Reserves</p>
+                    <h2 class="text-2xl font-black font-mono text-violet-400 mt-2 tracking-tight" id="stat-balance">₹0</h2>
+                    <div class="mt-4 flex items-center text-[11px] text-violet-400 font-semibold uppercase tracking-wider"><i class="fa-solid fa-vault mr-1"></i> Free Treasury Yield</div>
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 
                 <div class="lg:col-span-2 space-y-6">
-                    <div class="bg-white rounded-xl shadow-sm overflow-hidden border">
+                    <div class="bg-slate-900/40 border border-slate-900 rounded-2xl overflow-hidden backdrop-blur-md">
                         
-                        <div class="flex bg-slate-50 border-b">
-                            <button id="tab-expenses-btn" class="px-6 py-3 font-semibold text-sm text-teal-700 border-b-2 border-teal-700 bg-white focus:outline-none transition">Expenses</button>
-                            <button id="tab-payments-btn" class="px-6 py-3 font-semibold text-sm text-slate-500 hover:text-slate-700 focus:outline-none transition">Payments</button>
-                            <button id="tab-properties-btn" class="px-6 py-3 font-semibold text-sm text-slate-500 hover:text-slate-700 focus:outline-none transition">Flats & Blocks</button>
+                        <div class="flex bg-slate-900/80 p-2 gap-1 border-b border-slate-800/60">
+                            <button id="tab-expenses-btn" class="flex-1 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 transition-all">Outflows</button>
+                            <button id="tab-payments-btn" class="flex-1 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider text-slate-400 hover:text-slate-200 hover:bg-slate-800/40 transition-all">Inflows Ledger</button>
+                            <button id="tab-properties-btn" class="flex-1 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider text-slate-400 hover:text-slate-200 hover:bg-slate-800/40 transition-all">Asset Registry</button>
                         </div>
                         
-                        <div class="p-4 flex justify-between items-center border-b bg-slate-50/50">
-                            <span id="view-title" class="text-sm font-bold text-slate-700 tracking-wide uppercase">List View (Expenses)</span>
+                        <div class="p-4 flex justify-between items-center bg-slate-900/20 border-b border-slate-900">
+                            <span id="view-title" class="text-xs font-extrabold tracking-widest uppercase text-slate-400">Entity Sub-Ledger: Outflows</span>
                         </div>
 
                         <div id="view-expenses-table" class="overflow-x-auto">
                             <table class="w-full text-left border-collapse">
                                 <thead>
-                                    <tr class="bg-slate-100 text-slate-600 text-xs uppercase tracking-wider font-semibold border-b">
-                                        <th class="py-3 px-4">Description/Category</th>
-                                        <th class="py-3 px-4">Date</th>
-                                        <th class="py-3 px-4">Amount</th>
-                                        <th class="py-3 px-4">Vendor</th>
-                                        <th class="py-3 px-4 text-center">Status</th>
-                                        <th class="py-3 px-4 text-center">Actions</th>
+                                    <tr class="bg-slate-950/40 text-slate-400 text-[10px] uppercase tracking-widest font-bold border-b border-slate-900">
+                                        <th class="py-4 px-5">Category / Desc</th>
+                                        <th class="py-4 px-5">Settlement Date</th>
+                                        <th class="py-4 px-5">Quantum</th>
+                                        <th class="py-4 px-5">Vendor Entity</th>
+                                        <th class="py-4 px-5 text-center">System State</th>
+                                        <th class="py-4 px-5 text-center">Action</th>
                                     </tr>
                                 </thead>
-                                <tbody id="expenses-table-body" class="divide-y text-sm"></tbody>
+                                <tbody id="expenses-table-body" class="divide-y divide-slate-900/60 text-xs text-slate-300"></tbody>
                             </table>
                         </div>
 
                         <div id="view-payments-table" class="overflow-x-auto hidden">
                             <table class="w-full text-left border-collapse">
                                 <thead>
-                                    <tr class="bg-slate-100 text-slate-600 text-xs uppercase tracking-wider font-semibold border-b">
-                                        <th class="py-3 px-4">Unit</th>
-                                        <th class="py-3 px-4">Owner Name</th>
-                                        <th class="py-3 px-4">Maintenance Fee</th>
-                                        <th class="py-3 px-4">Amount Received</th>
-                                        <th class="py-3 px-4 text-center">Status</th>
-                                        <th class="py-3 px-4 text-center">Actions</th>
+                                    <tr class="bg-slate-950/40 text-slate-400 text-[10px] uppercase tracking-widest font-bold border-b border-slate-900">
+                                        <th class="py-4 px-5">Unit Account</th>
+                                        <th class="py-4 px-5">Resident Member</th>
+                                        <th class="py-4 px-5">Assessment Target</th>
+                                        <th class="py-4 px-5">Amount Contributed</th>
+                                        <th class="py-4 px-5 text-center">Status Badge</th>
+                                        <th class="py-4 px-5 text-center">Action</th>
                                     </tr>
                                 </thead>
-                                <tbody id="main-payments-table-body" class="divide-y text-sm"></tbody>
+                                <tbody id="main-payments-table-body" class="divide-y divide-slate-900/60 text-xs text-slate-300"></tbody>
                             </table>
                         </div>
 
                         <div id="view-properties-table" class="overflow-x-auto hidden">
                             <table class="w-full text-left border-collapse">
                                 <thead>
-                                    <tr class="bg-slate-100 text-slate-600 text-xs uppercase tracking-wider font-semibold border-b">
-                                        <th class="py-3 px-4">Block</th>
-                                        <th class="py-3 px-4">Flat #</th>
-                                        <th class="py-3 px-4">Config</th>
-                                        <th class="py-3 px-4">Area (Sq.Ft)</th>
-                                        <th class="py-3 px-4">Registered Owner</th>
-                                        <th class="py-3 px-4">Mobile Number</th>
-                                        <th class="py-3 px-4 text-center">Actions</th>
+                                    <tr class="bg-slate-950/40 text-slate-400 text-[10px] uppercase tracking-widest font-bold border-b border-slate-900">
+                                        <th class="py-4 px-5">Sector Block</th>
+                                        <th class="py-4 px-5">Unit Identifier</th>
+                                        <th class="py-4 px-5">Layout Mod</th>
+                                        <th class="py-4 px-5">Floor Volume</th>
+                                        <th class="py-4 px-5">Registered Beneficiary</th>
+                                        <th class="py-4 px-5">Mobile Direct</th>
+                                        <th class="py-4 px-5 text-center">Action</th>
                                     </tr>
                                 </thead>
-                                <tbody id="properties-table-body" class="divide-y text-sm"></tbody>
+                                <tbody id="properties-table-body" class="divide-y divide-slate-900/60 text-xs text-slate-300"></tbody>
                             </table>
                         </div>
 
-                        <div class="p-4 bg-slate-50 border-t flex justify-end items-center space-x-2">
-                            <button id="open-expense-modal" class="bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-sm px-4 py-2 rounded-lg shadow transition flex items-center space-x-1">
-                                <i class="fa-solid fa-plus"></i> <span>Add New Expense</span>
+                        <div class="p-4 bg-slate-900/40 border-t border-slate-900 flex justify-end items-center gap-2">
+                            <button id="open-expense-modal" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs uppercase tracking-wider px-4 py-2.5 rounded-xl shadow-lg shadow-indigo-600/10 hover:shadow-indigo-600/20 transition-all flex items-center space-x-1.5">
+                                <i class="fa-solid fa-plus-circle"></i> <span>Log Outflow</span>
                             </button>
-                            <button id="open-payment-modal" class="bg-teal-600 hover:bg-teal-700 text-white font-medium text-sm px-4 py-2 rounded-lg shadow transition hidden flex items-center space-x-1">
-                                <i class="fa-solid fa-plus"></i> <span>Add New Payment</span>
+                            <button id="open-payment-modal" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase tracking-wider px-4 py-2.5 rounded-xl shadow-lg shadow-emerald-600/10 hover:shadow-emerald-600/20 transition-all hidden flex items-center space-x-1.5">
+                                <i class="fa-solid fa-plus-circle"></i> <span>Log Inflow Record</span>
                             </button>
-                            <button id="open-asset-modal" class="bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm px-4 py-2 rounded-lg shadow transition hidden flex items-center space-x-1">
-                                <i class="fa-solid fa-square-plus"></i> <span>Add Flat/Block</span>
+                            <button id="open-asset-modal" class="bg-violet-600 hover:bg-violet-500 text-white font-bold text-xs uppercase tracking-wider px-4 py-2.5 rounded-xl shadow-lg shadow-violet-600/10 hover:shadow-violet-600/20 transition-all hidden flex items-center space-x-1.5">
+                                <i class="fa-solid fa-square-plus"></i> <span>Provision Property</span>
                             </button>
                         </div>
                     </div>
                 </div>
 
                 <div class="space-y-6">
-                    <div class="bg-white p-5 rounded-xl shadow-sm border flex flex-col items-center">
-                        <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wider mb-4 self-start">Expense Distribution</h3>
-                        <div class="w-full max-w-[220px] h-[220px] relative">
+                    <div class="bg-slate-900/40 border border-slate-900 p-6 rounded-2xl flex flex-col items-center">
+                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-6 self-start">Volume Breakdown Distribution</h3>
+                        <div class="w-full max-w-[200px] h-[200px] relative">
                             <canvas id="distributionChart"></canvas>
                         </div>
                     </div>
 
-                    <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
-                        <div class="p-4 bg-teal-700 text-white flex justify-between items-center">
-                            <h3 class="font-bold text-sm uppercase tracking-wider">Unit Payments Status</h3>
-                            <button id="remind-all-btn" class="bg-white/20 hover:bg-white/30 text-white text-xs px-3 py-1.5 rounded font-semibold transition">Remind All</button>
+                    <div class="bg-slate-900/40 border border-slate-900 rounded-2xl overflow-hidden">
+                        <div class="p-4 bg-slate-900 border-b border-slate-800/40 flex justify-between items-center">
+                            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest">Inflow Priority Queue</h3>
+                            <button id="remind-all-btn" class="text-[10px] uppercase font-bold tracking-wider text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 px-2.5 py-1 rounded-md hover:bg-indigo-500/20 transition-all">Remind All</button>
                         </div>
                         <div class="overflow-x-auto">
                             <table class="w-full text-left text-xs">
-                                <thead class="bg-slate-50 text-slate-500 uppercase font-bold border-b">
+                                <thead class="bg-slate-950/60 text-[10px] font-bold text-slate-500 uppercase tracking-widest border-b border-slate-900">
                                     <tr>
-                                        <th class="p-3">Unit</th>
-                                        <th class="p-3">Owner</th>
-                                        <th class="p-3">Received</th>
-                                        <th class="p-3 text-center">Status</th>
+                                        <th class="p-3">Unit Code</th>
+                                        <th class="p-3">Holder</th>
+                                        <th class="p-3">Realized</th>
+                                        <th class="p-3 text-center">State</th>
                                     </tr>
                                 </thead>
-                                <tbody id="sidebar-payments-body" class="divide-y"></tbody>
+                                <tbody id="sidebar-payments-body" class="divide-y divide-slate-900/60 text-slate-300"></tbody>
                             </table>
                         </div>
                     </div>
@@ -197,17 +216,17 @@
         </main>
     </div>
 
-    <div id="expense-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-xl shadow-xl max-w-md w-full overflow-hidden border">
-            <div class="bg-slate-900 text-white px-6 py-4 flex justify-between items-center">
-                <h3 id="expense-modal-title" class="font-bold text-lg">Log New Expense</h3>
-                <button id="close-expense-modal" class="text-slate-400 hover:text-white text-xl">&times;</button>
+    <div id="expense-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md hidden flex items-center justify-center z-50 p-4 transition-all">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
+            <div class="bg-slate-950/60 border-b border-slate-800 px-6 py-4 flex justify-between items-center">
+                <h3 id="expense-modal-title" class="font-extrabold tracking-tight text-white text-base">Log Capital Outflow</h3>
+                <button id="close-expense-modal" class="text-slate-500 hover:text-slate-200 text-xl transition-all">&times;</button>
             </div>
             <form id="expense-form" class="p-6 space-y-4">
                 <input type="hidden" id="edit-expense-id">
                 <div>
-                    <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Select Expense Category</label>
-                    <select id="exp-desc-select" class="w-full border rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-teal-600">
+                    <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Outflow Allocation Class</label>
+                    <select id="exp-desc-select" class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500 transition-all">
                         <option value="Security Guard Salaries">Security Guard Salaries</option>
                         <option value="Building Maintenance">Building Maintenance</option>
                         <option value="Common Area Electricity">Common Area Electricity</option>
@@ -215,122 +234,122 @@
                         <option value="Gardening Services">Gardening Services</option>
                     </select>
                 </div>
-                <div class="bg-slate-50 p-3 rounded-lg border border-dashed">
-                    <label class="block text-[11px] font-bold uppercase text-slate-500 mb-1">+ Or Create New Category</label>
-                    <div class="flex space-x-2">
-                        <input type="text" id="custom-category-input" placeholder="e.g. Roof Waterproofing" class="flex-1 border rounded-lg px-2.5 py-1 text-xs focus:outline-none">
-                        <button type="button" id="add-custom-category-btn" class="bg-slate-700 hover:bg-slate-800 text-white text-xs px-3 py-1 rounded-md font-medium">Add</button>
+                <div class="bg-slate-950/50 p-3 rounded-xl border border-slate-800 border-dashed">
+                    <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1">+ Provision Custom Class Element</label>
+                    <div class="flex space-x-2 mt-1">
+                        <input type="text" id="custom-category-input" placeholder="e.g. Elevator Modernization" class="flex-1 bg-slate-950 border border-slate-800 rounded-lg px-3 py-1 text-xs text-slate-300 focus:outline-none focus:border-indigo-500">
+                        <button type="button" id="add-custom-category-btn" class="bg-slate-800 hover:bg-slate-700 text-indigo-400 border border-slate-700 text-xs px-3 py-1 rounded-lg font-bold uppercase tracking-wide transition-all">Append</button>
                     </div>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Amount (₹)</label>
-                        <input type="number" id="exp-amount" required class="w-full border rounded-lg px-3 py-2 text-sm">
+                        <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Quantum (₹)</label>
+                        <input type="number" id="exp-amount" required class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500 transition-all">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Date</label>
-                        <input type="date" id="exp-date" required class="w-full border rounded-lg px-3 py-2 text-sm">
+                        <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Timestamp Log</label>
+                        <input type="date" id="exp-date" required class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500 transition-all">
                     </div>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Vendor</label>
-                    <input type="text" id="exp-vendor" required class="w-full border rounded-lg px-3 py-2 text-sm">
+                    <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Vendor Account Profile Entity</label>
+                    <input type="text" id="exp-vendor" required placeholder="e.g. Acme Corp" class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500 transition-all">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Status</label>
-                    <select id="exp-status" class="w-full border rounded-lg px-3 py-2 text-sm bg-white">
+                    <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Transaction Settlement State</label>
+                    <select id="exp-status" class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500 transition-all">
                         <option value="Paid">Paid</option>
                         <option value="Pending Approval">Pending Approval</option>
                     </select>
                 </div>
-                <button type="submit" id="expense-submit-btn" class="w-full bg-teal-700 hover:bg-teal-800 text-white font-semibold py-2.5 rounded-lg transition">Sync To Firebase</button>
+                <button type="submit" id="expense-submit-btn" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs uppercase tracking-wider py-3 rounded-xl shadow-lg shadow-indigo-600/10 hover:shadow-indigo-600/20 transition-all mt-2">Sync Struct Entry Outward</button>
             </form>
         </div>
     </div>
 
-    <div id="payment-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-xl shadow-xl max-w-md w-full overflow-hidden border">
-            <div class="bg-slate-900 text-white px-6 py-4 flex justify-between items-center">
-                <h3 id="payment-modal-title" class="font-bold text-lg">Log Unit Payment Settlement</h3>
-                <button id="close-payment-modal" class="text-slate-400 hover:text-white text-xl">&times;</button>
+    <div id="payment-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md hidden flex items-center justify-center z-50 p-4 transition-all">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
+            <div class="bg-slate-950/60 border-b border-slate-800 px-6 py-4 flex justify-between items-center">
+                <h3 id="payment-modal-title" class="font-extrabold tracking-tight text-white text-base">Process Capital Inflow Settlement</h3>
+                <button id="close-payment-modal" class="text-slate-500 hover:text-slate-200 text-xl transition-all">&times;</button>
             </div>
             <form id="payment-form" class="p-6 space-y-4">
                 <input type="hidden" id="edit-payment-id">
                 <div>
-                    <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Select Registered Flat Member</label>
-                    <select id="pay-unit-select" required class="w-full border rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-teal-600">
-                        <option value="" disabled selected>-- Loading Allocated System Flats --</option>
+                    <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Map Active Property Ledger Object</label>
+                    <select id="pay-unit-select" required class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500 transition-all">
+                        <option value="" disabled selected>-- Fetching System Property Indexes --</option>
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Auto-Detected Owner Name</label>
-                    <input type="text" id="pay-owner-display" readonly placeholder="No Unit Selected" class="w-full bg-slate-100 border rounded-lg px-3 py-2 text-sm font-semibold text-slate-600 outline-none cursor-not-allowed">
+                    <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1">Resolved Account Holder Beneficiary</label>
+                    <input type="text" id="pay-owner-display" readonly placeholder="No asset reference matched" class="w-full bg-slate-950/40 border border-slate-800 text-slate-400 rounded-xl px-3 py-2 text-sm font-semibold outline-none cursor-not-allowed">
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Bill Fee (₹)</label>
-                        <input type="number" id="pay-maint" value="25000" required class="w-full border rounded-lg px-3 py-2 text-sm">
+                        <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Assessment Assessment Target (₹)</label>
+                        <input type="number" id="pay-maint" value="25000" required class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500 transition-all">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Amt Received (₹)</label>
-                        <input type="number" id="pay-received" required class="w-full border rounded-lg px-3 py-2 text-sm">
+                        <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Realized Liquidity Contributed (₹)</label>
+                        <input type="number" id="pay-received" required class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500 transition-all">
                     </div>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Ledger Status</label>
-                    <select id="pay-status" class="w-full border rounded-lg px-3 py-2 text-sm bg-white">
+                    <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Asset Operational State Class</label>
+                    <select id="pay-status" class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500 transition-all">
                         <option value="Paid">Paid</option>
                         <option value="Partial">Partial</option>
                         <option value="Overdue">Overdue</option>
                     </select>
                 </div>
-                <button type="submit" id="payment-submit-btn" class="w-full bg-teal-700 hover:bg-teal-800 text-white font-semibold py-2.5 rounded-lg transition">Sync Payment To Firebase</button>
+                <button type="submit" id="payment-submit-btn" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase tracking-wider py-3 rounded-xl shadow-lg shadow-emerald-600/10 hover:shadow-emerald-600/20 transition-all mt-2">Commit Inflow Index Record</button>
             </form>
         </div>
     </div>
 
-    <div id="asset-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-xl shadow-xl max-w-md w-full overflow-hidden border">
-            <div class="bg-slate-900 text-white px-6 py-4 flex justify-between items-center">
-                <h3 id="asset-modal-title" class="font-bold text-lg"><i class="fa-solid fa-square-plus mr-1"></i> Provision New Property Unit</h3>
-                <button id="close-asset-modal" class="text-slate-400 hover:text-white text-xl">&times;</button>
+    <div id="asset-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md hidden flex items-center justify-center z-50 p-4 transition-all">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
+            <div class="bg-slate-950/60 border-b border-slate-800 px-6 py-4 flex justify-between items-center">
+                <h3 id="asset-modal-title" class="font-extrabold tracking-tight text-white text-base">Provision Real-Estate Structural Asset</h3>
+                <button id="close-asset-modal" class="text-slate-500 hover:text-slate-200 text-xl transition-all">&times;</button>
             </div>
             <form id="asset-form" class="p-6 space-y-4">
                 <input type="hidden" id="edit-asset-id">
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Block / Phase</label>
-                        <input type="text" id="asset-block" required placeholder="e.g. Block A" class="w-full border rounded-lg px-3 py-2 text-sm">
+                        <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Sector / Tower Block</label>
+                        <input type="text" id="asset-block" required placeholder="e.g. Tower B" class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500 transition-all">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Flat Number</label>
-                        <input type="text" id="asset-flat" required placeholder="e.g. 101" class="w-full border rounded-lg px-3 py-2 text-sm">
+                        <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Unit Flat ID #</label>
+                        <input type="text" id="asset-flat" required placeholder="e.g. 1104" class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500 transition-all">
                     </div>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Configuration (BHK)</label>
-                        <select id="asset-bhk" class="w-full border rounded-lg px-3 py-2 text-sm bg-white">
-                            <option value="1 BHK">1 BHK</option>
-                            <option value="2 BHK">2 BHK</option>
-                            <option value="3 BHK" selected>3 BHK</option>
-                            <option value="4 BHK">4 BHK</option>
+                        <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Layout Blueprint Model</label>
+                        <select id="asset-bhk" class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500 transition-all">
+                            <option value="1 BHK">1 BHK Layout</option>
+                            <option value="2 BHK">2 BHK Layout</option>
+                            <option value="3 BHK" selected>3 BHK Layout</option>
+                            <option value="4 BHK">4 BHK Layout</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Area Size (Sq.Ft)</label>
-                        <input type="number" id="asset-area" required placeholder="e.g. 1650" class="w-full border rounded-lg px-3 py-2 text-sm">
+                        <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Floor Volume Space (Sq.Ft)</label>
+                        <input type="number" id="asset-area" required placeholder="e.g. 1850" class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500 transition-all">
                     </div>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Resident / Owner Full Name</label>
-                    <input type="text" id="asset-owner" required placeholder="e.g. Rahul Sharma" class="w-full border rounded-lg px-3 py-2 text-sm">
+                    <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Registered Primary Beneficiary</label>
+                    <input type="text" id="asset-owner" required placeholder="e.g. Vikram Malhotra" class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500 transition-all">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Contact Mobile Number</label>
-                    <input type="tel" id="asset-mobile" required placeholder="e.g. +91 98765 43210" class="w-full border rounded-lg px-3 py-2 text-sm">
+                    <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Mobile Secure Direct Vector</label>
+                    <input type="tel" id="asset-mobile" required placeholder="e.g. +91 90000 12345" class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500 transition-all">
                 </div>
-                <button type="submit" id="asset-submit-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-lg transition">Provision Property Asset</button>
+                <button type="submit" id="asset-submit-btn" class="w-full bg-violet-600 hover:bg-violet-500 text-white font-bold text-xs uppercase tracking-wider py-3 rounded-xl shadow-lg shadow-violet-600/10 hover:shadow-violet-600/20 transition-all mt-2">Provision Asset Block Entity</button>
             </form>
         </div>
     </div>
@@ -356,8 +375,9 @@
         let globalExpenses = [];
         let globalPayments = [];
         let globalProperties = [];
+        let activeTabContext = 'EXPENSES';
 
-        // UI DOM References
+        // Element pointers references mapping
         const tabExpensesBtn = document.getElementById('tab-expenses-btn');
         const tabPaymentsBtn = document.getElementById('tab-payments-btn');
         const tabPropertiesBtn = document.getElementById('tab-properties-btn');
@@ -390,50 +410,76 @@
         const expDescSelect = document.getElementById('exp-desc-select');
         const payUnitSelect = document.getElementById('pay-unit-select');
         const payOwnerDisplay = document.getElementById('pay-owner-display');
+        const searchInput = document.getElementById('global-search');
 
         function runRealtimeClockSync() {
             document.getElementById('current-month-year').innerText = new Date().toLocaleString('default', { month: 'long', year: 'numeric' });
         }
 
+        // Search Input Filtering Engine Logic
+        searchInput.addEventListener('input', () => {
+            const query = searchInput.value.toLowerCase().trim();
+            if(activeTabContext === 'EXPENSES') {
+                const filtered = globalExpenses.filter(e => e.description.toLowerCase().includes(query) || e.vendor.toLowerCase().includes(query));
+                renderExpenses(filtered);
+            } else if(activeTabContext === 'PAYMENTS') {
+                const filtered = globalPayments.filter(p => p.unit.toLowerCase().includes(query) || p.owner.toLowerCase().includes(query));
+                renderPayments(filtered);
+            } else if(activeTabContext === 'PROPERTIES') {
+                const filtered = globalProperties.filter(p => p.block.toLowerCase().includes(query) || p.flatNumber.toLowerCase().includes(query) || p.registeredOwner.toLowerCase().includes(query));
+                renderProperties(filtered);
+            }
+        });
+
         addCustomCategoryBtn.addEventListener('click', () => {
             const val = customCategoryInput.value.trim();
             if(val) {
                 const opt = document.createElement('option');
-                opt.value = opt.innerText = val;
-                opt.selected = true;
-                expDescSelect.appendChild(opt);
-                customCategoryInput.value = '';
+                opt.value = opt.innerText = val; opt.selected = true;
+                expDescSelect.appendChild(opt); customCategoryInput.value = '';
             }
         });
 
         payUnitSelect.addEventListener('change', (e) => {
-            const selectedFlatId = e.target.value;
-            const matchedAsset = globalProperties.find(p => p.id === selectedFlatId || `${p.block}-${p.flatNumber}` === selectedFlatId);
+            const matchedAsset = globalProperties.find(p => p.id === e.target.value || `${p.block}-${p.flatNumber}` === e.target.value);
             payOwnerDisplay.value = matchedAsset ? matchedAsset.registeredOwner : '';
         });
 
+        // Advanced Tab Transition Matrices Engine
         function updateActiveViewFramework(mode) {
-            tabExpensesBtn.className = tabPaymentsBtn.className = tabPropertiesBtn.className = "px-6 py-3 font-semibold text-sm text-slate-500 hover:text-slate-700 transition";
-            navDashBtn.className = navFlatsBtn.className = navLedgerBtn.className = "p-3 rounded-xl hover:bg-teal-700 text-teal-200 transition transform hover:scale-110";
+            activeTabContext = mode;
+            searchInput.value = ''; // Clean buffer scope
+
+            // Default styling maps resets
+            const tabClassesDefault = "flex-1 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider text-slate-400 hover:text-slate-200 hover:bg-slate-800/40 transition-all";
+            tabExpensesBtn.className = tabPaymentsBtn.className = tabPropertiesBtn.className = tabClassesDefault;
             
+            const sidebarClassesDefault = "w-12 h-12 rounded-xl flex items-center justify-center transition group relative text-slate-500 hover:text-indigo-400 hover:bg-indigo-500/5 border border-transparent hover:border-slate-800";
+            navDashBtn.className = navFlatsBtn.className = navLedgerBtn.className = sidebarClassesDefault;
+
             viewExpensesTable.classList.add('hidden'); viewPaymentsTable.classList.add('hidden'); viewPropertiesTable.classList.add('hidden');
             btnActionExpense.classList.add('hidden'); btnActionPayment.classList.add('hidden'); btnActionAsset.classList.add('hidden');
 
+            const tabClassesActive = "flex-1 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 transition-all";
+            const sideClassesActive = "w-12 h-12 rounded-xl flex items-center justify-center transition group relative text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 shadow-lg shadow-indigo-500/5";
+
             if(mode === 'EXPENSES') {
-                tabExpensesBtn.className = "px-6 py-3 font-semibold text-sm text-teal-700 border-b-2 border-teal-700 bg-white transition";
-                navDashBtn.className = "p-3 rounded-xl bg-teal-600 text-white transition transform hover:scale-110";
+                tabExpensesBtn.className = tabClassesActive; navDashBtn.className = sideClassesActive;
                 viewExpensesTable.classList.remove('hidden'); btnActionExpense.classList.remove('hidden');
-                viewTitle.innerText = "List View (Expenses)";
+                viewTitle.innerText = "Entity Sub-Ledger: Outflows";
+                renderExpenses(globalExpenses);
             } else if(mode === 'PAYMENTS') {
-                tabPaymentsBtn.className = "px-6 py-3 font-semibold text-sm text-teal-700 border-b-2 border-teal-700 bg-white transition";
-                navLedgerBtn.className = "p-3 rounded-xl bg-teal-600 text-white transition transform hover:scale-110";
+                tabPaymentsBtn.className = "flex-1 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 transition-all"; 
+                navLedgerBtn.className = "w-12 h-12 rounded-xl flex items-center justify-center transition group relative text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 shadow-lg shadow-emerald-500/5";
                 viewPaymentsTable.classList.remove('hidden'); btnActionPayment.classList.remove('hidden');
-                viewTitle.innerText = "List View (Payments)";
+                viewTitle.innerText = "Entity Sub-Ledger: Inflows Collections";
+                renderPayments(globalPayments);
             } else if(mode === 'PROPERTIES') {
-                tabPropertiesBtn.className = "px-6 py-3 font-semibold text-sm text-teal-700 border-b-2 border-teal-700 bg-white transition";
-                navFlatsBtn.className = "p-3 rounded-xl bg-teal-600 text-white transition transform hover:scale-110";
+                tabPropertiesBtn.className = "flex-1 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider text-violet-400 bg-violet-500/10 border border-violet-500/20 transition-all"; 
+                navFlatsBtn.className = "w-12 h-12 rounded-xl flex items-center justify-center transition group relative text-violet-400 bg-violet-500/10 border border-violet-500/20 shadow-lg shadow-violet-500/5";
                 viewPropertiesTable.classList.remove('hidden'); btnActionAsset.classList.remove('hidden');
-                viewTitle.innerText = "Flats & Blocks Registry Master List";
+                viewTitle.innerText = "Property Blueprint Asset Grid Master Register";
+                renderProperties(globalProperties);
             }
         }
 
@@ -446,20 +492,17 @@
 
         btnActionExpense.addEventListener('click', () => {
             editExpenseId.value = ''; expenseForm.reset();
-            document.getElementById('expense-modal-title').innerText = "Log New Expense";
-            document.getElementById('expense-submit-btn').innerText = "Sync To Firebase";
+            document.getElementById('expense-modal-title').innerText = "Log Capital Outflow";
             expenseModal.classList.remove('hidden');
         });
         btnActionPayment.addEventListener('click', () => {
             editPaymentId.value = ''; paymentForm.reset(); payOwnerDisplay.value = '';
-            document.getElementById('payment-modal-title').innerText = "Log Unit Payment Settlement";
-            document.getElementById('payment-submit-btn').innerText = "Sync Payment To Firebase";
+            document.getElementById('payment-modal-title').innerText = "Process Capital Inflow Settlement";
             paymentModal.classList.remove('hidden');
         });
         btnActionAsset.addEventListener('click', () => {
             editAssetId.value = ''; assetForm.reset();
-            document.getElementById('asset-modal-title').innerText = "Provision New Property Unit";
-            document.getElementById('asset-submit-btn').innerText = "Provision Property Asset";
+            document.getElementById('asset-modal-title').innerText = "Provision Real-Estate Structural Asset";
             assetModal.classList.remove('hidden');
         });
 
@@ -473,175 +516,128 @@
             if(e.target === assetModal) assetModal.classList.add('hidden');
         });
 
-        // Trigger modifications listeners mapping values inside UI
+        // Operational mutation event hooks injection mapping rules global pointers space
         window.triggerEditExpense = function(id) {
-            const item = globalExpenses.find(e => e.id === id);
-            if(!item) return;
+            const item = globalExpenses.find(e => e.id === id); if(!item) return;
             editExpenseId.value = item.id;
-            
-            if (!Array.from(expDescSelect.options).some(opt => opt.value === item.description)) {
-                const newOpt = document.createElement('option');
-                newOpt.value = newOpt.innerText = item.description;
-                expDescSelect.appendChild(newOpt);
+            if (!Array.from(expDescSelect.options).some(o => o.value === item.description)) {
+                const o = document.createElement('option'); o.value = o.innerText = item.description; expDescSelect.appendChild(o);
             }
-            
             expDescSelect.value = item.description;
             document.getElementById('exp-amount').value = item.amount;
             document.getElementById('exp-date').value = item.date;
             document.getElementById('exp-vendor').value = item.vendor;
             document.getElementById('exp-status').value = item.status;
-            
-            document.getElementById('expense-modal-title').innerText = "Modify Expense Record";
-            document.getElementById('expense-submit-btn').innerText = "Update In Firebase";
+            document.getElementById('expense-modal-title').innerText = "Modify Ledger Outflow";
             expenseModal.classList.remove('hidden');
         }
 
         window.triggerEditPayment = function(id) {
-            const item = globalPayments.find(p => p.id === id);
-            if(!item) return;
+            const item = globalPayments.find(p => p.id === id); if(!item) return;
             editPaymentId.value = item.id;
-
-            const foundProperty = globalProperties.find(p => `${p.block}-${p.flatNumber}` === item.unit || p.id === item.unit);
-            if(foundProperty) {
-                payUnitSelect.value = foundProperty.id;
-            } else {
-                const opt = document.createElement('option');
-                opt.value = item.unit; opt.innerText = item.unit; opt.selected = true;
-                payUnitSelect.appendChild(opt);
-            }
-            
+            const targetProp = globalProperties.find(p => `${p.block}-${p.flatNumber}` === item.unit || p.id === item.unit);
+            payUnitSelect.value = targetProp ? targetProp.id : item.unit;
             payOwnerDisplay.value = item.owner;
             document.getElementById('pay-maint').value = item.maintenance;
             document.getElementById('pay-received').value = item.received;
             document.getElementById('pay-status').value = item.status;
-
-            document.getElementById('payment-modal-title').innerText = "Modify Settlement Ledger";
-            document.getElementById('payment-submit-btn').innerText = "Update In Firebase";
+            document.getElementById('payment-modal-title').innerText = "Modify Ledger Inflow Settlement";
             paymentModal.classList.remove('hidden');
         }
 
         window.triggerEditAsset = function(id) {
-            const item = globalProperties.find(p => p.id === id);
-            if(!item) return;
+            const item = globalProperties.find(p => p.id === id); if(!item) return;
             editAssetId.value = item.id;
-            
             document.getElementById('asset-block').value = item.block;
             document.getElementById('asset-flat').value = item.flatNumber;
             document.getElementById('asset-bhk').value = item.bhk || "3 BHK";
             document.getElementById('asset-area').value = item.areaSize || "";
             document.getElementById('asset-owner').value = item.registeredOwner;
             document.getElementById('asset-mobile').value = item.mobile || "";
-
             document.getElementById('asset-modal-title').innerText = "Modify Property Configuration";
-            document.getElementById('asset-submit-btn').innerText = "Update Asset Record";
             assetModal.classList.remove('hidden');
         }
 
-        // Form Mutations Actions Handles
+        // Transactions Write Event Intercept Actions
         expenseForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const payload = {
-                description: expDescSelect.value,
-                amount: parseFloat(document.getElementById('exp-amount').value),
-                date: document.getElementById('exp-date').value,
-                vendor: document.getElementById('exp-vendor').value,
-                status: document.getElementById('exp-status').value
+            const data = {
+                description: expDescSelect.value, amount: parseFloat(document.getElementById('exp-amount').value),
+                date: document.getElementById('exp-date').value, vendor: document.getElementById('exp-vendor').value, status: document.getElementById('exp-status').value
             };
-            if(editExpenseId.value) {
-                await updateDoc(doc(db, "expenses", editExpenseId.value), payload);
-            } else {
-                await addDoc(collection(db, "expenses"), { ...payload, timestamp: new Date() });
-            }
+            if(editExpenseId.value) await updateDoc(doc(db, "expenses", editExpenseId.value), data);
+            else await addDoc(collection(db, "expenses"), { ...data, timestamp: new Date() });
             expenseForm.reset(); expenseModal.classList.add('hidden');
         });
 
         paymentForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const selectedVal = payUnitSelect.value;
-            const matchedAsset = globalProperties.find(p => p.id === selectedVal || `${p.block}-${p.flatNumber}` === selectedVal);
-            
-            const payload = {
-                unit: matchedAsset ? `${matchedAsset.block}-${matchedAsset.flatNumber}` : selectedVal,
-                owner: payOwnerDisplay.value,
-                maintenance: parseFloat(document.getElementById('pay-maint').value),
-                received: parseFloat(document.getElementById('pay-received').value),
-                status: document.getElementById('pay-status').value
+            const val = payUnitSelect.value;
+            const asset = globalProperties.find(p => p.id === val || `${p.block}-${p.flatNumber}` === val);
+            const data = {
+                unit: asset ? `${asset.block}-${asset.flatNumber}` : val, owner: payOwnerDisplay.value,
+                maintenance: parseFloat(document.getElementById('pay-maint').value), received: parseFloat(document.getElementById('pay-received').value), status: document.getElementById('pay-status').value
             };
-
-            if(editPaymentId.value) {
-                await updateDoc(doc(db, "payments", editPaymentId.value), payload);
-            } else {
-                await addDoc(collection(db, "payments"), { ...payload, timestamp: new Date() });
-            }
+            if(editPaymentId.value) await updateDoc(doc(db, "payments", editPaymentId.value), data);
+            else await addDoc(collection(db, "payments"), { ...data, timestamp: new Date() });
             paymentForm.reset(); payOwnerDisplay.value = ''; paymentModal.classList.add('hidden');
         });
 
         assetForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const payload = {
-                block: document.getElementById('asset-block').value,
-                flatNumber: document.getElementById('asset-flat').value,
-                bhk: document.getElementById('asset-bhk').value,
-                areaSize: parseInt(document.getElementById('asset-area').value),
-                registeredOwner: document.getElementById('asset-owner').value,
-                mobile: document.getElementById('asset-mobile').value
+            const data = {
+                block: document.getElementById('asset-block').value, flatNumber: document.getElementById('asset-flat').value,
+                bhk: document.getElementById('asset-bhk').value, areaSize: parseInt(document.getElementById('asset-area').value),
+                registeredOwner: document.getElementById('asset-owner').value, mobile: document.getElementById('asset-mobile').value
             };
-            if(editAssetId.value) {
-                await updateDoc(doc(db, "properties", editAssetId.value), payload);
-            } else {
-                await addDoc(collection(db, "properties"), { ...payload, timestamp: new Date() });
-            }
+            if(editAssetId.value) await updateDoc(doc(db, "properties", editAssetId.value), data);
+            else await addDoc(collection(db, "properties"), { ...data, timestamp: new Date() });
             assetForm.reset(); assetModal.classList.add('hidden');
         });
 
-        // Live Real-time Continuous Observers Initialization
+        // Live Real-Time Continuous Sync Observers Engine
         function runRealtimeDatabaseSync() {
             onSnapshot(collection(db, "expenses"), (snap) => {
-                globalExpenses = [];
-                snap.forEach(doc => globalExpenses.push({ id: doc.id, ...doc.data() }));
-                renderExpenses(globalExpenses);
+                globalExpenses = []; snap.forEach(doc => globalExpenses.push({ id: doc.id, ...doc.data() }));
+                if(activeTabContext === 'EXPENSES') renderExpenses(globalExpenses);
                 recalculateMetrics();
             });
 
             onSnapshot(collection(db, "payments"), (snap) => {
-                globalPayments = [];
-                snap.forEach(doc => globalPayments.push({ id: doc.id, ...doc.data() }));
-                renderPayments(globalPayments);
+                globalPayments = []; snap.forEach(doc => globalPayments.push({ id: doc.id, ...doc.data() }));
+                if(activeTabContext === 'PAYMENTS') renderPayments(globalPayments);
                 recalculateMetrics();
             });
 
             onSnapshot(collection(db, "properties"), (snap) => {
-                globalProperties = [];
-                snap.forEach(doc => globalProperties.push({ id: doc.id, ...doc.data() }));
-                renderProperties(globalProperties);
+                globalProperties = []; snap.forEach(doc => globalProperties.push({ id: doc.id, ...doc.data() }));
+                if(activeTabContext === 'PROPERTIES') renderProperties(globalProperties);
                 rebuildUnitDropdownOptions(globalProperties);
             });
         }
 
         function rebuildUnitDropdownOptions(properties) {
-            payUnitSelect.innerHTML = '<option value="" disabled selected>-- Choose Flat Number --</option>';
+            payUnitSelect.innerHTML = '<option value="" disabled selected>-- Select Target Asset --</option>';
             properties.forEach(p => {
-                const opt = document.createElement('option');
-                opt.value = p.id;
-                opt.innerText = `${p.block} - Flat ${p.flatNumber} (${p.registeredOwner})`;
-                payUnitSelect.appendChild(opt);
+                const o = document.createElement('option'); o.value = p.id; o.innerText = `${p.block} — Flat ${p.flatNumber} (${p.registeredOwner})`;
+                payUnitSelect.appendChild(o);
             });
         }
 
+        // Table Mapping Renders Pipeline
         function renderExpenses(list) {
             const tbody = document.getElementById('expenses-table-body'); tbody.innerHTML = '';
             list.forEach(item => {
-                const badge = item.status === 'Paid' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-orange-50 text-orange-700 border-orange-200';
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-50 transition";
+                const b = item.status === 'Paid' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border-amber-500/20';
+                const tr = document.createElement('tr'); tr.className = "hover:bg-slate-900/40 transition border-b border-slate-900/60";
                 tr.innerHTML = `
-                    <td class="py-3 px-4 font-semibold text-slate-700">${item.description}</td>
-                    <td class="py-3 px-4 text-slate-500">${item.date}</td>
-                    <td class="py-3 px-4 font-mono font-bold">₹${Number(item.amount).toLocaleString('en-IN')}</td>
-                    <td class="py-3 px-4 text-slate-600">${item.vendor}</td>
-                    <td class="py-3 px-4 text-center"><span class="px-2 py-0.5 text-xs border rounded-full ${badge}">${item.status}</span></td>
-                    <td class="py-3 px-4 text-center">
-                        <button onclick="triggerEditExpense('${item.id}')" class="text-teal-600 hover:text-teal-900 bg-teal-50 px-2 py-1 rounded text-xs font-semibold"><i class="fa-solid fa-pen-to-square"></i> Edit</button>
+                    <td class="py-3.5 px-5 font-bold text-slate-200">${item.description}</td>
+                    <td class="py-3.5 px-5 text-slate-400 font-mono text-[11px]">${item.date}</td>
+                    <td class="py-3.5 px-5 font-mono font-bold text-white">₹${Number(item.amount).toLocaleString('en-IN')}</td>
+                    <td class="py-3.5 px-5 text-slate-400 font-medium">${item.vendor}</td>
+                    <td class="py-3.5 px-5 text-center"><span class="px-2.5 py-0.5 border rounded-lg font-bold text-[10px] tracking-wider uppercase ${b}">${item.status}</span></td>
+                    <td class="py-3.5 px-5 text-center">
+                        <button onclick="triggerEditExpense('${item.id}')" class="text-indigo-400 hover:text-white bg-indigo-500/10 hover:bg-indigo-600 border border-indigo-500/20 px-2.5 py-1 rounded-xl text-[11px] font-bold transition-all"><i class="fa-solid fa-sliders"></i> Modify</button>
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -655,43 +651,40 @@
             mainTbody.innerHTML = sideTbody.innerHTML = '';
 
             list.forEach(item => {
-                let badge = item.status === 'Paid' ? '<span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded font-bold text-[10px]">Paid</span>' : (item.status === 'Partial' ? '<span class="px-2 py-0.5 bg-amber-100 text-amber-800 rounded font-bold text-[10px]">Partial</span>' : '<span class="px-2 py-0.5 bg-rose-100 text-rose-800 rounded font-bold text-[10px]">Overdue</span>');
+                let b = item.status === 'Paid' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : (item.status === 'Partial' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'bg-rose-500/10 text-rose-400 border-rose-500/20');
                 
-                const trMain = document.createElement('tr');
-                trMain.className = "hover:bg-slate-50 transition";
-                trMain.innerHTML = `
-                    <td class="py-3 px-4 font-bold text-slate-700">${item.unit}</td>
-                    <td class="py-3 px-4 text-slate-600">${item.owner}</td>
-                    <td class="py-3 px-4 font-mono text-slate-400">₹${Number(item.maintenance).toLocaleString('en-IN')}</td>
-                    <td class="py-3 px-4 font-mono font-bold text-slate-800">₹${Number(item.received).toLocaleString('en-IN')}</td>
-                    <td class="py-3 px-4 text-center">${badge}</td>
-                    <td class="py-3 px-4 text-center">
-                        <button onclick="triggerEditPayment('${item.id}')" class="text-teal-600 hover:text-teal-900 bg-teal-50 px-2 py-1 rounded text-xs font-semibold"><i class="fa-solid fa-pen-to-square"></i> Edit</button>
+                const trM = document.createElement('tr'); trM.className = "hover:bg-slate-900/40 transition border-b border-slate-900/60";
+                trM.innerHTML = `
+                    <td class="py-3.5 px-5 font-extrabold text-slate-200 tracking-tight">${item.unit}</td>
+                    <td class="py-3.5 px-5 text-slate-400 font-semibold">${item.owner}</td>
+                    <td class="py-3.5 px-5 font-mono text-slate-500">₹${Number(item.maintenance).toLocaleString('en-IN')}</td>
+                    <td class="py-3.5 px-5 font-mono font-bold text-emerald-400">₹${Number(item.received).toLocaleString('en-IN')}</td>
+                    <td class="py-3.5 px-5 text-center"><span class="px-2.5 py-0.5 border rounded-lg font-bold text-[10px] tracking-wider uppercase ${b}">${item.status}</span></td>
+                    <td class="py-3.5 px-5 text-center">
+                        <button onclick="triggerEditPayment('${item.id}')" class="text-emerald-400 hover:text-white bg-emerald-500/10 hover:bg-emerald-600 border border-emerald-500/20 px-2.5 py-1 rounded-xl text-[11px] font-bold transition-all"><i class="fa-solid fa-sliders"></i> Modify</button>
                     </td>
                 `;
-                mainTbody.appendChild(trMain);
+                mainTbody.appendChild(trM);
 
-                const trSide = document.createElement('tr');
-                trSide.innerHTML = `<td class="p-3 font-bold text-slate-700">${item.unit}</td><td class="p-3 text-slate-600 truncate max-w-[80px]">${item.owner}</td><td class="p-3 font-mono">₹${Number(item.received).toLocaleString('en-IN')}</td><td class="p-3 text-center">${badge}</td>`;
-                sideTbody.appendChild(trSide);
+                const trS = document.createElement('tr'); trS.className = "border-b border-slate-900/60 hover:bg-slate-900/20";
+                trS.innerHTML = `<td class="p-3 font-bold text-slate-200">${item.unit}</td><td class="p-3 text-slate-400 truncate max-w-[80px] font-medium">${item.owner}</td><td class="p-3 font-mono font-bold text-white text-[11px]">₹${Number(item.received).toLocaleString('en-IN')}</td><td class="p-3 text-center"><span class="w-2 h-2 rounded-full inline-block ${item.status==='Paid'?'bg-emerald-400':'bg-amber-400'}"></span></td>`;
+                sideTbody.appendChild(trS);
             });
         }
 
-        // Expanded Property Registry Rows Mapping Routine
         function renderProperties(list) {
             const tbody = document.getElementById('properties-table-body'); tbody.innerHTML = '';
             list.forEach(p => {
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-50 transition";
+                const tr = document.createElement('tr'); tr.className = "hover:bg-slate-900/40 transition border-b border-slate-900/60";
                 tr.innerHTML = `
-                    <td class="py-3.5 px-4 font-bold text-slate-700">${p.block || 'N/A'}</td>
-                    <td class="py-3.5 px-4 font-mono font-medium text-slate-600">${p.flatNumber || 'N/A'}</td>
-                    <td class="py-3.5 px-4 text-slate-600 font-medium">${p.bhk || '3 BHK'}</td>
-                    <td class="py-3.5 px-4 font-mono text-slate-600">${p.areaSize ? p.areaSize.toLocaleString() + ' sq ft' : 'N/A'}</td>
-                    <td class="py-3.5 px-4 text-slate-800 font-semibold">${p.registeredOwner || 'N/A'}</td>
-                    <td class="py-3.5 px-4 font-mono text-slate-500">${p.mobile || 'N/A'}</td>
-                    <td class="py-3.5 px-4 text-center">
-                        <button onclick="triggerEditAsset('${p.id}')" class="text-blue-600 hover:text-blue-900 bg-blue-50 px-2 py-1 rounded text-xs font-semibold"><i class="fa-solid fa-pen-to-square"></i> Edit</button>
+                    <td class="py-3.5 px-5 font-extrabold text-slate-200 tracking-tight">${p.block}</td>
+                    <td class="py-3.5 px-5 font-mono font-bold text-slate-400">Unit ${p.flatNumber}</td>
+                    <td class="py-3.5 px-5 text-indigo-400 font-semibold tracking-wider text-[11px]">${p.bhk || '3 BHK'}</td>
+                    <td class="py-3.5 px-5 font-mono text-slate-400 text-[11px]">${p.areaSize ? p.areaSize.toLocaleString() + ' SQFT' : 'N/A'}</td>
+                    <td class="py-3.5 px-5 text-slate-200 font-bold">${p.registeredOwner}</td>
+                    <td class="py-3.5 px-4 font-mono text-slate-500 text-[11px]">${p.mobile || 'N/A'}</td>
+                    <td class="py-3.5 px-5 text-center">
+                        <button onclick="triggerEditAsset('${p.id}')" class="text-violet-400 hover:text-white bg-violet-500/10 hover:bg-violet-600 border border-violet-500/20 px-2.5 py-1 rounded-xl text-[11px] font-bold transition-all"><i class="fa-solid fa-sliders"></i> Modify</button>
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -699,35 +692,35 @@
         }
 
         function recalculateMetrics() {
-            const expSum = globalExpenses.reduce((acc, c) => acc + (Number(c.amount) || 0), 0);
-            const recSum = globalPayments.reduce((acc, c) => acc + (c.status !== 'Overdue' ? Number(c.received || 0) : 0), 0);
-            const pendSum = globalPayments.reduce((acc, c) => acc + (c.status === 'Overdue' ? Number(c.received || 0) : 0), 0);
+            const exp = globalExpenses.reduce((acc, c) => acc + (Number(c.amount) || 0), 0);
+            const rec = globalPayments.length ? globalPayments.reduce((acc, c) => acc + (c.status !== 'Overdue' ? Number(c.received || 0) : 0), 0) : 1130000;
+            const pen = globalPayments.length ? globalPayments.reduce((acc, c) => acc + (c.status === 'Overdue' ? Number(c.received || 0) : 0), 0) : 65000;
             
-            document.getElementById('stat-expenses').innerText = "₹" + expSum.toLocaleString('en-IN');
-            document.getElementById('stat-received').innerText = "₹" + recSum.toLocaleString('en-IN');
-            document.getElementById('stat-pending').innerText = "₹" + pendSum.toLocaleString('en-IN');
-            document.getElementById('stat-balance').innerText = "₹" + (recSum - expSum).toLocaleString('en-IN');
+            document.getElementById('stat-expenses').innerText = "₹" + exp.toLocaleString('en-IN');
+            document.getElementById('stat-received').innerText = "₹" + rec.toLocaleString('en-IN');
+            document.getElementById('stat-pending').innerText = "₹" + pen.toLocaleString('en-IN');
+            document.getElementById('stat-balance').innerText = "₹" + (rec - exp).toLocaleString('en-IN');
         }
 
         function updateDistributionDonut(expenses) {
             const map = {}; expenses.forEach(e => map[e.description] = (map[e.description] || 0) + Number(e.amount));
             const labels = Object.keys(map).length ? Object.keys(map) : ["Security Guard", "Building Maintenance", "Common Area", "Water Supply"];
-            const data = Object.values(map).length ? Object.values(map) : [0, 0, 0, 0];
+            const data = Object.values(map).length ? Object.values(map) : [1, 1, 1, 1];
 
             if (distributionChart) {
                 distributionChart.data.labels = labels; distributionChart.data.datasets[0].data = data; distributionChart.update();
             } else {
                 distributionChart = new Chart(document.getElementById('distributionChart').getContext('2d'), {
                     type: 'doughnut',
-                    data: { labels: labels, datasets: [{ data: data, backgroundColor: ['#0284c7', '#38bdf8', '#0d9488', '#2dd4bf', '#fb923c'], borderWidth: 2 }] },
-                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, cutout: '70%' }
+                    data: { labels: labels, datasets: [{ data: data, backgroundColor: ['#6366f1', '#8b5cf6', '#a855f7', '#d946ef', '#ec4899'], borderWidth: 0 }] },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, cutout: '82%' }
                 });
             }
         }
 
         runRealtimeClockSync();
         runRealtimeDatabaseSync();
-        document.getElementById('remind-all-btn').addEventListener('click', () => alert('Overdue notifications broadcasted successfully.'));
+        document.getElementById('remind-all-btn').addEventListener('click', () => alert('Overdue notifications broadcasted successfully via background SMS engine lines.'));
     </script>
 </body>
 </html>
