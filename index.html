@@ -110,6 +110,7 @@
                                         <th class="py-3 px-4">Amount</th>
                                         <th class="py-3 px-4">Vendor</th>
                                         <th class="py-3 px-4 text-center">Status</th>
+                                        <th class="py-3 px-4 text-center">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody id="expenses-table-body" class="divide-y text-sm"></tbody>
@@ -125,6 +126,7 @@
                                         <th class="py-3 px-4">Maintenance Fee</th>
                                         <th class="py-3 px-4">Amount Received</th>
                                         <th class="py-3 px-4 text-center">Status</th>
+                                        <th class="py-3 px-4 text-center">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody id="main-payments-table-body" class="divide-y text-sm"></tbody>
@@ -139,6 +141,7 @@
                                         <th class="py-3 px-4">Flat Number</th>
                                         <th class="py-3 px-4">Registered Owner</th>
                                         <th class="py-3 px-4">Status</th>
+                                        <th class="py-3 px-4 text-center">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody id="properties-table-body" class="divide-y text-sm"></tbody>
@@ -195,10 +198,11 @@
     <div id="expense-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
         <div class="bg-white rounded-xl shadow-xl max-w-md w-full overflow-hidden border">
             <div class="bg-slate-900 text-white px-6 py-4 flex justify-between items-center">
-                <h3 class="font-bold text-lg">Log New Expense</h3>
+                <h3 id="expense-modal-title" class="font-bold text-lg">Log New Expense</h3>
                 <button id="close-expense-modal" class="text-slate-400 hover:text-white text-xl">&times;</button>
             </div>
             <form id="expense-form" class="p-6 space-y-4">
+                <input type="hidden" id="edit-expense-id">
                 <div>
                     <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Select Expense Category</label>
                     <select id="exp-desc-select" class="w-full border rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-teal-600">
@@ -237,7 +241,7 @@
                         <option value="Pending Approval">Pending Approval</option>
                     </select>
                 </div>
-                <button type="submit" class="w-full bg-teal-700 hover:bg-teal-800 text-white font-semibold py-2.5 rounded-lg transition">Sync To Firebase</button>
+                <button type="submit" id="expense-submit-btn" class="w-full bg-teal-700 hover:bg-teal-800 text-white font-semibold py-2.5 rounded-lg transition">Sync To Firebase</button>
             </form>
         </div>
     </div>
@@ -245,16 +249,16 @@
     <div id="payment-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
         <div class="bg-white rounded-xl shadow-xl max-w-md w-full overflow-hidden border">
             <div class="bg-slate-900 text-white px-6 py-4 flex justify-between items-center">
-                <h3 class="font-bold text-lg">Log Unit Payment Settlement</h3>
+                <h3 id="payment-modal-title" class="font-bold text-lg">Log Unit Payment Settlement</h3>
                 <button id="close-payment-modal" class="text-slate-400 hover:text-white text-xl">&times;</button>
             </div>
             <form id="payment-form" class="p-6 space-y-4">
+                <input type="hidden" id="edit-payment-id">
                 <div>
                     <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Select Registered Flat Member</label>
                     <select id="pay-unit-select" required class="w-full border rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-teal-600">
                         <option value="" disabled selected>-- Loading Allocated System Flats --</option>
                     </select>
-                    <p class="text-[11px] text-slate-400 mt-1"><i class="fa-solid fa-circle-info"></i> Member details are linked dynamically to the Flats & Blocks registry.</p>
                 </div>
                 <div>
                     <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Auto-Detected Owner Name</label>
@@ -278,7 +282,7 @@
                         <option value="Overdue">Overdue</option>
                     </select>
                 </div>
-                <button type="submit" class="w-full bg-teal-700 hover:bg-teal-800 text-white font-semibold py-2.5 rounded-lg transition">Sync Payment To Firebase</button>
+                <button type="submit" id="payment-submit-btn" class="w-full bg-teal-700 hover:bg-teal-800 text-white font-semibold py-2.5 rounded-lg transition">Sync Payment To Firebase</button>
             </form>
         </div>
     </div>
@@ -286,10 +290,11 @@
     <div id="asset-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
         <div class="bg-white rounded-xl shadow-xl max-w-md w-full overflow-hidden border">
             <div class="bg-slate-900 text-white px-6 py-4 flex justify-between items-center">
-                <h3 class="font-bold text-lg"><i class="fa-solid fa-square-plus mr-1"></i> Provision New Property Unit</h3>
+                <h3 id="asset-modal-title" class="font-bold text-lg"><i class="fa-solid fa-square-plus mr-1"></i> Provision New Property Unit</h3>
                 <button id="close-asset-modal" class="text-slate-400 hover:text-white text-xl">&times;</button>
             </div>
             <form id="asset-form" class="p-6 space-y-4">
+                <input type="hidden" id="edit-asset-id">
                 <div>
                     <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Block / Phase Name</label>
                     <input type="text" id="asset-block" required placeholder="e.g. Block A" class="w-full border rounded-lg px-3 py-2 text-sm">
@@ -302,14 +307,14 @@
                     <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Resident / Owner Full Name</label>
                     <input type="text" id="asset-owner" required placeholder="e.g. Rahul Sharma" class="w-full border rounded-lg px-3 py-2 text-sm">
                 </div>
-                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-lg transition">Provision Property Asset</button>
+                <button type="submit" id="asset-submit-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-lg transition">Provision Property Asset</button>
             </form>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, updateDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAnUvPo_G_efbacdDApbULQgY5OToghJYM",
@@ -353,40 +358,38 @@
         const paymentForm = document.getElementById('payment-form');
         const assetForm = document.getElementById('asset-form');
 
-        // Dynamic Elements
+        // Form ID pointers for tracking update states
+        const editExpenseId = document.getElementById('edit-expense-id');
+        const editPaymentId = document.getElementById('edit-payment-id');
+        const editAssetId = document.getElementById('edit-asset-id');
+
         const customCategoryInput = document.getElementById('custom-category-input');
         const addCustomCategoryBtn = document.getElementById('add-custom-category-btn');
         const expDescSelect = document.getElementById('exp-desc-select');
         const payUnitSelect = document.getElementById('pay-unit-select');
         const payOwnerDisplay = document.getElementById('pay-owner-display');
 
-        // Clock Sync
         function runRealtimeClockSync() {
             document.getElementById('current-month-year').innerText = new Date().toLocaleString('default', { month: 'long', year: 'numeric' });
         }
 
-        // Add New Custom Category on the fly
+        // Add dynamic category to dropdown selection list
         addCustomCategoryBtn.addEventListener('click', () => {
             const val = customCategoryInput.value.trim();
             if(val) {
                 const opt = document.createElement('option');
-                opt.value = val;
-                opt.innerText = val;
+                opt.value = opt.innerText = val;
                 opt.selected = true;
                 expDescSelect.appendChild(opt);
                 customCategoryInput.value = '';
             }
         });
 
-        // Relational Mapping Event (Selecting a Unit fetches the correct Flat Owner)
+        // Relational hook: auto-resolve names when changing dropdown indices
         payUnitSelect.addEventListener('change', (e) => {
             const selectedFlatId = e.target.value;
-            const matchedAsset = globalProperties.find(p => p.id === selectedFlatId);
-            if(matchedAsset) {
-                payOwnerDisplay.value = matchedAsset.registeredOwner;
-            } else {
-                payOwnerDisplay.value = '';
-            }
+            const matchedAsset = globalProperties.find(p => p.id === selectedFlatId || `${p.block}-${p.flatNumber}` === selectedFlatId);
+            payOwnerDisplay.value = matchedAsset ? matchedAsset.registeredOwner : '';
         });
 
         // Tab views controller framework
@@ -422,11 +425,32 @@
         tabPropertiesBtn.addEventListener('click', () => updateActiveViewFramework('PROPERTIES'));
         navFlatsBtn.addEventListener('click', () => updateActiveViewFramework('PROPERTIES'));
 
-        btnActionExpense.addEventListener('click', () => expenseModal.classList.remove('hidden'));
+        // Reset Add vs Edit contextual forms headers upon clear actions triggers
+        btnActionExpense.addEventListener('click', () => {
+            editExpenseId.value = '';
+            expenseForm.reset();
+            document.getElementById('expense-modal-title').innerText = "Log New Expense";
+            document.getElementById('expense-submit-btn').innerText = "Sync To Firebase";
+            expenseModal.classList.remove('hidden');
+        });
+        btnActionPayment.addEventListener('click', () => {
+            editPaymentId.value = '';
+            paymentForm.reset();
+            payOwnerDisplay.value = '';
+            document.getElementById('payment-modal-title').innerText = "Log Unit Payment Settlement";
+            document.getElementById('payment-submit-btn').innerText = "Sync Payment To Firebase";
+            paymentModal.classList.remove('hidden');
+        });
+        btnActionAsset.addEventListener('click', () => {
+            editAssetId.value = '';
+            assetForm.reset();
+            document.getElementById('asset-modal-title').innerText = "Provision New Property Unit";
+            document.getElementById('asset-submit-btn').innerText = "Provision Property Asset";
+            assetModal.classList.remove('hidden');
+        });
+
         document.getElementById('close-expense-modal').addEventListener('click', () => expenseModal.classList.add('hidden'));
-        btnActionPayment.addEventListener('click', () => paymentModal.classList.remove('hidden'));
         document.getElementById('close-payment-modal').addEventListener('click', () => paymentModal.classList.add('hidden'));
-        btnActionAsset.addEventListener('click', () => assetModal.classList.remove('hidden'));
         document.getElementById('close-asset-modal').addEventListener('click', () => assetModal.classList.add('hidden'));
 
         window.addEventListener('click', (e) => {
@@ -435,48 +459,124 @@
             if(e.target === assetModal) assetModal.classList.add('hidden');
         });
 
-        // Form writing handlers
+        // Dynamic Edit Mapping Handlers
+        window.triggerEditExpense = function(id) {
+            const item = globalExpenses.find(e => e.id === id);
+            if(!item) return;
+            editExpenseId.value = item.id;
+            
+            // Check if option exists in dropdown, else provision it dynamically
+            if (!Array.from(expDescSelect.options).some(opt => opt.value === item.description)) {
+                const newOpt = document.createElement('option');
+                newOpt.value = newOpt.innerText = item.description;
+                expDescSelect.appendChild(newOpt);
+            }
+            
+            expDescSelect.value = item.description;
+            document.getElementById('exp-amount').value = item.amount;
+            document.getElementById('exp-date').value = item.date;
+            document.getElementById('exp-vendor').value = item.vendor;
+            document.getElementById('exp-status').value = item.status;
+            
+            document.getElementById('expense-modal-title').innerText = "Modify Expense Record";
+            document.getElementById('expense-submit-btn').innerText = "Update In Firebase";
+            expenseModal.classList.remove('hidden');
+        }
+
+        window.triggerEditPayment = function(id) {
+            const item = globalPayments.find(p => p.id === id);
+            if(!item) return;
+            editPaymentId.value = item.id;
+
+            // Pre-select flat mapping element criteria matched patterns 
+            const foundProperty = globalProperties.find(p => `${p.block}-${p.flatNumber}` === item.unit || p.id === item.unit);
+            if(foundProperty) {
+                payUnitSelect.value = foundProperty.id;
+            } else {
+                // Runtime allocation fallback option injection
+                const opt = document.createElement('option');
+                opt.value = item.unit; opt.innerText = item.unit; opt.selected = true;
+                payUnitSelect.appendChild(opt);
+            }
+            
+            payOwnerDisplay.value = item.owner;
+            document.getElementById('pay-maint').value = item.maintenance;
+            document.getElementById('pay-received').value = item.received;
+            document.getElementById('pay-status').value = item.status;
+
+            document.getElementById('payment-modal-title').innerText = "Modify Settlement Ledger";
+            document.getElementById('payment-submit-btn').innerText = "Update In Firebase";
+            paymentModal.classList.remove('hidden');
+        }
+
+        window.triggerEditAsset = function(id) {
+            const item = globalProperties.find(p => p.id === id);
+            if(!item) return;
+            editAssetId.value = item.id;
+            document.getElementById('asset-block').value = item.block;
+            document.getElementById('asset-flat').value = item.flatNumber;
+            document.getElementById('asset-owner').value = item.registeredOwner;
+
+            document.getElementById('asset-modal-title').innerText = "Modify Allocated Property Configuration";
+            document.getElementById('asset-submit-btn').innerText = "Update Asset Record";
+            assetModal.classList.remove('hidden');
+        }
+
+        // Dual Mode Form Submissions Strategy (Write vs Mutation Processing Updates)
         expenseForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            await addDoc(collection(db, "expenses"), {
+            const payload = {
                 description: expDescSelect.value,
                 amount: parseFloat(document.getElementById('exp-amount').value),
                 date: document.getElementById('exp-date').value,
                 vendor: document.getElementById('exp-vendor').value,
-                status: document.getElementById('exp-status').value,
-                timestamp: new Date()
-            });
+                status: document.getElementById('exp-status').value
+            };
+            if(editExpenseId.value) {
+                await updateDoc(doc(db, "expenses", editExpenseId.value), payload);
+            } else {
+                await addDoc(collection(db, "expenses"), { ...payload, timestamp: new Date() });
+            }
             expenseForm.reset(); expenseModal.classList.add('hidden');
         });
 
         paymentForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const matchedAsset = globalProperties.find(p => p.id === payUnitSelect.value);
-            if(!matchedAsset) return alert("Please select a valid allocated system flat.");
+            const selectedVal = payUnitSelect.value;
+            const matchedAsset = globalProperties.find(p => p.id === selectedVal || `${p.block}-${p.flatNumber}` === selectedVal);
             
-            await addDoc(collection(db, "payments"), {
-                unit: matchedAsset.block + "-" + matchedAsset.flatNumber,
-                owner: matchedAsset.registeredOwner,
+            const payload = {
+                unit: matchedAsset ? `${matchedAsset.block}-${matchedAsset.flatNumber}` : selectedVal,
+                owner: payOwnerDisplay.value,
                 maintenance: parseFloat(document.getElementById('pay-maint').value),
                 received: parseFloat(document.getElementById('pay-received').value),
-                status: document.getElementById('pay-status').value,
-                timestamp: new Date()
-            });
+                status: document.getElementById('pay-status').value
+            };
+
+            if(editPaymentId.value) {
+                await updateDoc(doc(db, "payments", editPaymentId.value), payload);
+            } else {
+                await addDoc(collection(db, "payments"), { ...payload, timestamp: new Date() });
+            }
             paymentForm.reset(); payOwnerDisplay.value = ''; paymentModal.classList.add('hidden');
         });
 
         assetForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            await addDoc(collection(db, "properties"), {
+            const payload = {
                 block: document.getElementById('asset-block').value,
                 flatNumber: document.getElementById('asset-flat').value,
-                registeredOwner: document.getElementById('asset-owner').value,
-                timestamp: new Date()
-            });
+                registeredOwner: document.getElementById('asset-owner').value
+            };
+            if(editAssetId.value) {
+                await updateDoc(doc(db, "properties", editAssetId.value), payload);
+            } else {
+                await addDoc(collection(db, "properties"), { ...payload, timestamp: new Date() });
+            }
             assetForm.reset(); assetModal.classList.add('hidden');
         });
 
-        // Live Synchronizer Hooks
+        // Live Real-time Continuous Engine Observers Listeners 
         function runRealtimeDatabaseSync() {
             onSnapshot(collection(db, "expenses"), (snap) => {
                 globalExpenses = [];
@@ -502,10 +602,6 @@
 
         function rebuildUnitDropdownOptions(properties) {
             payUnitSelect.innerHTML = '<option value="" disabled selected>-- Choose Flat Number --</option>';
-            if(properties.length === 0) {
-                payUnitSelect.innerHTML = '<option value="" disabled>No flats configured. Go to Flats/Blocks tab first.</option>';
-                return;
-            }
             properties.forEach(p => {
                 const opt = document.createElement('option');
                 opt.value = p.id;
@@ -519,12 +615,16 @@
             list.forEach(item => {
                 const badge = item.status === 'Paid' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-orange-50 text-orange-700 border-orange-200';
                 const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition";
                 tr.innerHTML = `
                     <td class="py-3 px-4 font-semibold text-slate-700">${item.description}</td>
                     <td class="py-3 px-4 text-slate-500">${item.date}</td>
                     <td class="py-3 px-4 font-mono font-bold">₹${Number(item.amount).toLocaleString('en-IN')}</td>
                     <td class="py-3 px-4 text-slate-600">${item.vendor}</td>
                     <td class="py-3 px-4 text-center"><span class="px-2 py-0.5 text-xs border rounded-full ${badge}">${item.status}</span></td>
+                    <td class="py-3 px-4 text-center">
+                        <button onclick="triggerEditExpense('${item.id}')" class="text-teal-600 hover:text-teal-900 bg-teal-50 px-2 py-1 rounded text-xs font-semibold"><i class="fa-solid fa-pen-to-square"></i> Edit</button>
+                    </td>
                 `;
                 tbody.appendChild(tr);
             });
@@ -536,16 +636,21 @@
             const sideTbody = document.getElementById('sidebar-payments-body');
             mainTbody.innerHTML = sideTbody.innerHTML = '';
 
-            const activeSet = list.length ? list : [
-                { unit: 'Block A-101', owner: 'Anner Sun', maintenance: 25000, received: 345000, status: 'Paid' },
-                { unit: 'Block B-203', owner: 'Ifra Shah', maintenance: 25000, received: 410000, status: 'Partial' }
-            ];
-
-            activeSet.forEach(item => {
-                let badge = item.status === 'Paid' ? '<span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded font-bold text-[10px]">Paid</span>' : '<span class="px-2 py-0.5 bg-amber-100 text-amber-800 rounded font-bold text-[10px]">Partial</span>';
+            list.forEach(item => {
+                let badge = item.status === 'Paid' ? '<span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded font-bold text-[10px]">Paid</span>' : (item.status === 'Partial' ? '<span class="px-2 py-0.5 bg-amber-100 text-amber-800 rounded font-bold text-[10px]">Partial</span>' : '<span class="px-2 py-0.5 bg-rose-100 text-rose-800 rounded font-bold text-[10px]">Overdue</span>');
                 
                 const trMain = document.createElement('tr');
-                trMain.innerHTML = `<td class="py-3 px-4 font-bold text-slate-700">${item.unit}</td><td class="py-3 px-4 text-slate-600">${item.owner}</td><td class="py-3 px-4 font-mono text-slate-400">₹${Number(item.maintenance).toLocaleString('en-IN')}</td><td class="py-3 px-4 font-mono font-bold text-slate-800">₹${Number(item.received).toLocaleString('en-IN')}</td><td class="py-3 px-4 text-center">${badge}</td>`;
+                trMain.className = "hover:bg-slate-50 transition";
+                trMain.innerHTML = `
+                    <td class="py-3 px-4 font-bold text-slate-700">${item.unit}</td>
+                    <td class="py-3 px-4 text-slate-600">${item.owner}</td>
+                    <td class="py-3 px-4 font-mono text-slate-400">₹${Number(item.maintenance).toLocaleString('en-IN')}</td>
+                    <td class="py-3 px-4 font-mono font-bold text-slate-800">₹${Number(item.received).toLocaleString('en-IN')}</td>
+                    <td class="py-3 px-4 text-center">${badge}</td>
+                    <td class="py-3 px-4 text-center">
+                        <button onclick="triggerEditPayment('${item.id}')" class="text-teal-600 hover:text-teal-900 bg-teal-50 px-2 py-1 rounded text-xs font-semibold"><i class="fa-solid fa-pen-to-square"></i> Edit</button>
+                    </td>
+                `;
                 mainTbody.appendChild(trMain);
 
                 const trSide = document.createElement('tr');
@@ -556,21 +661,26 @@
 
         function renderProperties(list) {
             const tbody = document.getElementById('properties-table-body'); tbody.innerHTML = '';
-            if(!list.length) {
-                tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400">No properties allocated yet. Click 'Add Flat/Block' to provision.</td></tr>`;
-                return;
-            }
             list.forEach(p => {
                 const tr = document.createElement('tr');
-                tr.innerHTML = `<td class="py-3 px-4 font-bold text-slate-700">${p.block}</td><td class="py-3 px-4 font-mono">Flat ${p.flatNumber}</td><td class="py-3 px-4 font-medium">${p.registeredOwner}</td><td class="py-3 px-4"><span class="text-xs bg-blue-50 text-blue-700 font-semibold px-2 py-0.5 rounded-full">Occupied</span></td>`;
+                tr.className = "hover:bg-slate-50 transition";
+                tr.innerHTML = `
+                    <td class="py-3 px-4 font-bold text-slate-700">${p.block}</td>
+                    <td class="py-3 px-4 font-mono">Flat ${p.flatNumber}</td>
+                    <td class="py-3 px-4 font-medium">${p.registeredOwner}</td>
+                    <td class="py-3 px-4"><span class="text-xs bg-blue-50 text-blue-700 font-semibold px-2 py-0.5 rounded-full">Occupied</span></td>
+                    <td class="py-3 px-4 text-center">
+                        <button onclick="triggerEditAsset('${p.id}')" class="text-blue-600 hover:text-blue-900 bg-blue-50 px-2 py-1 rounded text-xs font-semibold"><i class="fa-solid fa-pen-to-square"></i> Edit</button>
+                    </td>
+                `;
                 tbody.appendChild(tr);
             });
         }
 
         function recalculateMetrics() {
             const expSum = globalExpenses.reduce((acc, c) => acc + (Number(c.amount) || 0), 0);
-            const recSum = globalPayments.length ? globalPayments.reduce((acc, c) => acc + (c.status !== 'Overdue' ? Number(c.received || 0) : 0), 0) : 1130000;
-            const pendSum = globalPayments.length ? globalPayments.reduce((acc, c) => acc + (c.status === 'Overdue' ? Number(c.received || 0) : 0), 0) : 65000;
+            const recSum = globalPayments.reduce((acc, c) => acc + (c.status !== 'Overdue' ? Number(c.received || 0) : 0), 0);
+            const pendSum = globalPayments.reduce((acc, c) => acc + (c.status === 'Overdue' ? Number(c.received || 0) : 0), 0);
             
             document.getElementById('stat-expenses').innerText = "₹" + expSum.toLocaleString('en-IN');
             document.getElementById('stat-received').innerText = "₹" + recSum.toLocaleString('en-IN');
@@ -581,7 +691,7 @@
         function updateDistributionDonut(expenses) {
             const map = {}; expenses.forEach(e => map[e.description] = (map[e.description] || 0) + Number(e.amount));
             const labels = Object.keys(map).length ? Object.keys(map) : ["Security Guard", "Building Maintenance", "Common Area", "Water Supply"];
-            const data = Object.values(map).length ? Object.values(map) : [345000, 410000, 350000, 290000];
+            const data = Object.values(map).length ? Object.values(map) : [0, 0, 0, 0];
 
             if (distributionChart) {
                 distributionChart.data.labels = labels; distributionChart.data.datasets[0].data = data; distributionChart.update();
@@ -596,7 +706,7 @@
 
         runRealtimeClockSync();
         runRealtimeDatabaseSync();
-        document.getElementById('remind-all-btn').addEventListener('click', () => alert('Overdue notices dispatched via system engine SMS.'));
+        document.getElementById('remind-all-btn').addEventListener('click', () => alert('Overdue notifications broadcasted successfully.'));
     </script>
 </body>
 </html>
