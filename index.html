@@ -138,9 +138,11 @@
                                 <thead>
                                     <tr class="bg-slate-100 text-slate-600 text-xs uppercase tracking-wider font-semibold border-b">
                                         <th class="py-3 px-4">Block</th>
-                                        <th class="py-3 px-4">Flat Number</th>
+                                        <th class="py-3 px-4">Flat #</th>
+                                        <th class="py-3 px-4">Config</th>
+                                        <th class="py-3 px-4">Area (Sq.Ft)</th>
                                         <th class="py-3 px-4">Registered Owner</th>
-                                        <th class="py-3 px-4">Status</th>
+                                        <th class="py-3 px-4">Mobile Number</th>
                                         <th class="py-3 px-4 text-center">Actions</th>
                                     </tr>
                                 </thead>
@@ -295,17 +297,38 @@
             </div>
             <form id="asset-form" class="p-6 space-y-4">
                 <input type="hidden" id="edit-asset-id">
-                <div>
-                    <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Block / Phase Name</label>
-                    <input type="text" id="asset-block" required placeholder="e.g. Block A" class="w-full border rounded-lg px-3 py-2 text-sm">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Block / Phase</label>
+                        <input type="text" id="asset-block" required placeholder="e.g. Block A" class="w-full border rounded-lg px-3 py-2 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Flat Number</label>
+                        <input type="text" id="asset-flat" required placeholder="e.g. 101" class="w-full border rounded-lg px-3 py-2 text-sm">
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Flat / Apartment Number</label>
-                    <input type="text" id="asset-flat" required placeholder="e.g. 101" class="w-full border rounded-lg px-3 py-2 text-sm">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Configuration (BHK)</label>
+                        <select id="asset-bhk" class="w-full border rounded-lg px-3 py-2 text-sm bg-white">
+                            <option value="1 BHK">1 BHK</option>
+                            <option value="2 BHK">2 BHK</option>
+                            <option value="3 BHK" selected>3 BHK</option>
+                            <option value="4 BHK">4 BHK</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Area Size (Sq.Ft)</label>
+                        <input type="number" id="asset-area" required placeholder="e.g. 1650" class="w-full border rounded-lg px-3 py-2 text-sm">
+                    </div>
                 </div>
                 <div>
                     <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Resident / Owner Full Name</label>
                     <input type="text" id="asset-owner" required placeholder="e.g. Rahul Sharma" class="w-full border rounded-lg px-3 py-2 text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Contact Mobile Number</label>
+                    <input type="tel" id="asset-mobile" required placeholder="e.g. +91 98765 43210" class="w-full border rounded-lg px-3 py-2 text-sm">
                 </div>
                 <button type="submit" id="asset-submit-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-lg transition">Provision Property Asset</button>
             </form>
@@ -358,7 +381,6 @@
         const paymentForm = document.getElementById('payment-form');
         const assetForm = document.getElementById('asset-form');
 
-        // Form ID pointers for tracking update states
         const editExpenseId = document.getElementById('edit-expense-id');
         const editPaymentId = document.getElementById('edit-payment-id');
         const editAssetId = document.getElementById('edit-asset-id');
@@ -373,7 +395,6 @@
             document.getElementById('current-month-year').innerText = new Date().toLocaleString('default', { month: 'long', year: 'numeric' });
         }
 
-        // Add dynamic category to dropdown selection list
         addCustomCategoryBtn.addEventListener('click', () => {
             const val = customCategoryInput.value.trim();
             if(val) {
@@ -385,14 +406,12 @@
             }
         });
 
-        // Relational hook: auto-resolve names when changing dropdown indices
         payUnitSelect.addEventListener('change', (e) => {
             const selectedFlatId = e.target.value;
             const matchedAsset = globalProperties.find(p => p.id === selectedFlatId || `${p.block}-${p.flatNumber}` === selectedFlatId);
             payOwnerDisplay.value = matchedAsset ? matchedAsset.registeredOwner : '';
         });
 
-        // Tab views controller framework
         function updateActiveViewFramework(mode) {
             tabExpensesBtn.className = tabPaymentsBtn.className = tabPropertiesBtn.className = "px-6 py-3 font-semibold text-sm text-slate-500 hover:text-slate-700 transition";
             navDashBtn.className = navFlatsBtn.className = navLedgerBtn.className = "p-3 rounded-xl hover:bg-teal-700 text-teal-200 transition transform hover:scale-110";
@@ -425,25 +444,20 @@
         tabPropertiesBtn.addEventListener('click', () => updateActiveViewFramework('PROPERTIES'));
         navFlatsBtn.addEventListener('click', () => updateActiveViewFramework('PROPERTIES'));
 
-        // Reset Add vs Edit contextual forms headers upon clear actions triggers
         btnActionExpense.addEventListener('click', () => {
-            editExpenseId.value = '';
-            expenseForm.reset();
+            editExpenseId.value = ''; expenseForm.reset();
             document.getElementById('expense-modal-title').innerText = "Log New Expense";
             document.getElementById('expense-submit-btn').innerText = "Sync To Firebase";
             expenseModal.classList.remove('hidden');
         });
         btnActionPayment.addEventListener('click', () => {
-            editPaymentId.value = '';
-            paymentForm.reset();
-            payOwnerDisplay.value = '';
+            editPaymentId.value = ''; paymentForm.reset(); payOwnerDisplay.value = '';
             document.getElementById('payment-modal-title').innerText = "Log Unit Payment Settlement";
             document.getElementById('payment-submit-btn').innerText = "Sync Payment To Firebase";
             paymentModal.classList.remove('hidden');
         });
         btnActionAsset.addEventListener('click', () => {
-            editAssetId.value = '';
-            assetForm.reset();
+            editAssetId.value = ''; assetForm.reset();
             document.getElementById('asset-modal-title').innerText = "Provision New Property Unit";
             document.getElementById('asset-submit-btn').innerText = "Provision Property Asset";
             assetModal.classList.remove('hidden');
@@ -459,13 +473,12 @@
             if(e.target === assetModal) assetModal.classList.add('hidden');
         });
 
-        // Dynamic Edit Mapping Handlers
+        // Trigger modifications listeners mapping values inside UI
         window.triggerEditExpense = function(id) {
             const item = globalExpenses.find(e => e.id === id);
             if(!item) return;
             editExpenseId.value = item.id;
             
-            // Check if option exists in dropdown, else provision it dynamically
             if (!Array.from(expDescSelect.options).some(opt => opt.value === item.description)) {
                 const newOpt = document.createElement('option');
                 newOpt.value = newOpt.innerText = item.description;
@@ -488,12 +501,10 @@
             if(!item) return;
             editPaymentId.value = item.id;
 
-            // Pre-select flat mapping element criteria matched patterns 
             const foundProperty = globalProperties.find(p => `${p.block}-${p.flatNumber}` === item.unit || p.id === item.unit);
             if(foundProperty) {
                 payUnitSelect.value = foundProperty.id;
             } else {
-                // Runtime allocation fallback option injection
                 const opt = document.createElement('option');
                 opt.value = item.unit; opt.innerText = item.unit; opt.selected = true;
                 payUnitSelect.appendChild(opt);
@@ -513,16 +524,20 @@
             const item = globalProperties.find(p => p.id === id);
             if(!item) return;
             editAssetId.value = item.id;
+            
             document.getElementById('asset-block').value = item.block;
             document.getElementById('asset-flat').value = item.flatNumber;
+            document.getElementById('asset-bhk').value = item.bhk || "3 BHK";
+            document.getElementById('asset-area').value = item.areaSize || "";
             document.getElementById('asset-owner').value = item.registeredOwner;
+            document.getElementById('asset-mobile').value = item.mobile || "";
 
-            document.getElementById('asset-modal-title').innerText = "Modify Allocated Property Configuration";
+            document.getElementById('asset-modal-title').innerText = "Modify Property Configuration";
             document.getElementById('asset-submit-btn').innerText = "Update Asset Record";
             assetModal.classList.remove('hidden');
         }
 
-        // Dual Mode Form Submissions Strategy (Write vs Mutation Processing Updates)
+        // Form Mutations Actions Handles
         expenseForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const payload = {
@@ -566,7 +581,10 @@
             const payload = {
                 block: document.getElementById('asset-block').value,
                 flatNumber: document.getElementById('asset-flat').value,
-                registeredOwner: document.getElementById('asset-owner').value
+                bhk: document.getElementById('asset-bhk').value,
+                areaSize: parseInt(document.getElementById('asset-area').value),
+                registeredOwner: document.getElementById('asset-owner').value,
+                mobile: document.getElementById('asset-mobile').value
             };
             if(editAssetId.value) {
                 await updateDoc(doc(db, "properties", editAssetId.value), payload);
@@ -576,7 +594,7 @@
             assetForm.reset(); assetModal.classList.add('hidden');
         });
 
-        // Live Real-time Continuous Engine Observers Listeners 
+        // Live Real-time Continuous Observers Initialization
         function runRealtimeDatabaseSync() {
             onSnapshot(collection(db, "expenses"), (snap) => {
                 globalExpenses = [];
@@ -659,17 +677,20 @@
             });
         }
 
+        // Expanded Property Registry Rows Mapping Routine
         function renderProperties(list) {
             const tbody = document.getElementById('properties-table-body'); tbody.innerHTML = '';
             list.forEach(p => {
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-50 transition";
                 tr.innerHTML = `
-                    <td class="py-3 px-4 font-bold text-slate-700">${p.block}</td>
-                    <td class="py-3 px-4 font-mono">Flat ${p.flatNumber}</td>
-                    <td class="py-3 px-4 font-medium">${p.registeredOwner}</td>
-                    <td class="py-3 px-4"><span class="text-xs bg-blue-50 text-blue-700 font-semibold px-2 py-0.5 rounded-full">Occupied</span></td>
-                    <td class="py-3 px-4 text-center">
+                    <td class="py-3.5 px-4 font-bold text-slate-700">${p.block || 'N/A'}</td>
+                    <td class="py-3.5 px-4 font-mono font-medium text-slate-600">${p.flatNumber || 'N/A'}</td>
+                    <td class="py-3.5 px-4 text-slate-600 font-medium">${p.bhk || '3 BHK'}</td>
+                    <td class="py-3.5 px-4 font-mono text-slate-600">${p.areaSize ? p.areaSize.toLocaleString() + ' sq ft' : 'N/A'}</td>
+                    <td class="py-3.5 px-4 text-slate-800 font-semibold">${p.registeredOwner || 'N/A'}</td>
+                    <td class="py-3.5 px-4 font-mono text-slate-500">${p.mobile || 'N/A'}</td>
+                    <td class="py-3.5 px-4 text-center">
                         <button onclick="triggerEditAsset('${p.id}')" class="text-blue-600 hover:text-blue-900 bg-blue-50 px-2 py-1 rounded text-xs font-semibold"><i class="fa-solid fa-pen-to-square"></i> Edit</button>
                     </td>
                 `;
