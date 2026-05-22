@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gatebook Pro — Luxury Real-Estate Dashboard</title>
+    <title>Gatebook Pro — Apartment Management System</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,217 +16,246 @@
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.6); }
         ::-webkit-scrollbar-thumb { background: rgba(99, 102, 241, 0.3); border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(99, 102, 241, 0.6); }
     </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white">
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased">
 
-    <header class="bg-slate-900/80 backdrop-blur-md border-b border-slate-800/80 px-6 py-4 flex justify-between items-center sticky top-0 z-40 shadow-xl shadow-slate-950/20">
-        <div class="flex items-center space-x-3 group cursor-pointer">
-            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-violet-600 to-fuchsia-600 flex items-center justify-center shadow-lg shadow-indigo-500/30 transition group-hover:scale-105">
-                <i class="fa-solid fa-layer-group text-white text-lg"></i>
-            </div>
-            <div class="flex flex-col">
-                <span class="text-xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-200 to-slate-400">Gatebook<span class="text-indigo-400 font-light text-base ml-1 tracking-widest uppercase">Pro</span></span>
-                <span class="text-[10px] text-slate-500 font-medium tracking-wider uppercase">Data Fabric Architecture</span>
-            </div>
-        </div>
-        
-        <div class="flex items-center space-x-5">
-            <div class="relative hidden sm:block">
-                <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-500 text-xs"></i>
-                <input type="text" id="global-search" placeholder="Quick search dashboard..." class="bg-slate-950/60 border border-slate-800 text-slate-300 pl-9 pr-4 py-1.5 rounded-xl text-xs focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 w-64 transition-all placeholder:text-slate-600">
-            </div>
-            <div class="flex items-center space-x-2 border-l pl-5 border-slate-800">
-                <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-500 p-[1.5px]">
-                    <div class="w-full h-full bg-slate-900 rounded-[10px] flex items-center justify-center font-bold text-xs text-emerald-400">HQ</div>
+    <div id="auth-gateway-screen" class="fixed inset-0 bg-slate-950 z-50 flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-slate-900 border border-slate-800 p-8 rounded-2xl max-w-md w-full space-y-6 shadow-2xl">
+            <div class="text-center space-y-2">
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-600 flex items-center justify-center mx-auto shadow-lg shadow-indigo-500/20">
+                    <i class="fa-solid fa-building-shield text-white text-xl"></i>
                 </div>
-                <span class="text-xs font-semibold text-slate-300 hidden md:inline tracking-wide">Terminal Admin</span>
+                <h2 class="text-2xl font-black tracking-tight text-white">Gatebook Apartment Engine</h2>
+                <p class="text-xs text-slate-400">Initialize setup or log into your community registry portal</p>
             </div>
-        </div>
-    </header>
 
-    <div class="flex flex-1">
-        
-        <aside class="w-20 bg-slate-900/40 border-r border-slate-900/80 flex flex-col items-center py-8 space-y-6">
-            <button id="nav-dash-btn" class="w-12 h-12 rounded-xl flex items-center justify-center transition group relative text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 shadow-lg shadow-indigo-500/5" title="Overview Dashboard">
-                <i class="fa-solid fa-chart-pie text-lg"></i>
-                <span class="absolute left-24 bg-slate-900 border border-slate-800 text-[10px] uppercase font-bold tracking-wider px-2 py-1 rounded-md hidden group-hover:inline-block z-50 whitespace-nowrap text-indigo-400">Overview Matrix</span>
-            </button>
-            <button id="nav-flats-btn" class="w-12 h-12 rounded-xl flex items-center justify-center transition group relative text-slate-500 hover:text-indigo-400 hover:bg-indigo-500/5 border border-transparent hover:border-slate-800" title="Manage Blocks & Flats">
-                <i class="fa-solid fa-city text-lg"></i>
-                <span class="absolute left-24 bg-slate-900 border border-slate-800 text-[10px] uppercase font-bold tracking-wider px-2 py-1 rounded-md hidden group-hover:inline-block z-50 whitespace-nowrap text-slate-400">Assets Register</span>
-            </button>
-            <button id="nav-ledger-btn" class="w-12 h-12 rounded-xl flex items-center justify-center transition group relative text-slate-500 hover:text-indigo-400 hover:bg-indigo-500/5 border border-transparent hover:border-slate-800" title="Financial Ledger Accounts">
-                <i class="fa-solid fa-receipt text-lg"></i>
-                <span class="absolute left-24 bg-slate-900 border border-slate-800 text-[10px] uppercase font-bold tracking-wider px-2 py-1 rounded-md hidden group-hover:inline-block z-50 whitespace-nowrap text-slate-400">Ledger Accounts</span>
-            </button>
-        </aside>
-
-        <main class="flex-1 p-6 md:p-8 max-w-7xl mx-auto w-full space-y-8 overflow-hidden">
-            
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <form id="setup-initial-form" class="space-y-4 hidden">
+                <div class="border border-indigo-500/20 bg-indigo-500/5 p-3 rounded-xl text-center text-[11px] text-indigo-400 font-medium">
+                    <i class="fa-solid fa-wand-magic-sparkles mr-1"></i> First time configuration setup detected.
+                </div>
                 <div>
-                    <span class="text-xs font-bold text-indigo-400 tracking-widest uppercase">System Analytics Hub</span>
-                    <h1 class="text-2xl md:text-3xl font-black text-white tracking-tight mt-0.5">
-                        Overview Matrix — <span id="current-month-year" class="bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-violet-400 to-fuchsia-400">...</span>
-                    </h1>
+                    <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Apartment Community Name</label>
+                    <input type="text" id="setup-name" required placeholder="e.g. Green Meadows Residency" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-indigo-500 transition-all">
                 </div>
-                <div class="bg-slate-900 border border-slate-800 px-4 py-2 rounded-xl text-xs font-bold tracking-wider text-slate-400 uppercase flex items-center space-x-2 shadow-inner">
-                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                    <span>Live Firestore Connected</span>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-                <div class="bg-slate-900/60 border border-slate-800/80 p-5 rounded-2xl relative overflow-hidden group hover:border-slate-700/80 transition-all">
-                    <div class="absolute -right-3 -top-3 w-24 h-24 bg-blue-500/5 rounded-full blur-xl group-hover:bg-blue-500/10 transition-all"></div>
-                    <p class="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Total Outflows</p>
-                    <h2 class="text-2xl font-black font-mono text-slate-100 mt-2 tracking-tight" id="stat-expenses">₹0</h2>
-                    <div class="mt-4 flex items-center text-[11px] text-blue-400 font-semibold uppercase tracking-wider"><i class="fa-solid fa-arrow-trend-up mr-1"></i> Current Expense Load</div>
-                </div>
-                <div class="bg-slate-900/60 border border-slate-800/80 p-5 rounded-2xl relative overflow-hidden group hover:border-slate-700/80 transition-all">
-                    <div class="absolute -right-3 -top-3 w-24 h-24 bg-emerald-500/5 rounded-full blur-xl group-hover:bg-emerald-500/10 transition-all"></div>
-                    <p class="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Inflows Collected</p>
-                    <h2 class="text-2xl font-black font-mono text-emerald-400 mt-2 tracking-tight" id="stat-received">₹0</h2>
-                    <div class="mt-4 flex items-center text-[11px] text-emerald-500 font-semibold uppercase tracking-wider"><i class="fa-solid fa-circle-check mr-1"></i> Liquidity Realized</div>
-                </div>
-                <div class="bg-slate-900/60 border border-slate-800/80 p-5 rounded-2xl relative overflow-hidden group hover:border-slate-700/80 transition-all">
-                    <div class="absolute -right-3 -top-3 w-24 h-24 bg-amber-500/5 rounded-full blur-xl group-hover:bg-amber-500/10 transition-all"></div>
-                    <p class="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Receivables Risk</p>
-                    <h2 class="text-2xl font-black font-mono text-amber-500 mt-2 tracking-tight" id="stat-pending">₹0</h2>
-                    <div class="mt-4 flex items-center text-[11px] text-amber-500 font-semibold uppercase tracking-wider"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Outstanding Invoices</div>
-                </div>
-                <div class="bg-slate-900/60 border border-slate-800/80 p-5 rounded-2xl relative overflow-hidden group hover:border-slate-700/80 transition-all">
-                    <div class="absolute -right-3 -top-3 w-24 h-24 bg-violet-500/5 rounded-full blur-xl group-hover:bg-violet-500/10 transition-all"></div>
-                    <p class="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Net Capital Reserves</p>
-                    <h2 class="text-2xl font-black font-mono text-violet-400 mt-2 tracking-tight" id="stat-balance">₹0</h2>
-                    <div class="mt-4 flex items-center text-[11px] text-violet-400 font-semibold uppercase tracking-wider"><i class="fa-solid fa-vault mr-1"></i> Free Treasury Yield</div>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                
-                <div class="lg:col-span-2 space-y-6">
-                    <div class="bg-slate-900/40 border border-slate-900 rounded-2xl overflow-hidden backdrop-blur-md">
-                        
-                        <div class="flex bg-slate-900/80 p-2 gap-1 border-b border-slate-800/60">
-                            <button id="tab-expenses-btn" class="flex-1 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 transition-all">Outflows</button>
-                            <button id="tab-payments-btn" class="flex-1 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider text-slate-400 hover:text-slate-200 hover:bg-slate-800/40 transition-all">Inflows Ledger</button>
-                            <button id="tab-properties-btn" class="flex-1 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider text-slate-400 hover:text-slate-200 hover:bg-slate-800/40 transition-all">Asset Registry</button>
-                        </div>
-                        
-                        <div class="p-4 flex justify-between items-center bg-slate-900/20 border-b border-slate-900">
-                            <span id="view-title" class="text-xs font-extrabold tracking-widest uppercase text-slate-400">Entity Sub-Ledger: Outflows</span>
-                        </div>
-
-                        <div id="view-expenses-table" class="overflow-x-auto">
-                            <table class="w-full text-left border-collapse">
-                                <thead>
-                                    <tr class="bg-slate-950/40 text-slate-400 text-[10px] uppercase tracking-widest font-bold border-b border-slate-900">
-                                        <th class="py-4 px-5">Category / Desc</th>
-                                        <th class="py-4 px-5">Settlement Date</th>
-                                        <th class="py-4 px-5">Quantum</th>
-                                        <th class="py-4 px-5">Vendor Entity</th>
-                                        <th class="py-4 px-5 text-center">System State</th>
-                                        <th class="py-4 px-5 text-center">Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="expenses-table-body" class="divide-y divide-slate-900/60 text-xs text-slate-300"></tbody>
-                            </table>
-                        </div>
-
-                        <div id="view-payments-table" class="overflow-x-auto hidden">
-                            <table class="w-full text-left border-collapse">
-                                <thead>
-                                    <tr class="bg-slate-950/40 text-slate-400 text-[10px] uppercase tracking-widest font-bold border-b border-slate-900">
-                                        <th class="py-4 px-5">Unit Account</th>
-                                        <th class="py-4 px-5">Resident Member</th>
-                                        <th class="py-4 px-5">Assessment Target</th>
-                                        <th class="py-4 px-5">Amount Contributed</th>
-                                        <th class="py-4 px-5 text-center">Status Badge</th>
-                                        <th class="py-4 px-5 text-center">Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="main-payments-table-body" class="divide-y divide-slate-900/60 text-xs text-slate-300"></tbody>
-                            </table>
-                        </div>
-
-                        <div id="view-properties-table" class="overflow-x-auto hidden">
-                            <table class="w-full text-left border-collapse">
-                                <thead>
-                                    <tr class="bg-slate-950/40 text-slate-400 text-[10px] uppercase tracking-widest font-bold border-b border-slate-900">
-                                        <th class="py-4 px-5">Sector Block</th>
-                                        <th class="py-4 px-5">Unit Identifier</th>
-                                        <th class="py-4 px-5">Layout Mod</th>
-                                        <th class="py-4 px-5">Floor Volume</th>
-                                        <th class="py-4 px-5">Registered Beneficiary</th>
-                                        <th class="py-4 px-5">Mobile Direct</th>
-                                        <th class="py-4 px-5 text-center">Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="properties-table-body" class="divide-y divide-slate-900/60 text-xs text-slate-300"></tbody>
-                            </table>
-                        </div>
-
-                        <div class="p-4 bg-slate-900/40 border-t border-slate-900 flex justify-end items-center gap-2">
-                            <button id="open-expense-modal" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs uppercase tracking-wider px-4 py-2.5 rounded-xl shadow-lg shadow-indigo-600/10 hover:shadow-indigo-600/20 transition-all flex items-center space-x-1.5">
-                                <i class="fa-solid fa-plus-circle"></i> <span>Log Outflow</span>
-                            </button>
-                            <button id="open-payment-modal" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase tracking-wider px-4 py-2.5 rounded-xl shadow-lg shadow-emerald-600/10 hover:shadow-emerald-600/20 transition-all hidden flex items-center space-x-1.5">
-                                <i class="fa-solid fa-plus-circle"></i> <span>Log Inflow Record</span>
-                            </button>
-                            <button id="open-asset-modal" class="bg-violet-600 hover:bg-violet-500 text-white font-bold text-xs uppercase tracking-wider px-4 py-2.5 rounded-xl shadow-lg shadow-violet-600/10 hover:shadow-violet-600/20 transition-all hidden flex items-center space-x-1.5">
-                                <i class="fa-solid fa-square-plus"></i> <span>Provision Property</span>
-                            </button>
-                        </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Number of Blocks</label>
+                        <input type="number" id="setup-blocks" required placeholder="e.g. 4" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-indigo-500 transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Total Flats Count</label>
+                        <input type="number" id="setup-flats" required placeholder="e.g. 120" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-indigo-500 transition-all">
                     </div>
                 </div>
-
-                <div class="space-y-6">
-                    <div class="bg-slate-900/40 border border-slate-900 p-6 rounded-2xl flex flex-col items-center">
-                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-6 self-start">Volume Breakdown Distribution</h3>
-                        <div class="w-full max-w-[200px] h-[200px] relative">
-                            <canvas id="distributionChart"></canvas>
-                        </div>
-                    </div>
-
-                    <div class="bg-slate-900/40 border border-slate-900 rounded-2xl overflow-hidden">
-                        <div class="p-4 bg-slate-900 border-b border-slate-800/40 flex justify-between items-center">
-                            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest">Inflow Priority Queue</h3>
-                            <button id="remind-all-btn" class="text-[10px] uppercase font-bold tracking-wider text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 px-2.5 py-1 rounded-md hover:bg-indigo-500/20 transition-all">Remind All</button>
-                        </div>
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left text-xs">
-                                <thead class="bg-slate-950/60 text-[10px] font-bold text-slate-500 uppercase tracking-widest border-b border-slate-900">
-                                    <tr>
-                                        <th class="p-3">Unit Code</th>
-                                        <th class="p-3">Holder</th>
-                                        <th class="p-3">Realized</th>
-                                        <th class="p-3 text-center">State</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="sidebar-payments-body" class="divide-y divide-slate-900/60 text-slate-300"></tbody>
-                            </table>
-                        </div>
-                    </div>
+                <div>
+                    <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Admin Access Code / Password</label>
+                    <input type="password" id="setup-password" required placeholder="••••••••" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-indigo-500 transition-all">
                 </div>
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs uppercase tracking-wider py-3 rounded-xl transition-all">Initialize Core Dashboard</button>
+            </form>
 
-            </div>
-        </main>
+            <form id="login-form" class="space-y-4">
+                <div>
+                    <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Select Apartment Society</label>
+                    <select id="login-society-select" required class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500 transition-all">
+                        </select>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">System Administrative Password</label>
+                    <input type="password" id="login-password" required placeholder="Enter login password" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-indigo-500 transition-all">
+                </div>
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs uppercase tracking-wider py-3 rounded-xl transition-all">Authorize & Authenticate</button>
+                <div class="text-center pt-2">
+                    <button type="button" id="trigger-onboarding-view-btn" class="text-[11px] text-indigo-400 font-semibold hover:underline">Register & Setup New Apartment Account</button>
+                </div>
+            </form>
+        </div>
     </div>
 
-    <div id="expense-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md hidden flex items-center justify-center z-50 p-4 transition-all">
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
+
+    <div id="main-dashboard-workspace" class="hidden flex-1 flex flex-col">
+        <header class="bg-slate-900/80 backdrop-blur-md border-b border-slate-800/80 px-6 py-4 flex justify-between items-center sticky top-0 z-40">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-600 flex items-center justify-center">
+                    <i class="fa-solid fa-city text-white text-lg"></i>
+                </div>
+                <div class="flex flex-col">
+                    <span id="header-society-name" class="text-lg font-extrabold tracking-tight text-white">Apartment Workspace</span>
+                    <span id="header-structural-pill" class="text-[10px] text-indigo-400 font-medium tracking-wider uppercase">Loading parameters...</span>
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-4">
+                <div class="relative hidden sm:block">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-500 text-xs"></i>
+                    <input type="text" id="global-search" placeholder="Search flats, vendors, custom records..." class="bg-slate-950/60 border border-slate-800 text-slate-300 pl-9 pr-4 py-1.5 rounded-xl text-xs focus:outline-none focus:border-indigo-500 w-64 placeholder:text-slate-600">
+                </div>
+                <button id="system-logout-btn" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-xl font-bold uppercase tracking-wider border border-slate-700"><i class="fa-solid fa-right-from-bracket mr-1"></i> Exit</button>
+            </div>
+        </header>
+
+        <div class="flex flex-1">
+            <aside class="w-20 bg-slate-900/40 border-r border-slate-900 flex flex-col items-center py-8 space-y-6">
+                <button id="nav-dash-btn" class="w-12 h-12 rounded-xl flex items-center justify-center transition text-indigo-400 bg-indigo-500/10 border border-indigo-500/20" title="Outflows (Expenses)">
+                    <i class="fa-solid fa-arrow-up-from-bracket text-lg"></i>
+                </button>
+                <button id="nav-ledger-btn" class="w-12 h-12 rounded-xl flex items-center justify-center transition text-slate-500 hover:text-indigo-400 hover:bg-indigo-500/5 border border-transparent hover:border-slate-800" title="Inflows (Collections)">
+                    <i class="fa-solid fa-arrow-down-to-bracket text-lg"></i>
+                </button>
+                <button id="nav-flats-btn" class="w-12 h-12 rounded-xl flex items-center justify-center transition text-slate-500 hover:text-indigo-400 hover:bg-indigo-500/5 border border-transparent hover:border-slate-800" title="Apartment Registry (Flats & Blocks)">
+                    <i class="fa-solid fa-address-book text-lg"></i>
+                </button>
+            </aside>
+
+            <main class="flex-1 p-6 md:p-8 max-w-7xl mx-auto w-full space-y-8 overflow-hidden">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div>
+                        <span class="text-xs font-bold text-indigo-400 tracking-widest uppercase">Financial Ledger Node</span>
+                        <h1 class="text-2xl md:text-3xl font-black text-white tracking-tight mt-0.5">Overview Month — <span id="current-month-year" class="bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-fuchsia-400">...</span></h1>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                    <div class="bg-slate-900/60 border border-slate-800/80 p-5 rounded-2xl">
+                        <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Total Outflows (Expenses)</p>
+                        <h2 class="text-2xl font-black font-mono text-slate-100 mt-1 tracking-tight" id="stat-expenses">₹0</h2>
+                    </div>
+                    <div class="bg-slate-900/60 border border-slate-800/80 p-5 rounded-2xl">
+                        <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Total Inflows (Collections)</p>
+                        <h2 class="text-2xl font-black font-mono text-emerald-400 mt-1 tracking-tight" id="stat-received">₹0</h2>
+                    </div>
+                    <div class="bg-slate-900/60 border border-slate-800/80 p-5 rounded-2xl">
+                        <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Pending Collections</p>
+                        <h2 class="text-2xl font-black font-mono text-amber-500 mt-1 tracking-tight" id="stat-pending">₹0</h2>
+                    </div>
+                    <div class="bg-slate-900/60 border border-slate-800/80 p-5 rounded-2xl">
+                        <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Net Cash Balance</p>
+                        <h2 class="text-2xl font-black font-mono text-violet-400 mt-1 tracking-tight" id="stat-balance">₹0</h2>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div class="lg:col-span-2 space-y-6">
+                        <div class="bg-slate-900/40 border border-slate-900 rounded-2xl overflow-hidden backdrop-blur-md">
+                            
+                            <div class="flex bg-slate-900/80 p-2 gap-1 border-b border-slate-800/60">
+                                <button id="tab-expenses-btn" class="flex-1 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 transition-all">Outflows (Expenses)</button>
+                                <button id="tab-payments-btn" class="flex-1 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider text-slate-400 hover:text-slate-200 hover:bg-slate-800/40 transition-all">Inflows (Collections)</button>
+                                <button id="tab-properties-btn" class="flex-1 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider text-slate-400 hover:text-slate-200 hover:bg-slate-800/40 transition-all">Apartment Registry</button>
+                            </div>
+                            
+                            <div class="p-4 bg-slate-900/20 border-b border-slate-900">
+                                <span id="view-title" class="text-xs font-extrabold tracking-widest uppercase text-slate-400">Ledger View: Outflows (Expenses)</span>
+                            </div>
+
+                            <div id="view-expenses-table" class="overflow-x-auto">
+                                <table class="w-full text-left border-collapse">
+                                    <thead>
+                                        <tr class="bg-slate-950/40 text-slate-400 text-[10px] uppercase tracking-widest font-bold border-b border-slate-900">
+                                            <th class="py-4 px-5">Expense Category</th>
+                                            <th class="py-4 px-5">Date</th>
+                                            <th class="py-4 px-5">Amount</th>
+                                            <th class="py-4 px-5">Paid To (Vendor)</th>
+                                            <th class="py-4 px-5 text-center">Status</th>
+                                            <th class="py-4 px-5 text-center">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="expenses-table-body" class="divide-y divide-slate-900/60 text-xs text-slate-300"></tbody>
+                                </table>
+                            </div>
+
+                            <div id="view-payments-table" class="overflow-x-auto hidden">
+                                <table class="w-full text-left border-collapse">
+                                    <thead>
+                                        <tr class="bg-slate-950/40 text-slate-400 text-[10px] uppercase tracking-widest font-bold border-b border-slate-900">
+                                            <th class="py-4 px-5">Flat Number</th>
+                                            <th class="py-4 px-5">Resident Name</th>
+                                            <th class="py-4 px-5">Maintenance Fee Bill</th>
+                                            <th class="py-4 px-5">Amount Collected</th>
+                                            <th class="py-4 px-5 text-center">Collection Status</th>
+                                            <th class="py-4 px-5 text-center">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="main-payments-table-body" class="divide-y divide-slate-900/60 text-xs text-slate-300"></tbody>
+                                </table>
+                            </div>
+
+                            <div id="view-properties-table" class="overflow-x-auto hidden">
+                                <table class="w-full text-left border-collapse">
+                                    <thead>
+                                        <tr class="bg-slate-950/40 text-slate-400 text-[10px] uppercase tracking-widest font-bold border-b border-slate-900">
+                                            <th class="py-4 px-5">Block</th>
+                                            <th class="py-4 px-5">Flat #</th>
+                                            <th class="py-4 px-5">Type</th>
+                                            <th class="py-4 px-5">Area Size (Sqft)</th>
+                                            <th class="py-4 px-5">Resident Owner Name</th>
+                                            <th class="py-4 px-5">Contact Mobile</th>
+                                            <th class="py-4 px-5 text-center">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="properties-table-body" class="divide-y divide-slate-900/60 text-xs text-slate-300"></tbody>
+                                </table>
+                            </div>
+
+                            <div class="p-4 bg-slate-900/40 border-t border-slate-900 flex justify-end gap-2">
+                                <button id="open-expense-modal" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs uppercase tracking-wider px-4 py-2.5 rounded-xl transition-all flex items-center space-x-1.5">
+                                    <i class="fa-solid fa-plus-circle"></i> <span>Add Expense</span>
+                                </button>
+                                <button id="open-payment-modal" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase tracking-wider px-4 py-2.5 rounded-xl transition-all hidden flex items-center space-x-1.5">
+                                    <i class="fa-solid fa-plus-circle"></i> <span>Record Collection</span>
+                                </button>
+                                <button id="open-asset-modal" class="bg-violet-600 hover:bg-violet-500 text-white font-bold text-xs uppercase tracking-wider px-4 py-2.5 rounded-xl transition-all hidden flex items-center space-x-1.5">
+                                    <i class="fa-solid fa-square-plus"></i> <span>Register Flat</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-6">
+                        <div class="bg-slate-900/40 border border-slate-900 p-6 rounded-2xl flex flex-col items-center">
+                            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-6 self-start">Expense Categories Outflow</h3>
+                            <div class="w-full max-w-[200px] h-[200px] relative">
+                                <canvas id="distributionChart"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-900/40 border border-slate-900 rounded-2xl overflow-hidden">
+                            <div class="p-4 bg-slate-900 border-b border-slate-800/40 flex justify-between items-center">
+                                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest">Collections Stream</h3>
+                                <button id="remind-all-btn" class="text-[10px] uppercase font-bold tracking-wider text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 px-2.5 py-1 rounded-md hover:bg-indigo-500/20 transition-all">Send Reminders</button>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left text-xs">
+                                    <thead class="bg-slate-950/60 text-[10px] font-bold text-slate-500 uppercase tracking-widest border-b border-slate-900">
+                                        <tr>
+                                            <th class="p-3">Flat Code</th>
+                                            <th class="p-3">Owner</th>
+                                            <th class="p-3">Collected</th>
+                                            <th class="p-3 text-center">State</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="sidebar-payments-body" class="divide-y divide-slate-900/60 text-slate-300"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <div id="expense-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md hidden flex items-center justify-center z-50 p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full overflow-hidden">
             <div class="bg-slate-950/60 border-b border-slate-800 px-6 py-4 flex justify-between items-center">
-                <h3 id="expense-modal-title" class="font-extrabold tracking-tight text-white text-base">Log Capital Outflow</h3>
-                <button id="close-expense-modal" class="text-slate-500 hover:text-slate-200 text-xl transition-all">&times;</button>
+                <h3 id="expense-modal-title" class="font-bold text-white text-base">Record Expense Outflow</h3>
+                <button id="close-expense-modal" class="text-slate-500 hover:text-slate-200 text-xl">&times;</button>
             </div>
             <form id="expense-form" class="p-6 space-y-4">
                 <input type="hidden" id="edit-expense-id">
                 <div>
-                    <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Outflow Allocation Class</label>
-                    <select id="exp-desc-select" class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500 transition-all">
+                    <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Expense Category Select</label>
+                    <select id="exp-desc-select" class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500">
                         <option value="Security Guard Salaries">Security Guard Salaries</option>
                         <option value="Building Maintenance">Building Maintenance</option>
                         <option value="Common Area Electricity">Common Area Electricity</option>
@@ -235,101 +264,101 @@
                     </select>
                 </div>
                 <div class="bg-slate-950/50 p-3 rounded-xl border border-slate-800 border-dashed">
-                    <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1">+ Provision Custom Class Element</label>
+                    <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">+ Or Type Custom Category Name</label>
                     <div class="flex space-x-2 mt-1">
-                        <input type="text" id="custom-category-input" placeholder="e.g. Elevator Modernization" class="flex-1 bg-slate-950 border border-slate-800 rounded-lg px-3 py-1 text-xs text-slate-300 focus:outline-none focus:border-indigo-500">
-                        <button type="button" id="add-custom-category-btn" class="bg-slate-800 hover:bg-slate-700 text-indigo-400 border border-slate-700 text-xs px-3 py-1 rounded-lg font-bold uppercase tracking-wide transition-all">Append</button>
+                        <input type="text" id="custom-category-input" placeholder="e.g. Lift Repairing" class="flex-1 bg-slate-950 border border-slate-800 rounded-lg px-3 py-1 text-xs text-slate-300 focus:outline-none">
+                        <button type="button" id="add-custom-category-btn" class="bg-slate-800 text-indigo-400 border border-slate-700 text-xs px-3 py-1 rounded-lg font-bold uppercase">Add</button>
                     </div>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Quantum (₹)</label>
-                        <input type="number" id="exp-amount" required class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500 transition-all">
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Amount Paid (₹)</label>
+                        <input type="number" id="exp-amount" required class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none">
                     </div>
                     <div>
-                        <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Timestamp Log</label>
-                        <input type="date" id="exp-date" required class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500 transition-all">
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Payment Date</label>
+                        <input type="date" id="exp-date" required class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none">
                     </div>
                 </div>
                 <div>
-                    <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Vendor Account Profile Entity</label>
-                    <input type="text" id="exp-vendor" required placeholder="e.g. Acme Corp" class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500 transition-all">
+                    <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Paid To (Vendor Name)</label>
+                    <input type="text" id="exp-vendor" required placeholder="e.g. Water Agency Co." class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none">
                 </div>
                 <div>
-                    <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Transaction Settlement State</label>
-                    <select id="exp-status" class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500 transition-all">
+                    <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Settlement Status</label>
+                    <select id="exp-status" class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none">
                         <option value="Paid">Paid</option>
                         <option value="Pending Approval">Pending Approval</option>
                     </select>
                 </div>
-                <button type="submit" id="expense-submit-btn" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs uppercase tracking-wider py-3 rounded-xl shadow-lg shadow-indigo-600/10 hover:shadow-indigo-600/20 transition-all mt-2">Sync Struct Entry Outward</button>
+                <button type="submit" id="expense-submit-btn" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs uppercase tracking-wider py-3 rounded-xl mt-2">Commit Outflow Entry</button>
             </form>
         </div>
     </div>
 
-    <div id="payment-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md hidden flex items-center justify-center z-50 p-4 transition-all">
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
+    <div id="payment-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md hidden flex items-center justify-center z-50 p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full overflow-hidden">
             <div class="bg-slate-950/60 border-b border-slate-800 px-6 py-4 flex justify-between items-center">
-                <h3 id="payment-modal-title" class="font-extrabold tracking-tight text-white text-base">Process Capital Inflow Settlement</h3>
-                <button id="close-payment-modal" class="text-slate-500 hover:text-slate-200 text-xl transition-all">&times;</button>
+                <h3 id="payment-modal-title" class="font-bold text-white text-base">Record Maintenance Collection</h3>
+                <button id="close-payment-modal" class="text-slate-500 hover:text-slate-200 text-xl">&times;</button>
             </div>
             <form id="payment-form" class="p-6 space-y-4">
                 <input type="hidden" id="edit-payment-id">
                 <div>
-                    <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Map Active Property Ledger Object</label>
-                    <select id="pay-unit-select" required class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500 transition-all">
-                        <option value="" disabled selected>-- Fetching System Property Indexes --</option>
+                    <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Select Target Apartment Flat</label>
+                    <select id="pay-unit-select" required class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none">
+                        <option value="" disabled selected>-- Choose Apartment Unit --</option>
                     </select>
                 </div>
                 <div>
-                    <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1">Resolved Account Holder Beneficiary</label>
-                    <input type="text" id="pay-owner-display" readonly placeholder="No asset reference matched" class="w-full bg-slate-950/40 border border-slate-800 text-slate-400 rounded-xl px-3 py-2 text-sm font-semibold outline-none cursor-not-allowed">
+                    <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">Flat Owner Name (Auto Detected)</label>
+                    <input type="text" id="pay-owner-display" readonly placeholder="Select a flat from list above" class="w-full bg-slate-950/40 border border-slate-800 text-slate-400 rounded-xl px-3 py-2 text-sm font-semibold outline-none cursor-not-allowed">
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Assessment Assessment Target (₹)</label>
-                        <input type="number" id="pay-maint" value="25000" required class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500 transition-all">
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Total Bill Maintenance (₹)</label>
+                        <input type="number" id="pay-maint" value="25000" required class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-3 py-2 text-sm">
                     </div>
                     <div>
-                        <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Realized Liquidity Contributed (₹)</label>
-                        <input type="number" id="pay-received" required class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500 transition-all">
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Amount Collected (₹)</label>
+                        <input type="number" id="pay-received" required class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-3 py-2 text-sm">
                     </div>
                 </div>
                 <div>
-                    <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Asset Operational State Class</label>
-                    <select id="pay-status" class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500 transition-all">
+                    <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Collection Status</label>
+                    <select id="pay-status" class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-3 py-2 text-sm bg-slate-950">
                         <option value="Paid">Paid</option>
                         <option value="Partial">Partial</option>
                         <option value="Overdue">Overdue</option>
                     </select>
                 </div>
-                <button type="submit" id="payment-submit-btn" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase tracking-wider py-3 rounded-xl shadow-lg shadow-emerald-600/10 hover:shadow-emerald-600/20 transition-all mt-2">Commit Inflow Index Record</button>
+                <button type="submit" id="payment-submit-btn" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase tracking-wider py-3 rounded-xl mt-2">Commit Inflow Collection</button>
             </form>
         </div>
     </div>
 
-    <div id="asset-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md hidden flex items-center justify-center z-50 p-4 transition-all">
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
+    <div id="asset-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md hidden flex items-center justify-center z-50 p-4">
+        <div class="bg-white bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full overflow-hidden">
             <div class="bg-slate-950/60 border-b border-slate-800 px-6 py-4 flex justify-between items-center">
-                <h3 id="asset-modal-title" class="font-extrabold tracking-tight text-white text-base">Provision Real-Estate Structural Asset</h3>
-                <button id="close-asset-modal" class="text-slate-500 hover:text-slate-200 text-xl transition-all">&times;</button>
+                <h3 id="asset-modal-title" class="font-bold text-white text-base">Register Apartment Flat</h3>
+                <button id="close-asset-modal" class="text-slate-400 hover:text-white text-xl">&times;</button>
             </div>
             <form id="asset-form" class="p-6 space-y-4">
                 <input type="hidden" id="edit-asset-id">
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Sector / Tower Block</label>
-                        <input type="text" id="asset-block" required placeholder="e.g. Tower B" class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500 transition-all">
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Block / Phase Name</label>
+                        <input type="text" id="asset-block" required placeholder="e.g. Block A" class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-3 py-2 text-sm">
                     </div>
                     <div>
-                        <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Unit Flat ID #</label>
-                        <input type="text" id="asset-flat" required placeholder="e.g. 1104" class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500 transition-all">
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Flat Number</label>
+                        <input type="text" id="asset-flat" required placeholder="e.g. 302" class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-3 py-2 text-sm">
                     </div>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Layout Blueprint Model</label>
-                        <select id="asset-bhk" class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500 transition-all">
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Flat Type (BHK Config)</label>
+                        <select id="asset-bhk" class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-3 py-2 text-sm bg-slate-950">
                             <option value="1 BHK">1 BHK Layout</option>
                             <option value="2 BHK">2 BHK Layout</option>
                             <option value="3 BHK" selected>3 BHK Layout</option>
@@ -337,26 +366,26 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Floor Volume Space (Sq.Ft)</label>
-                        <input type="number" id="asset-area" required placeholder="e.g. 1850" class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500 transition-all">
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Flat Area Size (Sq.Ft)</label>
+                        <input type="number" id="asset-area" required placeholder="e.g. 1450" class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-3 py-2 text-sm">
                     </div>
                 </div>
                 <div>
-                    <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Registered Primary Beneficiary</label>
-                    <input type="text" id="asset-owner" required placeholder="e.g. Vikram Malhotra" class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500 transition-all">
+                    <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Resident Owner Full Name</label>
+                    <input type="text" id="asset-owner" required placeholder="e.g. Amit Kumar" class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-3 py-2 text-sm">
                 </div>
                 <div>
-                    <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Mobile Secure Direct Vector</label>
-                    <input type="tel" id="asset-mobile" required placeholder="e.g. +91 90000 12345" class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500 transition-all">
+                    <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Contact Mobile Number</label>
+                    <input type="tel" id="asset-mobile" required placeholder="e.g. +91 99999 88888" class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-3 py-2 text-sm">
                 </div>
-                <button type="submit" id="asset-submit-btn" class="w-full bg-violet-600 hover:bg-violet-500 text-white font-bold text-xs uppercase tracking-wider py-3 rounded-xl shadow-lg shadow-violet-600/10 hover:shadow-violet-600/20 transition-all mt-2">Provision Asset Block Entity</button>
+                <button type="submit" id="asset-submit-btn" class="w-full bg-violet-600 hover:bg-violet-500 text-white font-bold text-xs uppercase tracking-wider py-3 rounded-xl mt-2">Save Flat Register</button>
             </form>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, updateDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, updateDoc, doc, onSnapshot, getDocs, query, where } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAnUvPo_G_efbacdDApbULQgY5OToghJYM",
@@ -371,13 +400,22 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
+        // Active State Vectors Data Structures
         let distributionChart = null;
+        let activeSocietyToken = null;
         let globalExpenses = [];
         let globalPayments = [];
         let globalProperties = [];
         let activeTabContext = 'EXPENSES';
 
-        // Element pointers references mapping
+        // Interface System Views Pointers
+        const authGatewayScreen = document.getElementById('auth-gateway-screen');
+        const mainDashboardWorkspace = document.getElementById('main-dashboard-workspace');
+        const loginForm = document.getElementById('login-form');
+        const setupInitialForm = document.getElementById('setup-initial-form');
+        const loginSocietySelect = document.getElementById('login-society-select');
+        const triggerOnboardingViewBtn = document.getElementById('trigger-onboarding-view-btn');
+
         const tabExpensesBtn = document.getElementById('tab-expenses-btn');
         const tabPaymentsBtn = document.getElementById('tab-payments-btn');
         const tabPropertiesBtn = document.getElementById('tab-properties-btn');
@@ -412,73 +450,140 @@
         const payOwnerDisplay = document.getElementById('pay-owner-display');
         const searchInput = document.getElementById('global-search');
 
-        function runRealtimeClockSync() {
-            document.getElementById('current-month-year').innerText = new Date().toLocaleString('default', { month: 'long', year: 'numeric' });
+        // --- PRE-BOOT ROUTINE: POPULATE EXISTING REGISTERED SOCIETIES ---
+        async function fetchRegisteredSocietiesOnBoot() {
+            try {
+                const snap = await getDocs(collection(db, "societies"));
+                loginSocietySelect.innerHTML = '';
+                if(snap.empty) {
+                    toggleGatewayView(true); // Toggle initialization form immediately if database is raw
+                    return;
+                }
+                snap.forEach(doc => {
+                    const data = doc.data();
+                    const opt = document.createElement('option');
+                    opt.value = doc.id;
+                    opt.innerText = data.name;
+                    loginSocietySelect.appendChild(opt);
+                });
+            } catch (err) { console.error("Initialization fault: ", err); }
         }
 
-        // Search Input Filtering Engine Logic
+        function toggleGatewayView(showSetup) {
+            if(showSetup) {
+                setupInitialForm.classList.remove('hidden');
+                loginForm.classList.add('hidden');
+            } else {
+                setupInitialForm.classList.add('hidden');
+                loginForm.classList.remove('hidden');
+            }
+        }
+
+        triggerOnboardingViewBtn.addEventListener('click', () => toggleGatewayView(true));
+
+        // --- GATEWAY PROCESS 1: ONBOARD COMPLEX CREATION ---
+        setupInitialForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const complexName = document.getElementById('setup-name').value;
+            const blockCount = parseInt(document.getElementById('setup-blocks').value);
+            const flatsCount = parseInt(document.getElementById('setup-flats').value);
+            const passwordHash = document.getElementById('setup-password').value;
+
+            try {
+                const docRef = await addDoc(collection(db, "societies"), {
+                    name: complexName,
+                    blocks: blockCount,
+                    flats: flatsCount,
+                    passkey: passwordHash,
+                    timestamp: new Date()
+                });
+                alert("Apartment Account Configuration Successfully Created!");
+                await fetchRegisteredSocietiesOnBoot();
+                toggleGatewayView(false);
+            } catch (err) { alert("Onboarding registration error."); }
+        });
+
+        // --- GATEWAY PROCESS 2: ROUTE AUTHENTICATION ---
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const chosenId = loginSocietySelect.value;
+            const enteredPass = document.getElementById('login-password').value;
+
+            try {
+                const snap = await getDocs(query(collection(db, "societies")));
+                let authenticated = false;
+                snap.forEach(doc => {
+                    if(doc.id === chosenId && doc.data().passkey === enteredPass) {
+                        authenticated = true;
+                        launchDashboardWorkspace(doc.id, doc.data());
+                    }
+                });
+                if(!authenticated) alert("Invalid access password verification parameters mapping rule.");
+            } catch (err) { console.error(err); }
+        });
+
+        // Launch Dashboard View Workspace
+        function launchDashboardWorkspace(societyId, metadata) {
+            activeSocietyToken = societyId;
+            authGatewayScreen.classList.add('hidden');
+            mainDashboardWorkspace.classList.remove('hidden');
+            
+            document.getElementById('header-society-name').innerText = metadata.name;
+            document.getElementById('header-structural-pill').innerText = `${metadata.blocks} Blocks • ${metadata.flats} Total Flats System Capacity`;
+            
+            runRealtimeClockSync();
+            runRealtimeDatabaseSync();
+        }
+
+        document.getElementById('system-logout-btn').addEventListener('click', () => window.location.reload());
+
+        // --- CORE OPERATIONAL CODE SUB-ENGINE ---
         searchInput.addEventListener('input', () => {
             const query = searchInput.value.toLowerCase().trim();
             if(activeTabContext === 'EXPENSES') {
-                const filtered = globalExpenses.filter(e => e.description.toLowerCase().includes(query) || e.vendor.toLowerCase().includes(query));
-                renderExpenses(filtered);
+                renderExpenses(globalExpenses.filter(e => e.description.toLowerCase().includes(query) || e.vendor.toLowerCase().includes(query)));
             } else if(activeTabContext === 'PAYMENTS') {
-                const filtered = globalPayments.filter(p => p.unit.toLowerCase().includes(query) || p.owner.toLowerCase().includes(query));
-                renderPayments(filtered);
+                renderPayments(globalPayments.filter(p => p.unit.toLowerCase().includes(query) || p.owner.toLowerCase().includes(query)));
             } else if(activeTabContext === 'PROPERTIES') {
-                const filtered = globalProperties.filter(p => p.block.toLowerCase().includes(query) || p.flatNumber.toLowerCase().includes(query) || p.registeredOwner.toLowerCase().includes(query));
-                renderProperties(filtered);
+                renderProperties(globalProperties.filter(p => p.block.toLowerCase().includes(query) || p.flatNumber.toLowerCase().includes(query) || p.registeredOwner.toLowerCase().includes(query)));
             }
         });
 
         addCustomCategoryBtn.addEventListener('click', () => {
             const val = customCategoryInput.value.trim();
             if(val) {
-                const opt = document.createElement('option');
-                opt.value = opt.innerText = val; opt.selected = true;
+                const opt = document.createElement('option'); opt.value = opt.innerText = val; opt.selected = true;
                 expDescSelect.appendChild(opt); customCategoryInput.value = '';
             }
         });
 
         payUnitSelect.addEventListener('change', (e) => {
-            const matchedAsset = globalProperties.find(p => p.id === e.target.value || `${p.block}-${p.flatNumber}` === e.target.value);
+            const matchedAsset = globalProperties.find(p => p.id === e.target.value);
             payOwnerDisplay.value = matchedAsset ? matchedAsset.registeredOwner : '';
         });
 
-        // Advanced Tab Transition Matrices Engine
+        // Tab views transitions routing setup mapping
         function updateActiveViewFramework(mode) {
-            activeTabContext = mode;
-            searchInput.value = ''; // Clean buffer scope
-
-            // Default styling maps resets
+            activeTabContext = mode; searchInput.value = '';
             const tabClassesDefault = "flex-1 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider text-slate-400 hover:text-slate-200 hover:bg-slate-800/40 transition-all";
             tabExpensesBtn.className = tabPaymentsBtn.className = tabPropertiesBtn.className = tabClassesDefault;
-            
             const sidebarClassesDefault = "w-12 h-12 rounded-xl flex items-center justify-center transition group relative text-slate-500 hover:text-indigo-400 hover:bg-indigo-500/5 border border-transparent hover:border-slate-800";
             navDashBtn.className = navFlatsBtn.className = navLedgerBtn.className = sidebarClassesDefault;
 
             viewExpensesTable.classList.add('hidden'); viewPaymentsTable.classList.add('hidden'); viewPropertiesTable.classList.add('hidden');
             btnActionExpense.classList.add('hidden'); btnActionPayment.classList.add('hidden'); btnActionAsset.classList.add('hidden');
 
-            const tabClassesActive = "flex-1 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 transition-all";
-            const sideClassesActive = "w-12 h-12 rounded-xl flex items-center justify-center transition group relative text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 shadow-lg shadow-indigo-500/5";
-
             if(mode === 'EXPENSES') {
-                tabExpensesBtn.className = tabClassesActive; navDashBtn.className = sideClassesActive;
-                viewExpensesTable.classList.remove('hidden'); btnActionExpense.classList.remove('hidden');
-                viewTitle.innerText = "Entity Sub-Ledger: Outflows";
+                tabExpensesBtn.className = "flex-1 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 transition-all"; navDashBtn.className = "w-12 h-12 rounded-xl flex items-center justify-center transition text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 shadow-lg";
+                viewExpensesTable.classList.remove('hidden'); btnActionExpense.classList.remove('hidden'); viewTitle.innerText = "Ledger View: Outflows (Expenses)";
                 renderExpenses(globalExpenses);
             } else if(mode === 'PAYMENTS') {
-                tabPaymentsBtn.className = "flex-1 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 transition-all"; 
-                navLedgerBtn.className = "w-12 h-12 rounded-xl flex items-center justify-center transition group relative text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 shadow-lg shadow-emerald-500/5";
-                viewPaymentsTable.classList.remove('hidden'); btnActionPayment.classList.remove('hidden');
-                viewTitle.innerText = "Entity Sub-Ledger: Inflows Collections";
+                tabPaymentsBtn.className = "flex-1 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 transition-all"; navLedgerBtn.className = "w-12 h-12 rounded-xl flex items-center justify-center transition text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 shadow-lg";
+                viewPaymentsTable.classList.remove('hidden'); btnActionPayment.classList.remove('hidden'); viewTitle.innerText = "Ledger View: Inflows (Collections)";
                 renderPayments(globalPayments);
             } else if(mode === 'PROPERTIES') {
-                tabPropertiesBtn.className = "flex-1 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider text-violet-400 bg-violet-500/10 border border-violet-500/20 transition-all"; 
-                navFlatsBtn.className = "w-12 h-12 rounded-xl flex items-center justify-center transition group relative text-violet-400 bg-violet-500/10 border border-violet-500/20 shadow-lg shadow-violet-500/5";
-                viewPropertiesTable.classList.remove('hidden'); btnActionAsset.classList.remove('hidden');
-                viewTitle.innerText = "Property Blueprint Asset Grid Master Register";
+                tabPropertiesBtn.className = "flex-1 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider text-violet-400 bg-violet-500/10 border border-violet-500/20 transition-all"; navFlatsBtn.className = "w-12 h-12 rounded-xl flex items-center justify-center transition text-violet-400 bg-violet-500/10 border border-violet-500/20 shadow-lg";
+                viewPropertiesTable.classList.remove('hidden'); btnActionAsset.classList.remove('hidden'); viewTitle.innerText = "Apartment Registry Grid Master Database";
                 renderProperties(globalProperties);
             }
         }
@@ -490,21 +595,9 @@
         tabPropertiesBtn.addEventListener('click', () => updateActiveViewFramework('PROPERTIES'));
         navFlatsBtn.addEventListener('click', () => updateActiveViewFramework('PROPERTIES'));
 
-        btnActionExpense.addEventListener('click', () => {
-            editExpenseId.value = ''; expenseForm.reset();
-            document.getElementById('expense-modal-title').innerText = "Log Capital Outflow";
-            expenseModal.classList.remove('hidden');
-        });
-        btnActionPayment.addEventListener('click', () => {
-            editPaymentId.value = ''; paymentForm.reset(); payOwnerDisplay.value = '';
-            document.getElementById('payment-modal-title').innerText = "Process Capital Inflow Settlement";
-            paymentModal.classList.remove('hidden');
-        });
-        btnActionAsset.addEventListener('click', () => {
-            editAssetId.value = ''; assetForm.reset();
-            document.getElementById('asset-modal-title').innerText = "Provision Real-Estate Structural Asset";
-            assetModal.classList.remove('hidden');
-        });
+        btnActionExpense.addEventListener('click', () => { editExpenseId.value = ''; expenseForm.reset(); document.getElementById('expense-modal-title').innerText = "Record Expense Outflow"; expenseModal.classList.remove('hidden'); });
+        btnActionPayment.addEventListener('click', () => { editPaymentId.value = ''; paymentForm.reset(); payOwnerDisplay.value = ''; document.getElementById('payment-modal-title').innerText = "Record Maintenance Collection"; paymentModal.classList.remove('hidden'); });
+        btnActionAsset.addEventListener('click', () => { editAssetId.value = ''; assetForm.reset(); document.getElementById('asset-modal-title').innerText = "Register Apartment Flat"; assetModal.classList.remove('hidden'); });
 
         document.getElementById('close-expense-modal').addEventListener('click', () => expenseModal.classList.add('hidden'));
         document.getElementById('close-payment-modal').addEventListener('click', () => paymentModal.classList.add('hidden'));
@@ -516,55 +609,36 @@
             if(e.target === assetModal) assetModal.classList.add('hidden');
         });
 
-        // Operational mutation event hooks injection mapping rules global pointers space
+        // Trigger dynamic pre-population mutation actions handlers
         window.triggerEditExpense = function(id) {
             const item = globalExpenses.find(e => e.id === id); if(!item) return;
             editExpenseId.value = item.id;
             if (!Array.from(expDescSelect.options).some(o => o.value === item.description)) {
                 const o = document.createElement('option'); o.value = o.innerText = item.description; expDescSelect.appendChild(o);
             }
-            expDescSelect.value = item.description;
-            document.getElementById('exp-amount').value = item.amount;
-            document.getElementById('exp-date').value = item.date;
-            document.getElementById('exp-vendor').value = item.vendor;
-            document.getElementById('exp-status').value = item.status;
-            document.getElementById('expense-modal-title').innerText = "Modify Ledger Outflow";
-            expenseModal.classList.remove('hidden');
+            expDescSelect.value = item.description; document.getElementById('exp-amount').value = item.amount; document.getElementById('exp-date').value = item.date; document.getElementById('exp-vendor').value = item.vendor; document.getElementById('exp-status').value = item.status;
+            document.getElementById('expense-modal-title').innerText = "Modify Outflow Record"; expenseModal.classList.remove('hidden');
         }
 
         window.triggerEditPayment = function(id) {
             const item = globalPayments.find(p => p.id === id); if(!item) return;
             editPaymentId.value = item.id;
-            const targetProp = globalProperties.find(p => `${p.block}-${p.flatNumber}` === item.unit || p.id === item.unit);
-            payUnitSelect.value = targetProp ? targetProp.id : item.unit;
-            payOwnerDisplay.value = item.owner;
-            document.getElementById('pay-maint').value = item.maintenance;
-            document.getElementById('pay-received').value = item.received;
-            document.getElementById('pay-status').value = item.status;
-            document.getElementById('payment-modal-title').innerText = "Modify Ledger Inflow Settlement";
-            paymentModal.classList.remove('hidden');
+            const prop = globalProperties.find(p => `${p.block}-${p.flatNumber}` === item.unit || p.id === item.unit);
+            payUnitSelect.value = prop ? prop.id : item.unit; payOwnerDisplay.value = item.owner; document.getElementById('pay-maint').value = item.maintenance; document.getElementById('pay-received').value = item.received; document.getElementById('pay-status').value = item.status;
+            document.getElementById('payment-modal-title').innerText = "Modify Inflow Settlement Record"; paymentModal.classList.remove('hidden');
         }
 
         window.triggerEditAsset = function(id) {
             const item = globalProperties.find(p => p.id === id); if(!item) return;
             editAssetId.value = item.id;
-            document.getElementById('asset-block').value = item.block;
-            document.getElementById('asset-flat').value = item.flatNumber;
-            document.getElementById('asset-bhk').value = item.bhk || "3 BHK";
-            document.getElementById('asset-area').value = item.areaSize || "";
-            document.getElementById('asset-owner').value = item.registeredOwner;
-            document.getElementById('asset-mobile').value = item.mobile || "";
-            document.getElementById('asset-modal-title').innerText = "Modify Property Configuration";
-            assetModal.classList.remove('hidden');
+            document.getElementById('asset-block').value = item.block; document.getElementById('asset-flat').value = item.flatNumber; document.getElementById('asset-bhk').value = item.bhk || "3 BHK"; document.getElementById('asset-area').value = item.areaSize || ""; document.getElementById('asset-owner').value = item.registeredOwner; document.getElementById('asset-mobile').value = item.mobile || "";
+            document.getElementById('asset-modal-title').innerText = "Modify Flat Registration Parameters"; assetModal.classList.remove('hidden');
         }
 
-        // Transactions Write Event Intercept Actions
+        // Transactions forms commit pipelines
         expenseForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const data = {
-                description: expDescSelect.value, amount: parseFloat(document.getElementById('exp-amount').value),
-                date: document.getElementById('exp-date').value, vendor: document.getElementById('exp-vendor').value, status: document.getElementById('exp-status').value
-            };
+            const data = { societyId: activeSocietyToken, description: expDescSelect.value, amount: parseFloat(document.getElementById('exp-amount').value), date: document.getElementById('exp-date').value, vendor: document.getElementById('exp-vendor').value, status: document.getElementById('exp-status').value };
             if(editExpenseId.value) await updateDoc(doc(db, "expenses", editExpenseId.value), data);
             else await addDoc(collection(db, "expenses"), { ...data, timestamp: new Date() });
             expenseForm.reset(); expenseModal.classList.add('hidden');
@@ -572,12 +646,8 @@
 
         paymentForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const val = payUnitSelect.value;
-            const asset = globalProperties.find(p => p.id === val || `${p.block}-${p.flatNumber}` === val);
-            const data = {
-                unit: asset ? `${asset.block}-${asset.flatNumber}` : val, owner: payOwnerDisplay.value,
-                maintenance: parseFloat(document.getElementById('pay-maint').value), received: parseFloat(document.getElementById('pay-received').value), status: document.getElementById('pay-status').value
-            };
+            const val = payUnitSelect.value; const asset = globalProperties.find(p => p.id === val || `${p.block}-${p.flatNumber}` === val);
+            const data = { societyId: activeSocietyToken, unit: asset ? `${asset.block}-${asset.flatNumber}` : val, owner: payOwnerDisplay.value, maintenance: parseFloat(document.getElementById('pay-maint').value), received: parseFloat(document.getElementById('pay-received').value), status: document.getElementById('pay-status').value };
             if(editPaymentId.value) await updateDoc(doc(db, "payments", editPaymentId.value), data);
             else await addDoc(collection(db, "payments"), { ...data, timestamp: new Date() });
             paymentForm.reset(); payOwnerDisplay.value = ''; paymentModal.classList.add('hidden');
@@ -585,31 +655,27 @@
 
         assetForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const data = {
-                block: document.getElementById('asset-block').value, flatNumber: document.getElementById('asset-flat').value,
-                bhk: document.getElementById('asset-bhk').value, areaSize: parseInt(document.getElementById('asset-area').value),
-                registeredOwner: document.getElementById('asset-owner').value, mobile: document.getElementById('asset-mobile').value
-            };
+            const data = { societyId: activeSocietyToken, block: document.getElementById('asset-block').value, flatNumber: document.getElementById('asset-flat').value, bhk: document.getElementById('asset-bhk').value, areaSize: parseInt(document.getElementById('asset-area').value), registeredOwner: document.getElementById('asset-owner').value, mobile: document.getElementById('asset-mobile').value };
             if(editAssetId.value) await updateDoc(doc(db, "properties", editAssetId.value), data);
             else await addDoc(collection(db, "properties"), { ...data, timestamp: new Date() });
             assetForm.reset(); assetModal.classList.add('hidden');
         });
 
-        // Live Real-Time Continuous Sync Observers Engine
+        // Relational tenant isolated observers sync layer engine
         function runRealtimeDatabaseSync() {
-            onSnapshot(collection(db, "expenses"), (snap) => {
+            onSnapshot(query(collection(db, "expenses"), where("societyId", "==", activeSocietyToken)), (snap) => {
                 globalExpenses = []; snap.forEach(doc => globalExpenses.push({ id: doc.id, ...doc.data() }));
                 if(activeTabContext === 'EXPENSES') renderExpenses(globalExpenses);
                 recalculateMetrics();
             });
 
-            onSnapshot(collection(db, "payments"), (snap) => {
+            onSnapshot(query(collection(db, "payments"), where("societyId", "==", activeSocietyToken)), (snap) => {
                 globalPayments = []; snap.forEach(doc => globalPayments.push({ id: doc.id, ...doc.data() }));
                 if(activeTabContext === 'PAYMENTS') renderPayments(globalPayments);
                 recalculateMetrics();
             });
 
-            onSnapshot(collection(db, "properties"), (snap) => {
+            onSnapshot(query(collection(db, "properties"), where("societyId", "==", activeSocietyToken)), (snap) => {
                 globalProperties = []; snap.forEach(doc => globalProperties.push({ id: doc.id, ...doc.data() }));
                 if(activeTabContext === 'PROPERTIES') renderProperties(globalProperties);
                 rebuildUnitDropdownOptions(globalProperties);
@@ -617,29 +683,19 @@
         }
 
         function rebuildUnitDropdownOptions(properties) {
-            payUnitSelect.innerHTML = '<option value="" disabled selected>-- Select Target Asset --</option>';
+            payUnitSelect.innerHTML = '<option value="" disabled selected>-- Choose Apartment Unit --</option>';
             properties.forEach(p => {
                 const o = document.createElement('option'); o.value = p.id; o.innerText = `${p.block} — Flat ${p.flatNumber} (${p.registeredOwner})`;
                 payUnitSelect.appendChild(o);
             });
         }
 
-        // Table Mapping Renders Pipeline
         function renderExpenses(list) {
             const tbody = document.getElementById('expenses-table-body'); tbody.innerHTML = '';
             list.forEach(item => {
                 const b = item.status === 'Paid' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border-amber-500/20';
-                const tr = document.createElement('tr'); tr.className = "hover:bg-slate-900/40 transition border-b border-slate-900/60";
-                tr.innerHTML = `
-                    <td class="py-3.5 px-5 font-bold text-slate-200">${item.description}</td>
-                    <td class="py-3.5 px-5 text-slate-400 font-mono text-[11px]">${item.date}</td>
-                    <td class="py-3.5 px-5 font-mono font-bold text-white">₹${Number(item.amount).toLocaleString('en-IN')}</td>
-                    <td class="py-3.5 px-5 text-slate-400 font-medium">${item.vendor}</td>
-                    <td class="py-3.5 px-5 text-center"><span class="px-2.5 py-0.5 border rounded-lg font-bold text-[10px] tracking-wider uppercase ${b}">${item.status}</span></td>
-                    <td class="py-3.5 px-5 text-center">
-                        <button onclick="triggerEditExpense('${item.id}')" class="text-indigo-400 hover:text-white bg-indigo-500/10 hover:bg-indigo-600 border border-indigo-500/20 px-2.5 py-1 rounded-xl text-[11px] font-bold transition-all"><i class="fa-solid fa-sliders"></i> Modify</button>
-                    </td>
-                `;
+                const tr = document.createElement('tr'); tr.className = "hover:bg-slate-900/40 border-b border-slate-900/60 transition";
+                tr.innerHTML = `<td class="py-3.5 px-5 font-bold text-slate-200">${item.description}</td><td class="py-3.5 px-5 text-slate-400 font-mono">${item.date}</td><td class="py-3.5 px-5 font-mono font-bold text-white">₹${Number(item.amount).toLocaleString('en-IN')}</td><td class="py-3.5 px-5 text-slate-400 font-medium">${item.vendor}</td><td class="py-3.5 px-5 text-center"><span class="px-2.5 py-0.5 border rounded-lg font-bold text-[10px] tracking-wider uppercase ${b}">${item.status}</span></td><td class="py-3.5 px-5 text-center"><button onclick="triggerEditExpense('${item.id}')" class="text-indigo-400 hover:text-white bg-indigo-500/10 border border-indigo-500/20 px-2.5 py-1 rounded-xl text-[11px] font-bold"><i class="fa-solid fa-pen"></i> Edit</button></td>`;
                 tbody.appendChild(tr);
             });
             updateDistributionDonut(list);
@@ -652,22 +708,12 @@
 
             list.forEach(item => {
                 let b = item.status === 'Paid' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : (item.status === 'Partial' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'bg-rose-500/10 text-rose-400 border-rose-500/20');
-                
-                const trM = document.createElement('tr'); trM.className = "hover:bg-slate-900/40 transition border-b border-slate-900/60";
-                trM.innerHTML = `
-                    <td class="py-3.5 px-5 font-extrabold text-slate-200 tracking-tight">${item.unit}</td>
-                    <td class="py-3.5 px-5 text-slate-400 font-semibold">${item.owner}</td>
-                    <td class="py-3.5 px-5 font-mono text-slate-500">₹${Number(item.maintenance).toLocaleString('en-IN')}</td>
-                    <td class="py-3.5 px-5 font-mono font-bold text-emerald-400">₹${Number(item.received).toLocaleString('en-IN')}</td>
-                    <td class="py-3.5 px-5 text-center"><span class="px-2.5 py-0.5 border rounded-lg font-bold text-[10px] tracking-wider uppercase ${b}">${item.status}</span></td>
-                    <td class="py-3.5 px-5 text-center">
-                        <button onclick="triggerEditPayment('${item.id}')" class="text-emerald-400 hover:text-white bg-emerald-500/10 hover:bg-emerald-600 border border-emerald-500/20 px-2.5 py-1 rounded-xl text-[11px] font-bold transition-all"><i class="fa-solid fa-sliders"></i> Modify</button>
-                    </td>
-                `;
+                const trM = document.createElement('tr'); trM.className = "hover:bg-slate-900/40 border-b border-slate-900/60 transition";
+                trM.innerHTML = `<td class="py-3.5 px-5 font-extrabold text-slate-200">${item.unit}</td><td class="py-3.5 px-5 text-slate-400 font-semibold">${item.owner}</td><td class="py-3.5 px-5 font-mono text-slate-500">₹${Number(item.maintenance).toLocaleString('en-IN')}</td><td class="py-3.5 px-5 font-mono font-bold text-emerald-400">₹${Number(item.received).toLocaleString('en-IN')}</td><td class="py-3.5 px-5 text-center"><span class="px-2.5 py-0.5 border rounded-lg font-bold text-[10px] tracking-wider uppercase ${b}">${item.status}</span></td><td class="py-3.5 px-5 text-center"><button onclick="triggerEditPayment('${item.id}')" class="text-emerald-400 hover:text-white bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-xl text-[11px] font-bold"><i class="fa-solid fa-pen"></i> Edit</button></td>`;
                 mainTbody.appendChild(trM);
 
                 const trS = document.createElement('tr'); trS.className = "border-b border-slate-900/60 hover:bg-slate-900/20";
-                trS.innerHTML = `<td class="p-3 font-bold text-slate-200">${item.unit}</td><td class="p-3 text-slate-400 truncate max-w-[80px] font-medium">${item.owner}</td><td class="p-3 font-mono font-bold text-white text-[11px]">₹${Number(item.received).toLocaleString('en-IN')}</td><td class="p-3 text-center"><span class="w-2 h-2 rounded-full inline-block ${item.status==='Paid'?'bg-emerald-400':'bg-amber-400'}"></span></td>`;
+                trS.innerHTML = `<td class="p-3 font-bold text-slate-200">${item.unit}</td><td class="p-3 text-slate-400 truncate max-w-[80px]">${item.owner}</td><td class="p-3 font-mono font-bold text-white">₹${Number(item.received).toLocaleString('en-IN')}</td><td class="p-3 text-center"><span class="w-2 h-2 rounded-full inline-block ${item.status==='Paid'?'bg-emerald-400':'bg-amber-400'}"></span></td>`;
                 sideTbody.appendChild(trS);
             });
         }
@@ -675,26 +721,16 @@
         function renderProperties(list) {
             const tbody = document.getElementById('properties-table-body'); tbody.innerHTML = '';
             list.forEach(p => {
-                const tr = document.createElement('tr'); tr.className = "hover:bg-slate-900/40 transition border-b border-slate-900/60";
-                tr.innerHTML = `
-                    <td class="py-3.5 px-5 font-extrabold text-slate-200 tracking-tight">${p.block}</td>
-                    <td class="py-3.5 px-5 font-mono font-bold text-slate-400">Unit ${p.flatNumber}</td>
-                    <td class="py-3.5 px-5 text-indigo-400 font-semibold tracking-wider text-[11px]">${p.bhk || '3 BHK'}</td>
-                    <td class="py-3.5 px-5 font-mono text-slate-400 text-[11px]">${p.areaSize ? p.areaSize.toLocaleString() + ' SQFT' : 'N/A'}</td>
-                    <td class="py-3.5 px-5 text-slate-200 font-bold">${p.registeredOwner}</td>
-                    <td class="py-3.5 px-4 font-mono text-slate-500 text-[11px]">${p.mobile || 'N/A'}</td>
-                    <td class="py-3.5 px-5 text-center">
-                        <button onclick="triggerEditAsset('${p.id}')" class="text-violet-400 hover:text-white bg-violet-500/10 hover:bg-violet-600 border border-violet-500/20 px-2.5 py-1 rounded-xl text-[11px] font-bold transition-all"><i class="fa-solid fa-sliders"></i> Modify</button>
-                    </td>
-                `;
+                const tr = document.createElement('tr'); tr.className = "hover:bg-slate-900/40 border-b border-slate-900/60 transition";
+                tr.innerHTML = `<td class="py-3.5 px-5 font-extrabold text-slate-200">${p.block}</td><td class="py-3.5 px-5 font-mono font-bold text-slate-400">Flat ${p.flatNumber}</td><td class="py-3.5 px-5 text-indigo-400 font-semibold text-[11px]">${p.bhk || '3 BHK'}</td><td class="py-3.5 px-5 font-mono text-slate-400">${p.areaSize ? p.areaSize.toLocaleString() + ' SQFT' : 'N/A'}</td><td class="py-3.5 px-5 text-slate-200 font-bold">${p.registeredOwner}</td><td class="py-3.5 px-4 font-mono text-slate-500">${p.mobile || 'N/A'}</td><td class="py-3.5 px-5 text-center"><button onclick="triggerEditAsset('${p.id}')" class="text-violet-400 hover:text-white bg-violet-500/10 border border-violet-500/20 px-2.5 py-1 rounded-xl text-[11px] font-bold"><i class="fa-solid fa-pen"></i> Edit</button></td>`;
                 tbody.appendChild(tr);
             });
         }
 
         function recalculateMetrics() {
             const exp = globalExpenses.reduce((acc, c) => acc + (Number(c.amount) || 0), 0);
-            const rec = globalPayments.length ? globalPayments.reduce((acc, c) => acc + (c.status !== 'Overdue' ? Number(c.received || 0) : 0), 0) : 1130000;
-            const pen = globalPayments.length ? globalPayments.reduce((acc, c) => acc + (c.status === 'Overdue' ? Number(c.received || 0) : 0), 0) : 65000;
+            const rec = globalPayments.reduce((acc, c) => acc + (c.status !== 'Overdue' ? Number(c.received || 0) : 0), 0);
+            const pen = globalPayments.reduce((acc, c) => acc + (c.status === 'Overdue' ? Number(c.received || 0) : 0), 0);
             
             document.getElementById('stat-expenses').innerText = "₹" + exp.toLocaleString('en-IN');
             document.getElementById('stat-received').innerText = "₹" + rec.toLocaleString('en-IN');
@@ -705,7 +741,7 @@
         function updateDistributionDonut(expenses) {
             const map = {}; expenses.forEach(e => map[e.description] = (map[e.description] || 0) + Number(e.amount));
             const labels = Object.keys(map).length ? Object.keys(map) : ["Security Guard", "Building Maintenance", "Common Area", "Water Supply"];
-            const data = Object.values(map).length ? Object.values(map) : [1, 1, 1, 1];
+            const data = Object.values(map).length ? Object.values(map) : [0, 0, 0, 0];
 
             if (distributionChart) {
                 distributionChart.data.labels = labels; distributionChart.data.datasets[0].data = data; distributionChart.update();
@@ -718,9 +754,8 @@
             }
         }
 
+        fetchRegisteredSocietiesOnBoot();
         runRealtimeClockSync();
-        runRealtimeDatabaseSync();
-        document.getElementById('remind-all-btn').addEventListener('click', () => alert('Overdue notifications broadcasted successfully via background SMS engine lines.'));
     </script>
 </body>
 </html>
