@@ -989,7 +989,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
     <div class="veh-table-wrap tab-table-wrap sky">
       <table class="veh-table">
         <thead><tr>
-          <th>Flat</th><th>Resident</th><th>🏍 2W</th><th>🚗 4W</th>
+          <th>Flat</th><th>Resident</th><th>🏍 2W</th><th>🚗 4W</th><th style="text-align:right">Action</th>
         </tr></thead>
         <tbody id="resBody"></tbody>
       </table>
@@ -1593,6 +1593,37 @@ function rStats() {
 
 window.fMem = fMem;
 window.rResidents = rResidents;
+
+function toggleResEdit(fid) {
+  const editRow = document.getElementById('redit_'+fid);
+  if (!editRow) return;
+  const isOpen = editRow.style.display !== 'none';
+  // close all others first
+  document.querySelectorAll('[id^="redit_"]').forEach(r => r.style.display = 'none');
+  if (!isOpen) editRow.style.display = 'table-row';
+}
+
+async function saveResEdit(fid) {
+  const name    = (document.getElementById('re_name_'+fid)?.value||'').trim();
+  const resType = document.getElementById('re_type_'+fid)?.value||'owner';
+  const due     = parseInt(document.getElementById('re_due_'+fid)?.value)||0;
+  const moveIn  = document.getElementById('re_movein_'+fid)?.value||'';
+  const moveOut = document.getElementById('re_moveout_'+fid)?.value||'';
+  const tw      = parseInt(document.getElementById('re_tw_'+fid)?.value)||0;
+  const fw      = parseInt(document.getElementById('re_fw_'+fid)?.value)||0;
+  sync('saving');
+  try {
+    await updateDoc(flatRef(fid), { owner:name, resType, due, moveIn, moveOut });
+    await setDoc(vehRef(fid), { flatId:fid, tw, fw, updatedAt:serverTimestamp() }, {merge:true});
+    sync('live');
+    toast('Saved ✓');
+    document.getElementById('redit_'+fid).style.display = 'none';
+  } catch(e) { console.error(e); sync('error'); toast('Save failed.','error'); }
+}
+
+window._toggleResEdit = toggleResEdit;
+window._saveResEdit   = saveResEdit;
+
 window._oCatM = oCatM;
 window._cCatM = cCatM;
 window._addCat = addCat;
@@ -2933,24 +2964,28 @@ function rPresident() {
     const icon= catIcon(e.cat);
     return `<div class="exp-row" id="serow_${e.id}" style="display:flex;align-items:center;gap:12px;padding:11px 14px">
       <div style="flex:1;min-width:0;display:grid;grid-template-columns:2fr 1fr 1fr auto;align-items:center;gap:10px">
-        <div style="font-size:12px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${e.title||'—'}</div>
-        <div><span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:99px;background:${clr}18;color:${clr};border:1px solid ${clr}30">${e.cat||'—'}</span></div>
+        <div style="font-size:13px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${e.title||'—'}</div>
+        <div><span style="font-size:10px;font-weight:700;padding:3px 9px;border-radius:5px;background:${clr}18;color:${clr}">${e.cat||'—'}</span></div>
         <div style="font-size:11px;color:var(--muted)">${e.date||'—'}</div>
         <div style="font-size:13px;font-weight:800;color:var(--text);white-space:nowrap">${inr(e.amt)}</div>
       </div>
       <div style="display:flex;align-items:center;gap:5px;flex-shrink:0">
         <button onclick="window._openSEEdit('${e.id}')"
-          style="background:none;border:1.5px solid var(--border);border-radius:var(--r-md);padding:3px 7px;cursor:pointer;color:var(--indigo);font-size:11px;display:flex;align-items:center">
-          <i class="ti ti-pencil" style="font-size:11px"></i>
+          style="background:var(--indigo-bg);border:1px solid var(--indigo);border-radius:6px;padding:4px 10px;cursor:pointer;color:var(--indigo);font-size:11px;font-weight:700;font-family:var(--font);display:inline-flex;align-items:center;gap:4px">
+          <i class="ti ti-pencil" style="font-size:11px"></i> Edit
         </button>
         <button onclick="window._delSE('${e.id}')"
-          style="background:none;border:1.5px solid var(--border);border-radius:var(--r-md);padding:3px 7px;cursor:pointer;color:var(--red);font-size:11px;display:flex;align-items:center">
+          style="background:var(--red-bg);border:1px solid var(--red);border-radius:6px;padding:4px 8px;cursor:pointer;color:var(--red);font-size:11px;display:inline-flex;align-items:center">
           <i class="ti ti-trash" style="font-size:11px"></i>
         </button>
       </div>
     </div>
-    <div id="seedit_${e.id}" style="display:none;background:var(--surface2);border-bottom:1.5px solid var(--border2);padding:12px 14px">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px">
+    <div id="seedit_${e.id}" style="display:none;background:var(--surface2);border-bottom:2px solid var(--indigo);padding:12px 14px">
+      <div style="font-size:10px;font-weight:700;color:var(--indigo);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;display:flex;align-items:center;gap:6px">
+        <i class="ti ti-pencil"></i> Edit Expense
+        <button onclick="window._closeSEEdit('${e.id}')" style="margin-left:auto;background:none;border:none;cursor:pointer;color:var(--muted);font-size:16px;line-height:1;padding:0"><i class="ti ti-x"></i></button>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-bottom:10px">
         <div style="grid-column:1/-1">
           <div style="font-size:9px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px">Title</div>
           <input id="se_title_${e.id}" type="text" value="${(e.title||'').replace(/"/g,'&quot;')}" placeholder="Expense title"
@@ -2994,11 +3029,13 @@ function rPresident() {
             onfocus="this.style.borderColor='var(--indigo)'" onblur="this.style.borderColor='var(--border)'"/>
         </div>
       </div>
-      <div style="display:flex;gap:6px;justify-content:flex-end">
+      <div style="display:flex;gap:8px;justify-content:flex-end">
         <button onclick="window._closeSEEdit('${e.id}')"
-          style="background:none;border:1.5px solid var(--border);border-radius:var(--r-md);padding:4px 10px;cursor:pointer;color:var(--text2);font-size:11px;font-family:var(--font);font-weight:600">Cancel</button>
+          style="background:none;border:1px solid var(--border2);border-radius:6px;padding:5px 14px;cursor:pointer;color:var(--text2);font-size:12px;font-weight:600;font-family:var(--font)">Cancel</button>
         <button onclick="window._saveSEEdit('${e.id}')"
-          style="background:var(--indigo);border:none;border-radius:var(--r-md);padding:4px 12px;cursor:pointer;color:#fff;font-size:11px;font-family:var(--font);font-weight:700">Save</button>
+          style="background:var(--indigo);border:none;border-radius:6px;padding:5px 16px;cursor:pointer;color:#fff;font-size:12px;font-weight:700;font-family:var(--font);display:inline-flex;align-items:center;gap:5px">
+          <i class="ti ti-check" style="font-size:12px"></i> Save
+        </button>
       </div>
     </div>`;
   }).join('');
@@ -3150,6 +3187,7 @@ async function delSE(id) {
 }
 
 function openSEEdit(id) {
+  document.querySelectorAll('[id^="seedit_"]').forEach(el => el.style.display = 'none');
   document.getElementById('seedit_'+id).style.display = 'block';
 }
 function closeSEEdit(id) {
@@ -3230,14 +3268,88 @@ function rResidents() {
     const tw=parseInt(v.tw)||0,fw=parseInt(v.fw)||0;
     const twB=tw>0?`<span class="vbadge tw"><i class="ti ti-motorbike"></i>${tw}</span>`:`<span class="vbadge none">–</span>`;
     const fwB=fw>0?`<span class="vbadge fw"><i class="ti ti-car"></i>${fw}</span>`:`<span class="vbadge none">–</span>`;
-    return `<tr onclick="window._oFlEdit('${f.flatId}')" style="cursor:pointer">
-      <td><strong style="color:var(--indigo);font-size:12px">${f.flatId}</strong></td>
-      <td>
-        <div style="font-size:12px;font-weight:700">${f.owner||'<em style="color:var(--muted);font-weight:400">Vacant</em>'}</div>
-        <span class="mem-type ${rType}" style="font-size:10px;margin-top:3px">${isVacant?'Vacant':isTenant?'🔑 Tenant':'🏠 Owner'}</span>
+    const fid=f.flatId;
+    return `
+    <tr id="rrow_${fid}" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
+      <td style="padding:11px 14px;border-bottom:1px solid var(--border);vertical-align:middle">
+        <strong style="color:var(--indigo);font-size:12px;font-weight:800">${fid}</strong>
       </td>
-      <td>${twB}</td>
-      <td>${fwB}</td>
+      <td style="padding:11px 14px;border-bottom:1px solid var(--border);vertical-align:middle">
+        <div style="font-size:13px;font-weight:700;color:var(--text)">${f.owner||'<em style="color:var(--muted);font-weight:400">Vacant</em>'}</div>
+        <span class="mem-type ${rType}" style="margin-top:3px;display:inline-block">${isVacant?'Vacant':isTenant?'🔑 Tenant':'🏠 Owner'}</span>
+      </td>
+      <td style="padding:11px 14px;border-bottom:1px solid var(--border);vertical-align:middle">${twB}</td>
+      <td style="padding:11px 14px;border-bottom:1px solid var(--border);vertical-align:middle">${fwB}</td>
+      <td style="padding:11px 14px;border-bottom:1px solid var(--border);vertical-align:middle;text-align:right">
+        <button onclick="window._toggleResEdit('${fid}')"
+          style="background:var(--indigo-bg);border:1px solid var(--indigo);border-radius:6px;padding:4px 10px;cursor:pointer;color:var(--indigo);font-size:11px;font-weight:700;font-family:var(--font);display:inline-flex;align-items:center;gap:4px">
+          <i class="ti ti-pencil" style="font-size:11px"></i> Edit
+        </button>
+      </td>
+    </tr>
+    <tr id="redit_${fid}" style="display:none">
+      <td colspan="5" style="padding:0;border-bottom:2px solid var(--indigo)">
+        <div style="background:var(--surface2);padding:14px 16px">
+          <div style="font-size:10px;font-weight:700;color:var(--indigo);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;display:flex;align-items:center;gap:6px">
+            <i class="ti ti-pencil"></i> Edit Resident — ${fid}
+            <button onclick="window._toggleResEdit('${fid}')" style="margin-left:auto;background:none;border:none;cursor:pointer;color:var(--muted);font-size:16px;line-height:1;padding:0"><i class="ti ti-x"></i></button>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-bottom:10px">
+            <div>
+              <div style="font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px">Name</div>
+              <input id="re_name_${fid}" type="text" value="${(f.owner||'').replace(/"/g,'&quot;')}" placeholder="Full name"
+                style="width:100%;box-sizing:border-box;height:32px;padding:0 8px;background:#fff;border:1px solid var(--border2);color:var(--text);font-family:var(--font);font-size:12px;font-weight:600;border-radius:6px;outline:none"
+                onfocus="this.style.borderColor='var(--indigo)'" onblur="this.style.borderColor='var(--border2)'"/>
+            </div>
+            <div>
+              <div style="font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px">Type</div>
+              <select id="re_type_${fid}"
+                style="width:100%;box-sizing:border-box;height:32px;padding:0 8px;background:#fff;border:1px solid var(--border2);color:var(--text);font-family:var(--font);font-size:12px;font-weight:600;border-radius:6px;outline:none">
+                <option value="owner" ${!isTenant?'selected':''}>🏠 Owner</option>
+                <option value="tenant" ${isTenant?'selected':''}>🔑 Tenant</option>
+              </select>
+            </div>
+            <div>
+              <div style="font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px">Monthly Due (₹)</div>
+              <input id="re_due_${fid}" type="number" value="${f.due||''}" placeholder="5000" min="0"
+                style="width:100%;box-sizing:border-box;height:32px;padding:0 8px;background:#fff;border:1px solid var(--border2);color:var(--text);font-family:var(--font);font-size:12px;font-weight:600;border-radius:6px;outline:none"
+                onfocus="this.style.borderColor='var(--indigo)'" onblur="this.style.borderColor='var(--border2)'"/>
+            </div>
+            <div>
+              <div style="font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px">Move-In</div>
+              <input id="re_movein_${fid}" type="date" value="${f.moveIn||''}"
+                style="width:100%;box-sizing:border-box;height:32px;padding:0 8px;background:#fff;border:1px solid var(--border2);color:var(--text);font-family:var(--font);font-size:12px;border-radius:6px;outline:none"
+                onfocus="this.style.borderColor='var(--indigo)'" onblur="this.style.borderColor='var(--border2)'"/>
+            </div>
+            <div>
+              <div style="font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px">Move-Out</div>
+              <input id="re_moveout_${fid}" type="date" value="${f.moveOut||''}"
+                style="width:100%;box-sizing:border-box;height:32px;padding:0 8px;background:#fff;border:1px solid var(--border2);color:var(--text);font-family:var(--font);font-size:12px;border-radius:6px;outline:none"
+                onfocus="this.style.borderColor='var(--indigo)'" onblur="this.style.borderColor='var(--border2)'"/>
+            </div>
+            <div>
+              <div style="font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px">2-Wheelers</div>
+              <input id="re_tw_${fid}" type="number" value="${tw}" min="0" max="10"
+                style="width:100%;box-sizing:border-box;height:32px;padding:0 8px;background:#fff;border:1px solid var(--border2);color:var(--text);font-family:var(--font);font-size:12px;font-weight:600;border-radius:6px;outline:none"
+                onfocus="this.style.borderColor='var(--indigo)'" onblur="this.style.borderColor='var(--border2)'"/>
+            </div>
+            <div>
+              <div style="font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px">4-Wheelers</div>
+              <input id="re_fw_${fid}" type="number" value="${fw}" min="0" max="10"
+                style="width:100%;box-sizing:border-box;height:32px;padding:0 8px;background:#fff;border:1px solid var(--border2);color:var(--text);font-family:var(--font);font-size:12px;font-weight:600;border-radius:6px;outline:none"
+                onfocus="this.style.borderColor='var(--indigo)'" onblur="this.style.borderColor='var(--border2)'"/>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;justify-content:flex-end">
+            <button onclick="window._toggleResEdit('${fid}')"
+              style="background:none;border:1px solid var(--border2);border-radius:6px;padding:5px 14px;cursor:pointer;color:var(--text2);font-size:12px;font-weight:600;font-family:var(--font)">Cancel</button>
+            <button onclick="window._saveResEdit('${fid}')"
+              style="background:var(--indigo);border:none;border-radius:6px;padding:5px 16px;cursor:pointer;color:#fff;font-size:12px;font-weight:700;font-family:var(--font);display:inline-flex;align-items:center;gap:5px">
+              <i class="ti ti-check" style="font-size:12px"></i> Save
+            </button>
+          </div>
+        </div>
+      </td>
     </tr>`;
   }).join('');
 }
