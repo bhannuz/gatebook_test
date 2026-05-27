@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Gatebook — Sign In</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#F0F4FF; --surface:#FFFFFF; --surface2:#F7F9FF; --surface3:#EDF0FB;
+  --border:rgba(99,102,241,0.10); --border2:rgba(99,102,241,0.18); --border3:rgba(99,102,241,0.30);
+  --text:#1E1B4B; --text2:#6366A8; --muted:#A5A8D0;
+  --indigo:#6366F1; --indigo2:#4F46E5; --indigo-bg:rgba(99,102,241,0.08); --indigo-glow:rgba(99,102,241,0.20);
+  --green:#059669; --green-bg:#ECFDF5; --green-border:#A7F3D0; --green-txt:#065F46;
+  --red:#DC2626; --red-bg:#FEF2F2; --red-border:#FECACA; --red-txt:#991B1B;
+  --r-sm:8px; --r-md:12px; --r-lg:16px; --r-xl:20px; --r-2xl:28px;
+  --shadow-sm:0 1px 3px rgba(99,102,241,0.06),0 1px 2px rgba(0,0,0,0.04);
+  --shadow:0 4px 16px rgba(99,102,241,0.10),0 1px 4px rgba(0,0,0,0.05);
+  --shadow-xl:0 24px 64px rgba(99,102,241,0.18);
+  --font:'Plus Jakarta Sans',system-ui,-apple-system,sans-serif;
+}
+html{font-size:16px;-webkit-font-smoothing:antialiased}
+body{font-family:var(--font);background:linear-gradient(135deg,#EEF2FF 0%,#F0F9FF 50%,#FDF4FF 100%);
+  color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1rem}
+
+/* ── Card ── */
+.card{
+  background:#fff;border-radius:var(--r-2xl);
+  padding:40px 44px;width:min(440px,100%);
+  box-shadow:var(--shadow-xl);border:1.5px solid var(--border2);
+}
+.brand{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:32px;flex-direction:column}
+.brand-inner{display:flex;align-items:center;gap:12px}
+.brand-logo{
+  width:52px;height:52px;border-radius:16px;
+  background:linear-gradient(135deg,#6366F1,#8B5CF6);
+  display:flex;align-items:center;justify-content:center;
+  font-size:24px;color:#fff;
+  box-shadow:0 8px 24px rgba(99,102,241,0.35);
+}
+.brand-name{font-size:26px;font-weight:800;color:var(--text);letter-spacing:-.6px}
+.brand-name em{font-style:normal;color:var(--indigo)}
+.brand-tag{font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.8px;text-transform:uppercase;text-align:center}
+
+.card-title{font-size:20px;font-weight:800;color:var(--text);letter-spacing:-.3px;margin-bottom:6px}
+.card-sub{font-size:13px;color:var(--text2);font-weight:500;margin-bottom:28px;line-height:1.6}
+
+/* ── Tabs ── */
+.tabs{display:flex;gap:0;background:var(--surface3);border:1px solid var(--border2);
+  border-radius:var(--r-md);padding:4px;margin-bottom:24px}
+.tab-btn{flex:1;padding:8px 0;border-radius:var(--r-sm);font-size:13px;font-weight:700;
+  color:var(--text2);cursor:pointer;border:none;background:transparent;
+  font-family:var(--font);transition:all .2s}
+.tab-btn.active{background:#fff;color:var(--indigo);box-shadow:var(--shadow-sm)}
+
+/* ── Form ── */
+.fg{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.fg label{font-size:11px;font-weight:800;color:var(--text2);text-transform:uppercase;letter-spacing:.6px}
+.fg input{
+  background:var(--surface2);border:1.5px solid var(--border2);
+  color:var(--text);font-family:var(--font);font-size:13px;font-weight:600;
+  border-radius:var(--r-md);padding:11px 13px;outline:none;width:100%;
+  transition:border-color .18s,box-shadow .18s;
+}
+.fg input::placeholder{color:var(--muted);font-weight:400}
+.fg input:focus{border-color:var(--indigo);box-shadow:0 0 0 3px rgba(99,102,241,.12);background:#fff}
+
+.pw-wrap{position:relative}
+.pw-wrap input{padding-right:42px}
+.pw-toggle{position:absolute;right:12px;top:50%;transform:translateY(-50%);
+  background:none;border:none;cursor:pointer;color:var(--muted);font-size:18px;
+  display:flex;align-items:center;padding:0;transition:color .15s}
+.pw-toggle:hover{color:var(--indigo)}
+
+/* ── Buttons ── */
+.btn-primary{
+  width:100%;padding:12px;border-radius:var(--r-md);
+  font-size:14px;font-weight:800;font-family:var(--font);
+  cursor:pointer;border:none;transition:all .18s;letter-spacing:.1px;
+  background:linear-gradient(135deg,#6366F1,#8B5CF6);color:#fff;
+  box-shadow:0 4px 16px rgba(99,102,241,0.30);
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  margin-top:8px;
+}
+.btn-primary:hover{box-shadow:0 6px 24px rgba(99,102,241,0.45);transform:translateY(-1px)}
+.btn-primary:active{transform:scale(.98)}
+.btn-primary:disabled{opacity:.65;transform:none;cursor:not-allowed}
+
+.divider{display:flex;align-items:center;gap:10px;margin:20px 0;color:var(--muted);font-size:12px;font-weight:600}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border2)}
+
+.register-link{text-align:center;font-size:13px;color:var(--text2);font-weight:500}
+.register-link a{color:var(--indigo);font-weight:700;text-decoration:none}
+.register-link a:hover{text-decoration:underline}
+
+/* ── Alert ── */
+.alert{
+  padding:11px 14px;border-radius:var(--r-md);font-size:13px;font-weight:600;
+  display:none;align-items:center;gap:8px;margin-bottom:14px;
+}
+.alert.error{background:var(--red-bg);color:var(--red-txt);border:1.5px solid var(--red-border)}
+.alert.success{background:var(--green-bg);color:var(--green-txt);border:1.5px solid var(--green-border)}
+.alert.show{display:flex}
+.alert i{font-size:16px;flex-shrink:0}
+
+/* ── Loading overlay ── */
+#pageLoad{
+  position:fixed;inset:0;z-index:9999;
+  background:linear-gradient(135deg,#EEF2FF 0%,#F0F9FF 50%,#FDF4FF 100%);
+  display:flex;align-items:center;justify-content:center;
+}
+.lo-card{
+  background:#fff;border-radius:var(--r-2xl);padding:40px 48px;text-align:center;
+  box-shadow:var(--shadow-xl);display:flex;flex-direction:column;align-items:center;gap:18px;
+  border:1px solid var(--border2);
+}
+.lo-icon{
+  width:72px;height:72px;border-radius:20px;
+  background:linear-gradient(135deg,#6366F1,#8B5CF6);
+  display:flex;align-items:center;justify-content:center;
+  font-size:32px;color:#fff;
+  box-shadow:0 8px 24px rgba(99,102,241,0.35);
+  animation:loPulse 2s ease-in-out infinite;
+}
+@keyframes loPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+.lo-title{font-size:26px;font-weight:800;color:var(--text);letter-spacing:-.5px}
+.lo-title span{background:linear-gradient(90deg,#6366F1,#8B5CF6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.lo-sub{font-size:13px;color:var(--text2)}
+.lo-bar{width:200px;height:4px;background:var(--surface3);border-radius:99px;overflow:hidden}
+.lo-fill{height:100%;background:linear-gradient(90deg,#6366F1,#8B5CF6,#06B6D4);background-size:200%;animation:loSlide 1.6s ease-in-out infinite}
+@keyframes loSlide{0%{background-position:0%}100%{background-position:200%}}
+</style>
+</head>
+<body>
+
+<!-- Loading overlay (shown while checking auth state) -->
+<div id="pageLoad">
+  <div class="lo-card">
+    <div class="lo-icon"><i class="ti ti-book-2"></i></div>
+    <div class="lo-title">Gate<span>book</span></div>
+    <div class="lo-sub">Checking authentication…</div>
+    <div class="lo-bar"><div class="lo-fill"></div></div>
+  </div>
+</div>
+
+<div class="card" id="mainCard" style="display:none">
+  <div class="brand">
+    <div class="brand-inner">
+      <div class="brand-logo"><i class="ti ti-book-2"></i></div>
+      <div class="brand-name">Gate<em>book</em></div>
+    </div>
+    <div class="brand-tag">Smart Society Management</div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" id="tabLogin"  onclick="showTab('login')">Sign In</button>
+    <button class="tab-btn"        id="tabSignup" onclick="showTab('signup')">Create Account</button>
+  </div>
+
+  <!-- ── LOGIN FORM ── -->
+  <div id="loginForm">
+    <div class="card-title">Welcome back</div>
+    <div class="card-sub">Sign in to your <strong>Gatebook</strong> society dashboard.</div>
+
+    <div class="alert" id="loginAlert"><i class="ti ti-alert-circle"></i><span id="loginAlertMsg"></span></div>
+
+    <div class="fg">
+      <label>Email Address</label>
+      <input type="email" id="loginEmail" placeholder="you@example.com" autocomplete="email"/>
+    </div>
+    <div class="fg">
+      <label>Password</label>
+      <div class="pw-wrap">
+        <input type="password" id="loginPassword" placeholder="Your password" autocomplete="current-password"/>
+        <button class="pw-toggle" type="button" onclick="togglePw('loginPassword',this)"><i class="ti ti-eye"></i></button>
+      </div>
+    </div>
+
+    <button class="btn-primary" id="loginBtn" onclick="doLogin()">
+      <i class="ti ti-login"></i><span id="loginBtnLbl">Sign In</span>
+    </button>
+
+    <div class="divider">or</div>
+    <div class="register-link">
+      New society? <a href="register.html">Register your apartment</a>
+    </div>
+  </div>
+
+  <!-- ── SIGNUP FORM (quick account creation for existing apartment members) ── -->
+  <div id="signupForm" style="display:none">
+    <div class="card-title">Create an account</div>
+    <div class="card-sub">Sign up to access your society's dashboard.</div>
+
+    <div class="alert" id="signupAlert"><i class="ti ti-alert-circle"></i><span id="signupAlertMsg"></span></div>
+
+    <div class="fg">
+      <label>Full Name</label>
+      <input type="text" id="signupName" placeholder="Your full name"/>
+    </div>
+    <div class="fg">
+      <label>Email Address</label>
+      <input type="email" id="signupEmail" placeholder="you@example.com" autocomplete="email"/>
+    </div>
+    <div class="fg">
+      <label>Password</label>
+      <div class="pw-wrap">
+        <input type="password" id="signupPassword" placeholder="Min. 6 characters" autocomplete="new-password"/>
+        <button class="pw-toggle" type="button" onclick="togglePw('signupPassword',this)"><i class="ti ti-eye"></i></button>
+      </div>
+    </div>
+
+    <button class="btn-primary" id="signupBtn" onclick="doSignup()">
+      <i class="ti ti-user-plus"></i><span id="signupBtnLbl">Create Account</span>
+    </button>
+  </div>
+</div>
+
+<script type="module">
+import { auth } from './js/firebase.js';
+import {
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  onAuthStateChanged,
+  updateProfile,
+} from 'https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js';
+
+/* ── Admin email — change this to your admin email ── */
+const ADMIN_EMAIL = 'admin@gatebook.app';
+
+/* ── Auth guard: redirect logged-in users straight to app ── */
+onAuthStateChanged(auth, user => {
+  document.getElementById('pageLoad').style.display = 'none';
+  if (user) {
+    if (user.email === ADMIN_EMAIL) {
+      window.location.replace('admin.html');
+    } else {
+      window.location.replace('app.html');
+    }
+  } else {
+    document.getElementById('mainCard').style.display = '';
+  }
+});
+
+/* ── Tab switch ── */
+window.showTab = function(tab) {
+  const isLogin = tab === 'login';
+  document.getElementById('loginForm').style.display  = isLogin ? '' : 'none';
+  document.getElementById('signupForm').style.display = isLogin ? 'none' : '';
+  document.getElementById('tabLogin').classList.toggle('active', isLogin);
+  document.getElementById('tabSignup').classList.toggle('active', !isLogin);
+  clearAlerts();
+};
+
+/* ── Password visibility toggle ── */
+window.togglePw = function(inputId, btn) {
+  const inp = document.getElementById(inputId);
+  const show = inp.type === 'password';
+  inp.type = show ? 'text' : 'password';
+  btn.querySelector('i').className = show ? 'ti ti-eye-off' : 'ti ti-eye';
+};
+
+/* ── Helpers ── */
+function showAlert(id, msg, type = 'error') {
+  const el = document.getElementById(id);
+  document.getElementById(id + 'Msg').textContent = msg;
+  el.className = `alert ${type} show`;
+}
+function clearAlerts() {
+  ['loginAlert','signupAlert'].forEach(id => {
+    document.getElementById(id).classList.remove('show');
+  });
+}
+function setLoading(btnId, lblId, loading, defaultLbl) {
+  document.getElementById(btnId).disabled = loading;
+  document.getElementById(lblId).textContent = loading ? 'Please wait…' : defaultLbl;
+}
+
+/* ── Login ── */
+window.doLogin = async function() {
+  const email    = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  if (!email || !password) { showAlert('loginAlert','Please fill in all fields.'); return; }
+  setLoading('loginBtn','loginBtnLbl', true, 'Sign In');
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+    // onAuthStateChanged will redirect
+  } catch (err) {
+    const msgs = {
+      'auth/user-not-found':    'No account found with this email.',
+      'auth/wrong-password':    'Incorrect password. Please try again.',
+      'auth/invalid-email':     'Please enter a valid email address.',
+      'auth/invalid-credential':'Incorrect email or password.',
+      'auth/too-many-requests': 'Too many attempts. Please try again later.',
+    };
+    showAlert('loginAlert', msgs[err.code] || 'Sign in failed. Please try again.');
+  } finally {
+    setLoading('loginBtn','loginBtnLbl', false, 'Sign In');
+  }
+};
+
+/* ── Signup ── */
+window.doSignup = async function() {
+  const name     = document.getElementById('signupName').value.trim();
+  const email    = document.getElementById('signupEmail').value.trim();
+  const password = document.getElementById('signupPassword').value;
+  if (!name || !email || !password) { showAlert('signupAlert','Please fill in all fields.'); return; }
+  if (password.length < 6) { showAlert('signupAlert','Password must be at least 6 characters.'); return; }
+  setLoading('signupBtn','signupBtnLbl', true, 'Create Account');
+  try {
+    const cred = await createUserWithEmailAndPassword(auth, email, password);
+    await updateProfile(cred.user, { displayName: name });
+    // onAuthStateChanged will redirect
+  } catch (err) {
+    const msgs = {
+      'auth/email-already-in-use':'An account with this email already exists.',
+      'auth/invalid-email':       'Please enter a valid email address.',
+      'auth/weak-password':       'Password is too weak. Use at least 6 characters.',
+    };
+    showAlert('signupAlert', msgs[err.code] || 'Sign up failed. Please try again.');
+  } finally {
+    setLoading('signupBtn','signupBtnLbl', false, 'Create Account');
+  }
+};
+
+/* ── Enter key submit ── */
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  const loginVisible = document.getElementById('loginForm').style.display !== 'none';
+  if (loginVisible) window.doLogin();
+  else window.doSignup();
+});
+</script>
+</body>
+</html>
