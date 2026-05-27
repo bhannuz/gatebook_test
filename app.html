@@ -62,70 +62,85 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .itl-by{font-size:11px;color:var(--muted);font-weight:500}
 .itl-dot.open{background:var(--red)}.itl-dot.in-progress{background:var(--amber)}.itl-dot.resolved{background:var(--green)}.itl-dot.created{background:var(--indigo)}
 
-/* ── NAVBAR ── */
-.navbar{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.85);
-  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
-  border-bottom:1px solid var(--border2);padding:0 2rem;height:64px;
+/* ── NAVBAR — minimal 2025 ── */
+.navbar{
+  position:sticky;top:0;z-index:100;
+  background:#fff;
+  border-bottom:1px solid var(--border);
+  padding:0 2rem;height:56px;
   display:flex;align-items:center;justify-content:space-between;gap:16px;
-  box-shadow:0 2px 12px rgba(99,102,241,0.06)}
-.nav-brand{display:flex;align-items:center;gap:10px}
-.nav-logo{width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,#6366F1,#8B5CF6);
-  display:flex;align-items:center;justify-content:center;font-size:18px;color:#fff;flex-shrink:0;
-  box-shadow:0 4px 12px rgba(99,102,241,0.30)}
-.nav-name-wrap{display:flex;align-items:center;gap:6px}
-.nav-name{font-size:17px;font-weight:800;color:var(--text);letter-spacing:-.3px}
+}
+.nav-brand{display:flex;align-items:center;gap:9px}
+.nav-logo{
+  width:30px;height:30px;border-radius:8px;
+  background:var(--indigo);
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;color:#fff;flex-shrink:0;
+}
+.nav-name-wrap{display:flex;align-items:center;gap:8px}
+.nav-name{font-size:15px;font-weight:800;color:var(--text);letter-spacing:-.2px}
 .nav-name em{font-style:normal;color:var(--indigo)}
-.flat-count-badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:99px;
-  background:var(--indigo-bg);color:var(--indigo);border:1px solid var(--indigo-glow);white-space:nowrap}
-
-.nav-pills{display:none} /* tabs moved below stats */
-
-/* ── Tab bar separator ── */
-.tab-bar-wrap{
-  position:sticky;top:64px;z-index:90;
-  background:var(--surface2);
-  border-top:2px solid var(--border2);
-  border-bottom:2px solid var(--border2);
-  padding:10px 0;
-  margin:0 -1.5rem 1.4rem;
-  padding-left:1.5rem;
-  padding-right:1.5rem;
-  box-shadow:0 4px 12px rgba(0,0,0,0.04);
+.flat-count-badge{
+  font-size:10px;font-weight:700;padding:2px 7px;border-radius:99px;
+  background:var(--indigo-bg);color:var(--indigo);white-space:nowrap;
 }
 
-/* ── View tabs (Payments / Issues) below stats ── */
-.view-tabs{display:flex;gap:0;background:var(--surface3);border:1px solid var(--border2);
-  border-radius:var(--r-md);padding:4px;margin-bottom:1.4rem;width:fit-content}
-.vtab{padding:6px 16px;border-radius:var(--r-sm);font-size:12px;font-weight:700;
-.an-sf-btn{font-size:10px;font-weight:700;padding:3px 10px;border-radius:99px;border:1.5px solid var(--border2);background:var(--surface);color:var(--text2);cursor:pointer;font-family:var(--font);white-space:nowrap}
-.an-sf-btn.active{background:var(--indigo);color:#fff;border-color:var(--indigo)}
-  color:var(--text2);cursor:pointer;border:none;background:transparent;
-  font-family:var(--font);transition:all .2s;display:flex;align-items:center;gap:5px}
-.vtab i{font-size:14px}
-.vtab.active{background:#fff;color:var(--indigo);box-shadow:var(--shadow-sm)}
-.vtab:hover:not(.active){color:var(--text);background:rgba(255,255,255,0.6)}
-.vtab-badge{font-size:10px;padding:1px 6px;border-radius:99px;font-weight:700;
-  background:var(--red-bg);color:var(--red);border:1px solid var(--red-border)}
-.vtab.active .vtab-badge{background:var(--indigo-bg);color:var(--indigo);border-color:var(--indigo-glow)}
+.nav-pills{display:none}
 
-.nav-right{display:flex;align-items:center;gap:10px}
-.sync-chip{display:flex;align-items:center;gap:6px;padding:5px 12px;
-  border-radius:99px;background:var(--surface);border:1px solid var(--border2);
-  font-size:12px;font-weight:600;color:var(--text2);box-shadow:var(--shadow-sm)}
-.sdot{width:7px;height:7px;border-radius:50%;background:var(--muted);flex-shrink:0}
-.sdot.live{background:var(--green-light);box-shadow:0 0 0 3px rgba(16,185,129,.2)}
+/* ── Tab bar — clean underline nav ── */
+.tab-bar-wrap{
+  position:sticky;top:56px;z-index:90;
+  background:#fff;
+  border-bottom:1px solid var(--border);
+  margin:0 -1.5rem 1.4rem;
+  padding:0 1.5rem;
+}
+.view-tabs{
+  display:flex;gap:0;
+  width:100%;margin-bottom:0;
+}
+.vtab{
+  padding:0 4px;height:44px;margin-right:24px;
+  font-size:13px;font-weight:600;
+  color:var(--muted);cursor:pointer;border:none;background:transparent;
+  font-family:var(--font);transition:color .18s;
+  display:flex;align-items:center;gap:6px;
+  border-bottom:2px solid transparent;
+  position:relative;top:1px;
+}
+.vtab i{font-size:15px}
+.vtab.active{color:var(--indigo);border-bottom-color:var(--indigo)}
+.vtab:hover:not(.active){color:var(--text)}
+.vtab-badge{
+  font-size:10px;padding:1px 6px;border-radius:99px;font-weight:700;
+  background:var(--red-bg);color:var(--red);
+}
+.vtab.active .vtab-badge{background:var(--indigo-bg);color:var(--indigo)}
+
+.nav-right{display:flex;align-items:center;gap:12px}
+
+/* Sync status — just a dot + text, no pill border */
+.sync-chip{display:flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:var(--muted)}
+.sdot{width:6px;height:6px;border-radius:50%;background:var(--muted);flex-shrink:0}
+.sdot.live{background:var(--green-light)}
 .sdot.saving{background:var(--amber-light);animation:sPulse 1s infinite}
 .sdot.error{background:var(--red-light)}
 @keyframes sPulse{0%,100%{opacity:1}50%{opacity:.3}}
 
-/* User chip */
-.user-chip{display:flex;align-items:center;gap:8px;padding:5px 10px;
-  border-radius:99px;background:var(--surface);border:1px solid var(--border2);
-  font-size:12px;font-weight:600;color:var(--text2);box-shadow:var(--shadow-sm);cursor:pointer;
-  transition:all .15s}
-.user-chip:hover{border-color:var(--border3);background:var(--surface2)}
-.user-avatar{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#6366F1,#8B5CF6);
-  display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;flex-shrink:0}
+/* User — avatar only + name, no pill border */
+.user-chip{
+  display:flex;align-items:center;gap:7px;
+  font-size:13px;font-weight:600;color:var(--text2);
+  cursor:pointer;padding:4px 6px;border-radius:var(--r-sm);
+  transition:background .15s;
+}
+.user-chip:hover{background:var(--surface2)}
+.user-avatar{
+  width:28px;height:28px;border-radius:50%;
+  background:linear-gradient(135deg,#6366F1,#8B5CF6);
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:800;color:#fff;flex-shrink:0;
+}
 
 /* ── BUTTONS ── */
 .btn{display:inline-flex;align-items:center;gap:7px;padding:9px 20px;border-radius:var(--r-md);
@@ -217,79 +232,243 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .floor-divider{display:none}
 .floor-divider i{display:none}
 
-/* ── FLAT CARDS ── */
-.fgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:1rem}
-.fcard{background:#fff;border:1.5px solid var(--border);border-radius:var(--r-md);
-  padding:8px 10px 7px;cursor:pointer;position:relative;overflow:hidden;width:100%;box-sizing:border-box;transition:all .22s;box-shadow:var(--shadow-sm)}
-.fcard::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
-.fcard.paid::before   {background:linear-gradient(90deg,#059669,#10B981)}
-.fcard.partial::before{background:linear-gradient(90deg,#D97706,#F59E0B)}
-.fcard.pending::before{background:linear-gradient(90deg,#DC2626,#EF4444)}
-.fcard.paid   {border-color:rgba(5,150,105,.15)}
-.fcard.partial{border-color:rgba(217,119,6,.15)}
-.fcard.pending{border-color:rgba(220,38,38,.15)}
-.fcard:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg)}
+/* ── FLAT CARDS — minimal 2025 ── */
+.fgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:1rem}
+.fcard{
+  background:#fff;border:1px solid var(--border);border-radius:var(--r-lg);
+  padding:14px 14px 12px;cursor:pointer;position:relative;overflow:hidden;
+  width:100%;box-sizing:border-box;transition:box-shadow .2s,border-color .2s;
+}
+.fcard:hover{box-shadow:var(--shadow);border-color:var(--border2)}
 .fcard:focus{outline:2px solid var(--indigo);outline-offset:2px}
-.fc-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:5px;gap:4px}
-.fc-num{font-size:12px;font-weight:800;color:var(--text)}
-.fc-owner{font-size:10px;color:var(--text2);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;font-weight:500}
-.fc-type{font-size:8px;font-weight:700;padding:1px 4px;border-radius:99px;display:inline-block;margin-top:1px}
+.fcard::before{content:'';position:absolute;top:12px;bottom:12px;left:0;width:3px;border-radius:0 3px 3px 0}
+.fcard.paid::before   {background:var(--green)}
+.fcard.partial::before{background:var(--amber)}
+.fcard.pending::before{background:var(--red)}
+
+.fc-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;gap:4px}
+.fc-left{min-width:0}
+.fc-num{font-size:13px;font-weight:800;color:var(--text);letter-spacing:-.1px}
+.fc-owner{font-size:11px;color:var(--text2);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;font-weight:500}
+.fc-type{font-size:9px;font-weight:700;padding:1px 6px;border-radius:99px;display:inline-block;margin-top:3px}
 .fc-type.owner{background:var(--indigo-bg);color:var(--indigo)}
 .fc-type.tenant{background:var(--amber-bg);color:var(--amber)}
-.fc-indicator{width:20px;height:20px;border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px}
+.fc-indicator{width:22px;height:22px;border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px}
 .fcard.paid    .fc-indicator{background:var(--green-bg); color:var(--green)}
 .fcard.partial .fc-indicator{background:var(--amber-bg); color:var(--amber)}
 .fcard.pending .fc-indicator{background:var(--red-bg);   color:var(--red)}
-.fc-amount{font-size:14px;font-weight:800;letter-spacing:-.3px;line-height:1;margin-bottom:2px}
-.fcard.paid    .fc-amount{color:var(--green)}
+
+.fc-amount{font-size:16px;font-weight:800;letter-spacing:-.4px;line-height:1;margin-bottom:2px}
+.fcard.paid    .fc-amount{color:var(--text)}
 .fcard.partial .fc-amount{color:var(--amber)}
 .fcard.pending .fc-amount{color:var(--red)}
-.fc-due{font-size:9px;color:var(--muted);font-weight:600}
-.fprog{height:2px;background:var(--bg2);border-radius:99px;margin:3px 0 2px;overflow:hidden}
+.fc-due{font-size:10px;color:var(--muted);font-weight:500}
+
+.fprog{height:3px;background:var(--bg2);border-radius:99px;margin:8px 0 6px;overflow:hidden}
 .fpbar{height:100%;border-radius:99px;transition:width .6s cubic-bezier(.4,0,.2,1)}
-.fcard.paid    .fpbar{background:linear-gradient(90deg,#059669,#10B981)}
-.fcard.partial .fpbar{background:linear-gradient(90deg,#D97706,#F59E0B)}
-.fcard.pending .fpbar{background:linear-gradient(90deg,#DC2626,#EF4444)}
-.spill{display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:700;padding:2px 7px;
-  border-radius:99px;text-transform:uppercase;letter-spacing:.3px}
-.spill i{font-size:8px}
-.spill.paid   {background:var(--green-bg);color:var(--green-txt);border:1px solid var(--green-border)}
-.spill.partial{background:var(--amber-bg);color:var(--amber-txt);border:1px solid var(--amber-border)}
-.spill.pending{background:var(--red-bg);  color:var(--red-txt);  border:1px solid var(--red-border)}
+.fcard.paid    .fpbar{background:var(--green)}
+.fcard.partial .fpbar{background:var(--amber)}
+.fcard.pending .fpbar{background:var(--red)}
+
+.spill{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:700;
+  padding:2px 8px;border-radius:99px;text-transform:uppercase;letter-spacing:.3px}
+.spill i{font-size:9px}
+.spill.paid   {background:var(--green-bg);color:var(--green-txt)}
+.spill.partial{background:var(--amber-bg);color:var(--amber-txt)}
+.spill.pending{background:var(--red-bg);  color:var(--red-txt)}
+
 .empty-grid{grid-column:1/-1;text-align:center;padding:4rem 0;color:var(--text2)}
 .empty-grid i{font-size:44px;display:block;margin-bottom:12px;color:var(--muted)}
 
-/* ── ISSUES ── */
+/* ════════════════════════════════════════════════════════════
+   UNIFIED TAB DESIGN SYSTEM
+   Shared across Analytics, Expenses, Residents, Issues tabs
+   ════════════════════════════════════════════════════════════ */
+
+/* ── Filter chip bar (used in all tabs) ── */
+.tab-filters{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+/* .iff  = Issues filter chip  │  .mff = Members  │ all share same base */
+.iff,.mff{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:5px 14px;border-radius:6px;
+  font-size:12px;font-weight:600;
+  border:1px solid var(--border2);
+  background:#fff;color:var(--text2);
+  cursor:pointer;font-family:var(--font);
+  transition:background .15s,color .15s,border-color .15s;
+  white-space:nowrap;
+}
+.iff i,.mff i{font-size:12px}
+.iff.active,.mff.active{
+  background:var(--indigo);color:#fff;border-color:var(--indigo);
+}
+.iff:hover:not(.active),.mff:hover:not(.active){
+  border-color:var(--border3);color:var(--text);background:var(--surface2);
+}
+/* Analytics status filter buttons — same shape */
+.an-sf-btn{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:5px 14px;border-radius:6px;
+  font-size:12px;font-weight:600;
+  border:1px solid var(--border2);
+  background:#fff;color:var(--text2);
+  cursor:pointer;font-family:var(--font);
+  transition:background .15s,color .15s,border-color .15s;
+  white-space:nowrap;
+}
+.an-sf-btn.active{background:var(--indigo);color:#fff;border-color:var(--indigo)}
+.an-sf-btn:hover:not(.active){border-color:var(--border3);color:var(--text);background:var(--surface2)}
+
+/* ── Unified table wrapper + table ── */
+.tab-table-wrap{
+  background:#fff;
+  border:1px solid var(--border2);
+  border-radius:var(--r-lg);
+  overflow:hidden;
+}
+/* applies to mem-table, veh-table, analytics inline tables */
+.mem-table,.veh-table{width:100%;border-collapse:collapse}
+.mem-table th,.veh-table th{
+  background:var(--surface3);
+  padding:9px 14px;
+  font-size:10px;font-weight:700;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.6px;
+  text-align:left;border-bottom:1px solid var(--border2);
+}
+.mem-table td,.veh-table td{
+  padding:11px 14px;
+  font-size:13px;font-weight:500;color:var(--text);
+  border-bottom:1px solid var(--border);
+  vertical-align:middle;
+}
+.mem-table tr:last-child td,.veh-table tr:last-child td{border-bottom:none}
+.mem-table tr:hover td,.veh-table tr:hover td{background:var(--surface2)}
+
+/* Analytics records panel table (inline in app.html) also gets matching th/td via these rules */
+.exp-records-panel table th{
+  background:var(--surface3);
+  font-size:10px;font-weight:700;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.6px;
+  padding:9px 14px;text-align:left;
+  border-bottom:1px solid var(--border2);
+}
+.exp-records-panel table td{
+  padding:11px 14px;
+  font-size:13px;font-weight:500;color:var(--text);
+  border-bottom:1px solid var(--border);
+  vertical-align:middle;
+}
+.exp-records-panel table tr:last-child td{border-bottom:none}
+.exp-records-panel table tr:hover td{background:var(--surface2)}
+
+/* ── Unified status / type chip ── */
+/* used as .tab-chip  with color modifiers */
+.tab-chip{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:3px 9px;border-radius:5px;
+  font-size:10px;font-weight:700;
+  white-space:nowrap;
+}
+/* color variants */
+.tab-chip.indigo{background:var(--indigo-bg);color:var(--indigo)}
+.tab-chip.green {background:var(--green-bg); color:var(--green-txt)}
+.tab-chip.amber {background:var(--amber-bg); color:var(--amber-txt)}
+.tab-chip.red   {background:var(--red-bg);   color:var(--red-txt)}
+.tab-chip.sky   {background:var(--sky-bg);   color:var(--sky-txt)}
+.tab-chip.purple{background:var(--purple-bg);color:var(--purple-txt)}
+.tab-chip.muted {background:var(--surface3); color:var(--muted)}
+
+/* Legacy aliases — existing JS still outputs these class names */
+.mem-type{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:3px 9px;border-radius:5px;white-space:nowrap}
+.mem-type.owner {background:var(--indigo-bg);color:var(--indigo)}
+.mem-type.tenant{background:var(--amber-bg); color:var(--amber-txt)}
+.mem-type.vacant{background:var(--surface3); color:var(--muted)}
+
+.vbadge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:5px;font-size:10px;font-weight:700}
+.vbadge.tw  {background:var(--indigo-bg);color:var(--indigo)}
+.vbadge.fw  {background:var(--green-bg); color:var(--green-txt)}
+.vbadge.none{background:var(--surface3); color:var(--muted)}
+
+.istatus{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:5px;font-size:10px;font-weight:700;white-space:nowrap;text-transform:capitalize}
+.istatus.open       {background:var(--red-bg);  color:var(--red-txt)}
+.istatus.in-progress{background:var(--amber-bg);color:var(--amber-txt)}
+.istatus.resolved   {background:var(--green-bg);color:var(--green-txt)}
+
+.ipriority{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:5px;font-size:10px;font-weight:700}
+.ipriority.high  {background:var(--red-bg);  color:var(--red-txt)}
+.ipriority.medium{background:var(--amber-bg);color:var(--amber-txt)}
+.ipriority.low   {background:var(--green-bg);color:var(--green-txt)}
+
+.itag{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:3px 9px;border-radius:5px}
+.itag i{font-size:10px}
+.itag.flat  {background:var(--sky-bg);   color:var(--sky-txt)}
+.itag.cat   {background:var(--purple-bg);color:var(--purple-txt)}
+.itag.date  {background:var(--surface3); color:var(--text2)}
+
+.hist-chip{display:inline-flex;align-items:center;font-size:10px;font-weight:700;padding:3px 9px;border-radius:5px;background:var(--surface3);color:var(--text2);margin:1px}
+
+/* ── Unified summary stat cards (replaces vscard, fcard2) ── */
+.tab-stat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:1.4rem}
+/* both .vscard and .fcard2 map to the same visual */
+.vscard,.fcard2{
+  background:#fff;border-radius:var(--r-lg);
+  padding:14px 16px;border:1px solid var(--border);
+  display:flex;align-items:center;gap:12px;
+}
+.vscard-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.vscard-icon.tw {background:var(--indigo-bg);color:var(--indigo)}
+.vscard-icon.fw {background:var(--green-bg); color:var(--green)}
+.vscard-icon.tot{background:var(--sky-bg);   color:var(--sky)}
+.vscard-icon.fl {background:var(--amber-bg); color:var(--amber)}
+.vscard-label,.fcard2-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px}
+.vscard-val,.fcard2-val{font-size:20px;font-weight:800;color:var(--text)}
+.fcard2-sub{font-size:11px;color:var(--text2);margin-top:2px}
+/* fcard2 doesn't have an icon, left-align the text block */
+.fcard2{flex-direction:column;align-items:flex-start;gap:0}
+
+/* ── Expense records list (Expenses tab) ── */
+.exp-list{background:#fff;border:1px solid var(--border2);border-radius:var(--r-lg);overflow:hidden}
+.exp-list-head{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border2);background:var(--surface3)}
+.exp-list-title{font-size:12px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:7px;text-transform:uppercase;letter-spacing:.4px}
+.exp-list-title i{font-size:15px;color:var(--indigo)}
+.exp-row{display:grid;grid-template-columns:auto 1fr auto auto;gap:12px;align-items:center;padding:11px 16px;border-bottom:1px solid var(--border);transition:background .15s}
+.exp-row:last-child{border-bottom:none}
+.exp-row:hover{background:var(--surface2)}
+.exp-row-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.exp-row-cat{font-size:13px;font-weight:600;color:var(--text)}
+.exp-row-date{font-size:11px;color:var(--muted);margin-top:2px}
+.exp-row-note{font-size:11px;color:var(--text2);margin-top:1px;font-style:italic}
+.exp-row-amt{font-size:14px;font-weight:800;color:var(--text);white-space:nowrap}
+.exp-empty{text-align:center;padding:36px;color:var(--muted)}
+.exp-empty i{font-size:36px;display:block;margin-bottom:8px}
+
+/* ── Issues list ── */
 .iss-toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;flex-wrap:wrap;gap:10px}
 .iss-filters{display:flex;gap:6px;flex-wrap:wrap}
-.iff{padding:6px 16px;border-radius:99px;font-size:12px;font-weight:700;border:1.5px solid var(--border2);
-  background:#fff;color:var(--text2);cursor:pointer;font-family:var(--font);transition:all .15s;box-shadow:var(--shadow-sm)}
-.iff.active{border-color:var(--indigo);background:var(--indigo-bg);color:var(--indigo)}
-.iff:hover:not(.active){border-color:var(--border3);color:var(--text)}
-.iss-list{display:flex;flex-direction:column;gap:12px}
+.iss-list{display:flex;flex-direction:column;gap:10px}
+.icard{
+  background:#fff;border:1px solid var(--border);border-radius:var(--r-lg);
+  padding:18px 20px;display:grid;grid-template-columns:4px 1fr auto;gap:16px;
+  align-items:start;transition:border-color .18s,box-shadow .18s;cursor:pointer;
+}
+.icard:hover{border-color:var(--border3);box-shadow:var(--shadow)}
+.ipbar{border-radius:99px;align-self:stretch;min-height:48px;width:4px}
+.ipbar.high  {background:var(--red)}
+.ipbar.medium{background:var(--amber)}
+.ipbar.low   {background:var(--green)}
+.ic-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.ic-title i{font-size:15px;color:var(--indigo)}
+.ic-desc{font-size:12px;color:var(--text2);line-height:1.6;margin-bottom:10px;font-weight:400}
+.ic-meta{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.iright{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.iss-empty{text-align:center;padding:4rem 0;color:var(--text2)}
+.iss-empty i{font-size:48px;color:var(--muted);display:block;margin-bottom:14px;opacity:.5}
+.iss-empty h3{font-size:16px;font-weight:800;color:var(--text);margin-bottom:6px}
+.iss-empty p{font-size:13px;color:var(--text2)}
 
-/* ── MEMBERS TAB ── */
+/* ── Members table helpers ── */
 .mem-toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;flex-wrap:wrap;gap:10px}
 .mem-filters{display:flex;gap:6px;flex-wrap:wrap}
-.mff{padding:6px 14px;border-radius:99px;font-size:12px;font-weight:700;border:1.5px solid var(--border2);
-  background:#fff;color:var(--text2);cursor:pointer;font-family:var(--font);transition:all .2s;display:flex;align-items:center;gap:5px}
-.mff i{font-size:12px}
-.mff.active{border-color:var(--indigo);background:var(--indigo-bg);color:var(--indigo)}
-.mff:hover:not(.active){border-color:var(--border3);color:var(--text)}
-.mem-table{width:100%;border-collapse:collapse;background:#fff;border-radius:var(--r-xl);overflow:hidden;
-  box-shadow:var(--shadow-sm);border:1.5px solid var(--border)}
-.mem-table th{background:var(--surface3);font-size:10px;font-weight:800;color:var(--muted);
-  text-transform:uppercase;letter-spacing:.6px;padding:10px 14px;text-align:left;
-  border-bottom:1.5px solid var(--border2)}
-.mem-table td{padding:11px 14px;font-size:13px;border-bottom:1px solid var(--border);
-  color:var(--text);vertical-align:middle}
-.mem-table tr:last-child td{border-bottom:none}
-.mem-table tr:hover td{background:var(--surface2)}
-.mem-type{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;
-  padding:2px 8px;border-radius:99px}
-.mem-type.owner {background:var(--indigo-bg);color:var(--indigo)}
-.mem-type.tenant{background:var(--amber-bg); color:var(--amber)}
-.mem-type.vacant{background:var(--surface3); color:var(--muted)}
 .mem-name{font-weight:700;color:var(--text)}
 .mem-flat{font-size:11px;font-weight:800;color:var(--indigo)}
 .mem-tenure{font-size:11px;color:var(--text2);white-space:nowrap}
@@ -298,39 +477,14 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .mem-due {font-size:12px;font-weight:700;color:var(--red)}
 .mem-empty{text-align:center;padding:48px 24px;color:var(--muted)}
 .mem-empty i{font-size:40px;display:block;margin-bottom:10px;opacity:.4}
-.hist-chip{display:inline-block;font-size:10px;font-weight:700;padding:1px 7px;
-  border-radius:99px;background:var(--surface3);color:var(--text2);margin:1px}
-.icard{background:#fff;border:1.5px solid var(--border);border-radius:var(--r-xl);
-  padding:20px 22px;display:grid;grid-template-columns:5px 1fr auto;gap:18px;
-  align-items:start;transition:all .2s;cursor:pointer;box-shadow:var(--shadow-sm)}
-.icard:hover{border-color:var(--border3);transform:translateX(5px);box-shadow:var(--shadow)}
-.ipbar{border-radius:99px;align-self:stretch;min-height:50px;width:5px}
-.ipbar.high  {background:linear-gradient(180deg,#DC2626,#7C3AED)}
-.ipbar.medium{background:linear-gradient(180deg,#D97706,#F59E0B)}
-.ipbar.low   {background:linear-gradient(180deg,#059669,#0EA5E9)}
-.ic-title{font-size:14px;font-weight:800;color:var(--text);margin-bottom:5px;display:flex;align-items:center;gap:8px}
-.ic-title i{font-size:16px;color:var(--indigo)}
-.ic-desc{font-size:12px;color:var(--text2);line-height:1.65;margin-bottom:10px;font-weight:500}
-.ic-meta{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.itag{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:3px 9px;
-  border-radius:99px;text-transform:uppercase;letter-spacing:.4px}
-.itag i{font-size:10px}
-.itag.flat  {background:var(--sky-bg);   color:var(--sky-txt);  border:1px solid var(--sky-border)}
-.itag.cat   {background:var(--purple-bg);color:var(--purple-txt);border:1px solid var(--purple-border)}
-.itag.date  {background:var(--surface3); color:var(--text2);    border:1px solid var(--border2)}
-.iright{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
-.istatus{padding:4px 13px;border-radius:99px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap}
-.istatus.open       {background:var(--red-bg);  color:var(--red-txt);  border:1px solid var(--red-border)}
-.istatus.in-progress{background:var(--amber-bg);color:var(--amber-txt);border:1px solid var(--amber-border)}
-.istatus.resolved   {background:var(--green-bg);color:var(--green-txt);border:1px solid var(--green-border)}
-.ipriority{padding:3px 10px;border-radius:99px;font-size:10px;font-weight:700}
-.ipriority.high  {background:var(--red-bg);  color:var(--red-txt);  border:1px solid var(--red-border)}
-.ipriority.medium{background:var(--amber-bg);color:var(--amber-txt);border:1px solid var(--amber-border)}
-.ipriority.low   {background:var(--green-bg);color:var(--green-txt);border:1px solid var(--green-border)}
-.iss-empty{text-align:center;padding:4rem 0;color:var(--text2)}
-.iss-empty i{font-size:52px;color:var(--muted);display:block;margin-bottom:14px}
-.iss-empty h3{font-size:16px;font-weight:800;color:var(--text);margin-bottom:6px}
-.iss-empty p{font-size:13px;color:var(--text2)}
+.veh-search-row{display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap}
+.veh-sum{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:1.4rem}
+.veh-table-wrap{background:#fff;border:1px solid var(--border2);border-radius:var(--r-lg);overflow:hidden}
+.micon.veh{background:linear-gradient(135deg,rgba(2,132,199,.12),rgba(8,145,178,.08));color:var(--sky)}
+
+/* ── Analytics/Expenses shared panels ── */
+.exp-records-panel{background:#fff;border:1px solid var(--border2);border-radius:var(--r-lg);overflow:hidden}
+.exp-pie-panel{background:#fff;border:1px solid var(--border2);border-radius:var(--r-lg);padding:16px}
 
 /* ── MODALS ── */
 .mbg{display:none;position:fixed;inset:0;z-index:500;
@@ -419,32 +573,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .wiz-rm:hover{background:var(--red);color:#fff}
 
 
-/* ── VEHICLES TAB ── */
-.veh-toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;flex-wrap:wrap;gap:10px}
-.veh-sum{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:1.4rem}
-.vscard{background:#fff;border-radius:var(--r-lg);padding:14px 16px;border:1.5px solid var(--border);box-shadow:var(--shadow-sm);display:flex;align-items:center;gap:12px}
-.vscard-icon{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
-.vscard-icon.tw{background:rgba(99,102,241,.10);color:var(--indigo)}
-.vscard-icon.fw{background:var(--green-bg);color:var(--green)}
-.vscard-icon.tot{background:var(--sky-bg);color:var(--sky)}
-.vscard-icon.fl{background:var(--amber-bg);color:var(--amber)}
-.vscard-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px}
-.vscard-val{font-size:20px;font-weight:800;color:var(--text)}
-.veh-table-wrap{background:#fff;border:1.5px solid var(--border2);border-radius:var(--r-xl);overflow:hidden;box-shadow:var(--shadow-sm)}
-.veh-table{width:100%;border-collapse:collapse}
-.veh-table th{background:var(--surface3);padding:9px 14px;font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;text-align:left;border-bottom:1.5px solid var(--border2)}
-.veh-table td{padding:10px 14px;font-size:13px;font-weight:600;color:var(--text);border-bottom:1px solid var(--border);vertical-align:middle}
-.veh-table tr:last-child td{border-bottom:none}
-.veh-table tr:hover td{background:var(--surface2)}
-.vbadge{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:99px;font-size:11px;font-weight:700}
-.vbadge.tw{background:var(--indigo-bg);color:var(--indigo);border:1px solid var(--indigo-glow)}
-.vbadge.fw{background:var(--green-bg);color:var(--green-txt);border:1px solid var(--green-border)}
-.vbadge.none{background:var(--surface3);color:var(--muted);border:1px solid var(--border2)}
-.veh-search-row{display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap}
-.micon.veh{background:linear-gradient(135deg,rgba(2,132,199,.12),rgba(8,145,178,.08));color:var(--sky)}
-
 /* ── PRESIDENT / FUND TAB ── */
-/* President chip */
 .pres-chip{display:flex;align-items:center;gap:10px;padding:8px 16px 8px 8px;
   background:linear-gradient(135deg,#6366F1,#8B5CF6);border-radius:99px;
   width:fit-content;margin-bottom:1rem;box-shadow:0 3px 12px rgba(99,102,241,.3)}
@@ -462,28 +591,8 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   padding:20px;text-align:center;color:var(--text2);margin-bottom:1rem;display:flex;
   align-items:center;gap:12px}
 .pres-empty i{font-size:24px;color:var(--muted);flex-shrink:0}
-/* cat breakdown */
 .cat-summary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-bottom:12px}
 .fund-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:1.4rem}
-.fcard2{background:#fff;border-radius:var(--r-lg);padding:14px 16px;border:1.5px solid var(--border);box-shadow:var(--shadow-sm)}
-.fcard2-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
-.fcard2-val{font-size:20px;font-weight:800;color:var(--text)}
-.fcard2-sub{font-size:11px;color:var(--text2);margin-top:2px}
-.exp-list{background:#fff;border:1.5px solid var(--border2);border-radius:var(--r-xl);overflow:hidden;box-shadow:var(--shadow-sm)}
-.exp-list-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1.5px solid var(--border2);background:var(--surface3)}
-.exp-list-title{font-size:13px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:7px}
-.exp-list-title i{font-size:16px;color:var(--indigo)}
-.exp-row{display:grid;grid-template-columns:auto 1fr auto auto;gap:12px;align-items:center;padding:12px 18px;border-bottom:1px solid var(--border);transition:background .15s}
-.exp-row:last-child{border-bottom:none}
-.exp-row:hover{background:var(--surface2)}
-.exp-row-icon{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
-.exp-row-cat{font-size:13px;font-weight:700;color:var(--text)}
-.exp-row-date{font-size:11px;color:var(--muted);margin-top:2px}
-.exp-row-note{font-size:11px;color:var(--text2);margin-top:1px;font-style:italic}
-.exp-row-amt{font-size:14px;font-weight:800;color:var(--text);white-space:nowrap}
-
-.exp-empty{text-align:center;padding:36px;color:var(--muted)}
-.exp-empty i{font-size:36px;display:block;margin-bottom:8px}
 .micon.pres{background:linear-gradient(135deg,rgba(99,102,241,.12),rgba(139,92,246,.08));color:var(--indigo)}
 .cat-icon-map-maintenance{background:var(--indigo-bg);color:var(--indigo)}
 .cat-icon-map-water{background:var(--sky-bg);color:var(--sky)}
@@ -860,7 +969,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
       </div>
     </div>
     <div class="veh-sum" id="vehSum" style="margin-bottom:1rem"></div>
-    <div class="veh-table-wrap">
+    <div class="veh-table-wrap tab-table-wrap">
       <table class="veh-table">
         <thead><tr>
           <th>Flat</th><th>Resident</th><th>🏍 2W</th><th>🚗 4W</th>
@@ -889,16 +998,16 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
     <div style="display:grid;grid-template-columns:58fr 42fr;gap:14px;align-items:start" class="exp-layout-grid">
 
       <!-- Expense Records -->
-      <div class="exp-records-panel" style="background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--r-lg);overflow:hidden">
+      <div class="exp-records-panel tab-table-wrap">
 
-        <div style="padding:10px 14px;border-bottom:1.5px solid var(--border2);font-size:11px;font-weight:800;color:var(--text)">
+        <div style="padding:10px 14px;border-bottom:1px solid var(--border2);font-size:11px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.4px">
           <i class="ti ti-receipt" style="color:var(--indigo)"></i> Expense Records
         </div>
-        <div style="display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:10px;padding:6px 14px;background:var(--surface3);border-bottom:1px solid var(--border2)">
-          <div style="font-size:9px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Title</div>
-          <div style="font-size:9px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Category</div>
-          <div style="font-size:9px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Date</div>
-          <div style="font-size:9px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;text-align:right">Amount</div>
+        <div style="display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:10px;padding:9px 14px;background:var(--surface3);border-bottom:1px solid var(--border2)">
+          <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Title</div>
+          <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Category</div>
+          <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Date</div>
+          <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;text-align:right">Amount</div>
         </div>
         <div style="max-height:420px;overflow-y:auto">
           <div id="presExpList"></div>
@@ -906,7 +1015,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
       </div>
 
       <!-- Pie Chart -->
-      <div class="exp-pie-panel" style="background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--r-lg);padding:14px;position:sticky;top:14px">
+      <div class="exp-pie-panel" style="position:sticky;top:14px">
         <div style="font-size:11px;font-weight:800;color:var(--text);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">
           <i class="ti ti-chart-pie" style="color:var(--indigo)"></i> By Category
         </div>
@@ -942,9 +1051,9 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
     <div style="display:grid;grid-template-columns:55fr 45fr;gap:14px;margin-bottom:14px;align-items:start" class="an-layout-grid">
 
       <!-- Payment Records Table -->
-      <div class="exp-records-panel" style="background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--r-lg);overflow:hidden">
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1.5px solid var(--border2);flex-wrap:wrap;gap:6px">
-          <div style="font-size:11px;font-weight:800;color:var(--text)"><i class="ti ti-table" style="color:var(--indigo)"></i> Payment Records <span id="anPayCount" style="font-size:10px;color:var(--muted);font-weight:600"></span></div>
+      <div class="exp-records-panel tab-table-wrap">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border2);flex-wrap:wrap;gap:6px">
+          <div style="font-size:11px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.4px"><i class="ti ti-table" style="color:var(--indigo)"></i> Payment Records <span id="anPayCount" style="font-size:10px;color:var(--muted);font-weight:600;text-transform:none;letter-spacing:0"></span></div>
           <div style="display:flex;gap:5px;flex-wrap:wrap">
             <button class="an-sf-btn active" data-s="all"     onclick="anSetStatus('all')"    >All</button>
             <button class="an-sf-btn"        data-s="paid"    onclick="anSetStatus('paid')"   >✅ Paid</button>
@@ -953,13 +1062,13 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
           </div>
         </div>
         <div style="overflow-x:auto;max-height:340px;overflow-y:auto">
-          <table style="width:100%;border-collapse:collapse;font-size:12px">
+          <table style="width:100%;border-collapse:collapse">
             <thead style="position:sticky;top:0;z-index:1">
               <tr style="background:var(--surface3)">
-                <th style="padding:7px 10px;text-align:left;font-size:9px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1.5px solid var(--border2)">Flat</th>
-                <th style="padding:7px 10px;text-align:left;font-size:9px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1.5px solid var(--border2)">Owner</th>
-                <th style="padding:7px 10px;text-align:center;font-size:9px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1.5px solid var(--border2)">Status</th>
-                <th style="padding:7px 10px;text-align:right;font-size:9px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1.5px solid var(--border2)">Balance</th>
+                <th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border2)">Flat</th>
+                <th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border2)">Owner</th>
+                <th style="padding:9px 14px;text-align:center;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border2)">Status</th>
+                <th style="padding:9px 14px;text-align:right;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border2)">Balance</th>
               </tr>
             </thead>
             <tbody id="anPayTable"></tbody>
@@ -969,7 +1078,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
       </div>
 
       <!-- Payment Status Pie -->
-      <div class="exp-pie-panel" style="background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--r-lg);padding:14px">
+      <div class="exp-pie-panel">
         <div style="font-size:11px;font-weight:800;color:var(--text);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px"><i class="ti ti-credit-card" style="color:var(--indigo)"></i> Payment Status</div>
         <canvas id="payPie" style="display:block;margin:0 auto;width:100%;max-width:180px;cursor:pointer"></canvas>
         <div id="payTooltip" style="display:none;position:fixed;background:rgba(0,0,0,0.82);color:#fff;font-size:11px;font-weight:700;padding:5px 10px;border-radius:8px;pointer-events:none;z-index:9999;white-space:nowrap"></div>
