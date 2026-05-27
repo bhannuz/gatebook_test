@@ -3063,6 +3063,8 @@ async function rPresHistory() {
 window.rPresHistory = rPresHistory;
 
 function oPresM() {
+  const pres = president;
+  document.getElementById('presFlat').innerHTML = [...flats.values()]
     .filter(f => f.month === AM && (f.owner || '').trim())
     .map(f => `<option value="${f.flatId}"${pres && pres.flatId === f.flatId ? ' selected' : ''}>${f.flatId} — ${f.owner}</option>`)
     .join('');
