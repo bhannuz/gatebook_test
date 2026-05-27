@@ -87,30 +87,41 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 
 .nav-pills{display:none}
 
-/* ── Tab bar — clean underline nav ── */
+/* ── Tab bar ── */
 .tab-bar-wrap{
   position:sticky;top:56px;z-index:90;
   background:#fff;
   border-bottom:1px solid var(--border);
-  margin:0 -1.5rem 1.4rem;
-  padding:0 1.5rem;
+  padding:0 2rem;
+  margin-bottom:1.4rem;
 }
 .view-tabs{
-  display:flex;gap:0;
-  width:100%;margin-bottom:0;
+  display:flex;gap:2px;
+  width:100%;
+  overflow-x:auto;
+  scrollbar-width:none;
+  -ms-overflow-style:none;
 }
+.view-tabs::-webkit-scrollbar{display:none}
 .vtab{
-  padding:0 4px;height:44px;margin-right:24px;
+  flex-shrink:0;
+  padding:0 16px;height:46px;
   font-size:13px;font-weight:600;
-  color:var(--muted);cursor:pointer;border:none;background:transparent;
-  font-family:var(--font);transition:color .18s;
-  display:flex;align-items:center;gap:6px;
+  color:var(--text2);cursor:pointer;border:none;background:transparent;
+  font-family:var(--font);transition:color .15s,background .15s;
+  display:flex;align-items:center;gap:7px;
   border-bottom:2px solid transparent;
+  white-space:nowrap;
   position:relative;top:1px;
 }
 .vtab i{font-size:15px}
-.vtab.active{color:var(--indigo);border-bottom-color:var(--indigo)}
-.vtab:hover:not(.active){color:var(--text)}
+.vtab.active{
+  color:var(--indigo);
+  border-bottom-color:var(--indigo);
+  background:var(--indigo-bg);
+  border-radius:8px 8px 0 0;
+}
+.vtab:hover:not(.active){color:var(--text);background:var(--surface2);border-radius:8px 8px 0 0}
 .vtab-badge{
   font-size:10px;padding:1px 6px;border-radius:99px;font-weight:700;
   background:var(--red-bg);color:var(--red);
@@ -445,22 +456,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 /* ── Issues list ── */
 .iss-toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;flex-wrap:wrap;gap:10px}
 .iss-filters{display:flex;gap:6px;flex-wrap:wrap}
-.iss-list{display:flex;flex-direction:column;gap:10px}
-.icard{
-  background:#fff;border:1px solid var(--border);border-radius:var(--r-lg);
-  padding:18px 20px;display:grid;grid-template-columns:4px 1fr auto;gap:16px;
-  align-items:start;transition:border-color .18s,box-shadow .18s;cursor:pointer;
-}
-.icard:hover{border-color:var(--border3);box-shadow:var(--shadow)}
-.ipbar{border-radius:99px;align-self:stretch;min-height:48px;width:4px}
-.ipbar.high  {background:var(--red)}
-.ipbar.medium{background:var(--amber)}
-.ipbar.low   {background:var(--green)}
-.ic-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px;display:flex;align-items:center;gap:8px}
-.ic-title i{font-size:15px;color:var(--indigo)}
-.ic-desc{font-size:12px;color:var(--text2);line-height:1.6;margin-bottom:10px;font-weight:400}
-.ic-meta{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
-.iright{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
 .iss-empty{text-align:center;padding:4rem 0;color:var(--text2)}
 .iss-empty i{font-size:48px;color:var(--muted);display:block;margin-bottom:14px;opacity:.5}
 .iss-empty h3{font-size:16px;font-weight:800;color:var(--text);margin-bottom:6px}
@@ -735,31 +730,29 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   .fgrid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr))}
 }
 @media(max-width:900px){
-  .navbar{padding:0 1rem}.app{padding:0 1rem 5rem}
+  .navbar{padding:0 1rem}
+  .tab-bar-wrap{padding:0 1rem}
+  .app{padding:0 1rem 1.5rem}
   .fg2{grid-template-columns:1fr}
   .dm{grid-template-columns:1fr 1fr}
   .fgrid{grid-template-columns:repeat(auto-fill,minmax(165px,1fr))}
-  .icard{grid-template-columns:5px 1fr}.iright{display:none}
   .user-chip span{display:none}
-  .view-tabs{display:none}
-  .tab-bar-wrap{display:none}
+  .vtab{padding:0 12px;font-size:12px}
   .exp-layout-grid{grid-template-columns:1fr!important}
   .an-layout-grid{grid-template-columns:1fr!important}
   .exp-pie-panel{order:-1}
   .exp-records-panel{max-height:none!important}
 }
-@media(min-width:901px){
+@media(min-width:601px){
   .bottom-nav-bar{display:none!important}
-  .tab-bar-wrap{display:block}
-  .view-tabs{display:flex}
   .app{padding-bottom:1rem}
 }
-/* ── Bottom Nav Bar ── */
-@media(pointer:coarse){
-  .view-tabs{display:none}
+@media(max-width:600px){
   .bottom-nav-bar{display:flex}
-  .app{padding-bottom:5rem}
+  .tab-bar-wrap{display:none}
+  .app{padding:0 1rem 5rem}
 }
+/* ── Bottom Nav Bar (mobile ≤600px only) ── */
 .bottom-nav-bar{
   display:flex;
   position:fixed;bottom:0;left:0;right:0;
@@ -944,7 +937,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
       </div>
       <button class="btn btn-indigo btn-sm" onclick="window._oRI()"><i class="ti ti-plus"></i> Raise Issue</button>
     </div>
-    <div class="iss-list" id="iList"></div>
+    <div class="tab-table-wrap" id="iList"></div>
   </div><!-- /#iView -->
 
   <!-- RESIDENTS VIEW (Members + Vehicles merged) -->
@@ -2502,9 +2495,10 @@ function rIssues() {
     Security: 'ti-shield', Cleaning: 'ti-vacuum-cleaner', Parking: 'ti-car',
     Noise: 'ti-volume', Internet: 'ti-wifi', Other: 'ti-clipboard'
   };
+  const el = document.getElementById('iList');
 
   if (!fil.length) {
-    document.getElementById('iList').innerHTML = `<div class="iss-empty">
+    el.innerHTML = `<div class="iss-empty">
       <i class="ti ti-mood-happy"></i>
       <h3>${IF === 'all' ? 'No issues raised yet' : 'No ' + IF + ' issues found'}</h3>
       <p>${IF === 'all' ? 'Everything is running smoothly!' : 'All clear in this category.'}</p>
@@ -2512,27 +2506,54 @@ function rIssues() {
     return;
   }
 
-  document.getElementById('iList').innerHTML = fil.map(iss => {
-    const sLabel  = iss.status === 'in-progress' ? 'In Progress' : iss.status.charAt(0).toUpperCase() + iss.status.slice(1);
-    const pLabel  = iss.priority.charAt(0).toUpperCase() + iss.priority.slice(1);
-    return `<div class="icard" onclick="window._oID('${iss.id}')">
-      <div class="ipbar ${iss.priority}"></div>
-      <div>
-        <div class="ic-title"><i class="ti ${icons[iss.cat] || 'ti-clipboard'}"></i>${iss.title}</div>
-        <div class="ic-desc">${iss.desc.length > 130 ? iss.desc.slice(0, 130) + '…' : iss.desc}</div>
-        <div class="ic-meta">
-          <span class="itag flat"><i class="ti ti-home"></i>${iss.flat || iss.block}</span>
-          <span class="itag cat">${iss.cat}</span>
-          <span class="itag date"><i class="ti ti-calendar"></i>${fdt(iss.createdAt)}</span>
-          <span style="font-size:11px;color:var(--text2);font-weight:600">By: ${iss.reporter}</span>
-        </div>
-      </div>
-      <div class="iright">
-        <span class="istatus ${iss.status}">${sLabel}</span>
-        <span class="ipriority ${iss.priority}">${pLabel}</span>
-      </div>
-    </div>`;
-  }).join('');
+  el.innerHTML = `
+    <table style="width:100%;border-collapse:collapse">
+      <thead>
+        <tr style="background:var(--surface3)">
+          <th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border2)">Issue</th>
+          <th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border2)">Flat</th>
+          <th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border2)">Category</th>
+          <th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border2)">Reported</th>
+          <th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border2)">Priority</th>
+          <th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border2)">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${fil.map(iss => {
+          const sLabel = iss.status === 'in-progress' ? 'In Progress' : iss.status.charAt(0).toUpperCase() + iss.status.slice(1);
+          const pLabel = iss.priority.charAt(0).toUpperCase() + iss.priority.slice(1);
+          const pColor = iss.priority === 'high' ? 'red' : iss.priority === 'medium' ? 'amber' : 'green';
+          const sColor = iss.status === 'open' ? 'red' : iss.status === 'in-progress' ? 'amber' : 'green';
+          return `<tr style="cursor:pointer" onclick="window._oID('${iss.id}')"
+              onmouseover="this.style.background='var(--surface2)'"
+              onmouseout="this.style.background=''">
+            <td style="padding:11px 14px;border-bottom:1px solid var(--border);vertical-align:middle">
+              <div style="font-size:13px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:7px">
+                <i class="ti ${icons[iss.cat] || 'ti-clipboard'}" style="font-size:14px;color:var(--indigo);flex-shrink:0"></i>
+                ${iss.title}
+              </div>
+              ${iss.desc ? `<div style="font-size:11px;color:var(--text2);margin-top:2px">${iss.desc.length > 80 ? iss.desc.slice(0,80)+'…' : iss.desc}</div>` : ''}
+            </td>
+            <td style="padding:11px 14px;border-bottom:1px solid var(--border);vertical-align:middle">
+              <span class="tab-chip indigo">${iss.flat || iss.block}</span>
+            </td>
+            <td style="padding:11px 14px;border-bottom:1px solid var(--border);vertical-align:middle">
+              <span class="tab-chip purple">${iss.cat}</span>
+            </td>
+            <td style="padding:11px 14px;border-bottom:1px solid var(--border);vertical-align:middle;font-size:12px;color:var(--text2);white-space:nowrap">
+              <div>${fdt(iss.createdAt)}</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:1px">By ${iss.reporter}</div>
+            </td>
+            <td style="padding:11px 14px;border-bottom:1px solid var(--border);vertical-align:middle">
+              <span class="tab-chip ${pColor}">${pLabel}</span>
+            </td>
+            <td style="padding:11px 14px;border-bottom:1px solid var(--border);vertical-align:middle">
+              <span class="tab-chip ${sColor}">${sLabel}</span>
+            </td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>`;
 }
 
 function fIss(f) {
