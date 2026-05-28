@@ -93,7 +93,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   background:#f8f8fc;
   border-bottom:1px solid var(--border);
   padding:0 1.5rem;
-  margin-bottom:1.4rem;
+  margin-bottom:0;
 }
 .view-tabs{
   display:flex;gap:6px;
@@ -1040,10 +1040,10 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   </div><!-- /#presView -->
 
   <!-- ANALYTICS VIEW -->
-  <div id="analyticsView" style="display:none;padding:14px">
+  <div id="analyticsView" style="display:none;padding:10px 14px 14px">
 
-    <!-- Filters only — no title, no month label -->
-    <div style="display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:8px;margin-bottom:14px">
+    <!-- Filters only — right-aligned, tight to tab bar -->
+    <div style="display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:8px;margin-bottom:10px">
       <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
         <select id="anFilterType" class="ctrl" style="font-size:11px;height:30px;padding:0 8px" onchange="rAnalytics()">
           <option value="month">Month</option>
@@ -3710,31 +3710,32 @@ function buildLegend(legendId, segments, total) {
 }
 
 function _buildAnalyticsFilters() {
-  // Gather all months from flats + socExps
   const months = new Set();
   [...flats.values()].forEach(f=>{ if(f.month) months.add(f.month); });
   socExps.forEach(e=>{ if(e.month) months.add(e.month); });
+  // Always include current month even if no data yet
+  months.add(AM);
   const sorted = [...months].sort().reverse();
 
   const mSel = document.getElementById('anFilterMonth');
   const ySel = document.getElementById('anFilterYear');
   if (!mSel || !ySel) return;
 
-  // Only populate if empty or stale
-  const existing = [...mSel.options].map(o=>o.value);
-  const fresh    = sorted;
-  if (JSON.stringify(existing) !== JSON.stringify(fresh)) {
-    mSel.innerHTML = fresh.map(m => {
-      const lbl = new Date(m+'-01').toLocaleDateString('en-IN',{month:'long',year:'numeric'});
-      return `<option value="${m}"${m===AM?' selected':''}>${lbl}</option>`;
-    }).join('');
-  }
+  // Always repopulate to keep in sync
+  const prevMonth = mSel.value || AM;
+  mSel.innerHTML = sorted.map(m => {
+    const lbl = new Date(m+'-01').toLocaleDateString('en-IN',{month:'long',year:'numeric'});
+    return `<option value="${m}">${lbl}</option>`;
+  }).join('');
+  // Restore previous selection or default to AM
+  mSel.value = sorted.includes(prevMonth) ? prevMonth : AM;
+  if (!mSel.value) mSel.value = sorted[0] || AM;
 
   const years = [...new Set(sorted.map(m=>m.slice(0,4)))].sort().reverse();
   const curYear = new Date().getFullYear().toString();
-  if ([...ySel.options].length !== years.length) {
-    ySel.innerHTML = years.map(y=>`<option value="${y}"${y===curYear?' selected':''}>${y}</option>`).join('');
-  }
+  const prevYear = ySel.value || curYear;
+  ySel.innerHTML = years.map(y=>`<option value="${y}">${y}</option>`).join('');
+  ySel.value = years.includes(prevYear) ? prevYear : (years[0] || curYear);
 }
 
 function rAnalytics() {
@@ -3866,12 +3867,11 @@ function renderAnPayTable() {
   const filterType = document.getElementById('anFilterType')?.value||'month';
   const mSel = document.getElementById('anFilterMonth');
   const ySel = document.getElementById('anFilterYear');
-  const selMonth = (mSel?.value) || AM;
-  const selYear  = (ySel?.value) || new Date().getFullYear().toString();
+  const selMonth = mSel?.value || AM;
+  const selYear  = ySel?.value || new Date().getFullYear().toString();
   const matchM   = m => filterType==='month' ? m===selMonth : (m||'').startsWith(selYear);
 
-  // If no month selected yet, show current month flats
-  let rows = [...flats.values()].filter(f => matchM(f.month) || (!mSel?.value && f.month===AM));
+  let rows = [...flats.values()].filter(f => matchM(f.month));
   if (_anStatus !== 'all') rows = rows.filter(f=>st(f)===_anStatus);
   rows.sort((a,b)=>(a.flatId||'').localeCompare(b.flatId||''));
 
