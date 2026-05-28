@@ -123,15 +123,15 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 
 /* Per-tab inactive — light tint + coloured border */
 .vtab[data-v="analytics"]  {border-color:#6366F1;color:#6366F1;background:rgba(99,102,241,.06)}
-.vtab[data-v="president"]  {border-color:#7C3AED;color:#7C3AED;background:rgba(124,58,237,.06)}
-.vtab[data-v="payments"]   {border-color:#059669;color:#059669;background:rgba(5,150,105,.06)}
-.vtab[data-v="issues"]     {border-color:#DC2626;color:#DC2626;background:rgba(220,38,38,.06)}
+.vtab[data-v="president"]  {border-color:#6366F1;color:#6366F1;background:rgba(99,102,241,.06)}
+.vtab[data-v="payments"]   {border-color:#6366F1;color:#6366F1;background:rgba(99,102,241,.06)}
+.vtab[data-v="issues"]     {border-color:#6366F1;color:#6366F1;background:rgba(99,102,241,.06)}
 
 /* Active — filled solid */
 .vtab[data-v="analytics"].active  {background:#6366F1;color:#fff;border-color:#6366F1;box-shadow:0 2px 8px rgba(99,102,241,.3)}
-.vtab[data-v="president"].active  {background:#7C3AED;color:#fff;border-color:#7C3AED;box-shadow:0 2px 8px rgba(124,58,237,.3)}
-.vtab[data-v="payments"].active   {background:#059669;color:#fff;border-color:#059669;box-shadow:0 2px 8px rgba(5,150,105,.3)}
-.vtab[data-v="issues"].active     {background:#DC2626;color:#fff;border-color:#DC2626;box-shadow:0 2px 8px rgba(220,38,38,.3)}
+.vtab[data-v="president"].active  {background:#6366F1;color:#fff;border-color:#6366F1;box-shadow:0 2px 8px rgba(99,102,241,.3)}
+.vtab[data-v="payments"].active   {background:#6366F1;color:#fff;border-color:#6366F1;box-shadow:0 2px 8px rgba(99,102,241,.3)}
+.vtab[data-v="issues"].active     {background:#6366F1;color:#fff;border-color:#6366F1;box-shadow:0 2px 8px rgba(99,102,241,.3)}
 
 /* Hover — slightly deeper tint */
 .vtab:hover:not(.active){filter:brightness(.95)}
@@ -353,11 +353,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   border:1px solid var(--border2);
   border-top:3px solid #6366F1;
 }
-.tab-table-wrap.green  {border-top-color:#059669}
-.tab-table-wrap.amber  {border-top-color:#D97706}
-.tab-table-wrap.red    {border-top-color:#DC2626}
-.tab-table-wrap.sky    {border-top-color:#0284C7}
-.tab-table-wrap.purple {border-top-color:#7C3AED}
 /* applies to mem-table, veh-table, analytics inline tables */
 .mem-table,.veh-table{width:100%;border-collapse:collapse}
 .mem-table th,.veh-table th{
@@ -449,11 +444,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   display:flex;align-items:center;gap:12px;
   position:relative;overflow:hidden;
 }
-.vscard.green,.fcard2.green{border-top-color:#059669}
-.vscard.amber,.fcard2.amber{border-top-color:#D97706}
-.vscard.red,  .fcard2.red  {border-top-color:#DC2626}
-.vscard.sky,  .fcard2.sky  {border-top-color:#0284C7}
-.vscard.indigo,.fcard2.indigo{border-top-color:#6366F1}
 .vscard-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
 .vscard-icon.tw {background:var(--indigo-bg);color:var(--indigo)}
 .vscard-icon.fw {background:var(--green-bg); color:var(--green)}
@@ -507,7 +497,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 
 /* ── Analytics/Expenses shared panels ── */
 .exp-records-panel{background:#fff;border:1px solid var(--border2);border-top:3px solid #6366F1;border-radius:var(--r-lg);overflow:hidden;position:relative}
-.exp-pie-panel{background:#fff;border:1px solid var(--border2);border-top:3px solid #7C3AED;border-radius:var(--r-lg);padding:16px;position:relative;overflow:hidden}
+.exp-pie-panel{background:#fff;border:1px solid var(--border2);border-top:3px solid #6366F1;border-radius:var(--r-lg);padding:16px;position:relative;overflow:hidden}
 
 /* ── MODALS ── */
 .mbg{display:none;position:fixed;inset:0;z-index:500;
@@ -2711,7 +2701,6 @@ function rIssues() {
       </tbody>
     </table>`;
 }
-
 function fIss(f) {
   IF = f;
   document.querySelectorAll('.iff').forEach(b => b.classList.toggle('active', b.dataset.f === f));
