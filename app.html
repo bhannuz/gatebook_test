@@ -3657,30 +3657,34 @@ function drawPie(canvasId, segments, tooltipId) {
   ctx.fillStyle = mutedColor;
   ctx.fillText('total', cx, cy+15);
 
-  // Attach tooltip mouse handler
+  // Attach tooltip mouse handler — recalculate geometry from live canvas rect
   if (tooltipId) {
     canvas.onmousemove = (ev) => {
       const tip  = document.getElementById(tooltipId);
       if (!tip) return;
-      const cr   = canvas.getBoundingClientRect();
-      const mx   = ev.clientX - cr.left;
-      const my   = ev.clientY - cr.top;
-      const dx   = mx - cx, dy = my - cy;
-      const dist = Math.sqrt(dx*dx+dy*dy);
-      if (dist < r*0.45 || dist > r) { tip.style.display='none'; return; }
+      const segs = _pieSegs[canvasId];
+      if (!segs || !segs.length) { tip.style.display='none'; return; }
+      const cr  = canvas.getBoundingClientRect();
+      const lW  = cr.width, lH = cr.height;
+      const lcx = lW/2, lcy = lH/2, lr = Math.min(lW,lH)/2 - 8;
+      const mx  = ev.clientX - cr.left;
+      const my  = ev.clientY - cr.top;
+      const dx  = mx - lcx, dy = my - lcy;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      if (dist < lr*0.45 || dist > lr) { tip.style.display='none'; return; }
       let a = Math.atan2(dy, dx);
       if (a < -Math.PI/2) a += Math.PI*2;
-      const hit = drawn.find(sg => {
+      const hit = segs.find(sg => {
         let s = sg.startAngle, e = sg.endAngle;
         if (s < -Math.PI/2) { s += Math.PI*2; e += Math.PI*2; }
         return a >= s && a < e;
       });
       if (hit) {
         const pct = Math.round(hit.value/hit.total*100);
-        tip.textContent = `${hit.label}: ${hit.displayValue||hit.value} (${pct}%)`;
-        tip.style.display  = 'block';
-        tip.style.left     = (ev.clientX+12)+'px';
-        tip.style.top      = (ev.clientY-28)+'px';
+        tip.textContent   = `${hit.label}: ${hit.displayValue||hit.value} (${pct}%)`;
+        tip.style.display = 'block';
+        tip.style.left    = (ev.clientX+12)+'px';
+        tip.style.top     = (ev.clientY-28)+'px';
       } else {
         tip.style.display = 'none';
       }
@@ -3745,22 +3749,20 @@ function rAnalytics() {
   const mSel = document.getElementById('anFilterMonth');
   const ySel = document.getElementById('anFilterYear');
 
-  // Toggle visible filter
   if (mSel) mSel.style.display = filterType==='month' ? '' : 'none';
   if (ySel) ySel.style.display = filterType==='year'  ? '' : 'none';
 
+  // Use dropdown value — guaranteed set by _buildAnalyticsFilters
   const selMonth = mSel?.value || AM;
   const selYear  = ySel?.value || new Date().getFullYear().toString();
 
-  // Helper: does a record match the filter?
+  // Persist immediately so renderAnPayTable has them even if DOM is hidden
+  _anFilterType = filterType;
+  _anSelMonth   = selMonth;
+  _anSelYear    = selYear;
+
   const matchM = m => filterType==='month' ? m===selMonth : (m||'').startsWith(selYear);
 
-  // Label
-  const labelText = filterType==='month'
-    ? new Date(selMonth+'-01').toLocaleDateString('en-IN',{month:'long',year:'numeric'})
-    : selYear;
-
-  /* ── Payment status pie ── */
   const all     = [...flats.values()].filter(f=>matchM(f.month));
   const paid    = all.filter(f=>st(f)==='paid');
   const partial = all.filter(f=>st(f)==='partial');
@@ -3776,12 +3778,9 @@ function rAnalytics() {
 
   requestAnimationFrame(() => {
     drawPie('payPie', paySegs, 'payTooltip');
-    buildLegend('payLegend',
-      paySegs.map(s=>({...s, count:s.value})),
-      all.length);
+    buildLegend('payLegend', paySegs.map(s=>({...s,count:s.value})), all.length);
   });
 
-  /* ── Summary totals ── */
   const totalCollected   = all.reduce((s,f)=>s+(f.paid||0),0);
   const totalDue         = all.reduce((s,f)=>s+(f.due||0),0);
   const totalOutstanding = Math.max(0, totalDue - totalCollected);
@@ -3790,7 +3789,7 @@ function rAnalytics() {
     <div class="vscard green"><div class="vscard-icon fw"><i class="ti ti-circle-check"></i></div><div><div class="vscard-label">Collected</div><div class="vscard-val" style="color:var(--green)">${inr(totalCollected)}</div><div style="font-size:10px;color:var(--muted);margin-top:2px">${paid.length+partial.length} flats paid</div></div></div>
     <div class="vscard red"><div class="vscard-icon" style="background:var(--red-bg);color:var(--red)"><i class="ti ti-clock"></i></div><div><div class="vscard-label">Outstanding</div><div class="vscard-val" style="color:var(--red)">${inr(totalOutstanding)}</div><div style="font-size:10px;color:var(--muted);margin-top:2px">${pending.length} flats pending</div></div></div>`;
 
-  renderAnPayTable();
+  renderAnPayTable(filterType, selMonth, selYear);
 }
 window.rAnalytics = rAnalytics;
 
@@ -3856,24 +3855,38 @@ window._showPending  = showPending;
 window._closePending = closePending;
 
 let _anStatus = 'all';
+let _anFilterType = 'month';
+let _anSelMonth = AM;
+let _anSelYear  = new Date().getFullYear().toString();
+
 function anSetStatus(s) {
   _anStatus = s;
   document.querySelectorAll('.an-sf-btn').forEach(b => b.classList.toggle('active', b.dataset.s===s));
-  renderAnPayTable();
+  renderAnPayTable(_anFilterType, _anSelMonth, _anSelYear);
 }
 window.anSetStatus = anSetStatus;
 
-function renderAnPayTable() {
-  const filterType = document.getElementById('anFilterType')?.value||'month';
-  const mSel = document.getElementById('anFilterMonth');
-  const ySel = document.getElementById('anFilterYear');
-  const selMonth = mSel?.value || AM;
-  const selYear  = ySel?.value || new Date().getFullYear().toString();
-  const matchM   = m => filterType==='month' ? m===selMonth : (m||'').startsWith(selYear);
+function renderAnPayTable(filterType, selMonth, selYear) {
+  // Always update stored params when called with args
+  if (filterType !== undefined) _anFilterType = filterType;
+  if (selMonth   !== undefined) _anSelMonth   = selMonth   || AM;
+  if (selYear    !== undefined) _anSelYear    = selYear    || new Date().getFullYear().toString();
+
+  const ft = _anFilterType || 'month';
+  const sm = _anSelMonth   || AM;
+  const sy = _anSelYear    || new Date().getFullYear().toString();
+  const matchM = m => ft==='month' ? m===sm : (m||'').startsWith(sy);
 
   let rows = [...flats.values()].filter(f => matchM(f.month));
-  if (_anStatus !== 'all') rows = rows.filter(f=>st(f)===_anStatus);
-  rows.sort((a,b)=>(a.flatId||'').localeCompare(b.flatId||''));
+
+  // Debug: if still empty and using month filter, show all flats for AM as fallback
+  if (!rows.length && ft==='month') {
+    rows = [...flats.values()].filter(f => f.month===AM);
+    _anSelMonth = AM;
+  }
+
+  if (_anStatus !== 'all') rows = rows.filter(f => st(f) === _anStatus);
+  rows.sort((a,b) => (a.flatId||'').localeCompare(b.flatId||''));
 
   const tbody   = document.getElementById('anPayTable');
   const empty   = document.getElementById('anPayEmpty');
