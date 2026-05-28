@@ -333,23 +333,17 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 /* ── Unified table wrapper + table ── */
 .tab-table-wrap{
   background:#fff;
-  border:1px solid var(--border2);
   border-radius:var(--r-lg);
   overflow:hidden;
   position:relative;
+  border:1.5px solid #6366F1;
 }
-/* coloured top stripe — matches fcard pattern */
-.tab-table-wrap::before{
-  content:'';position:absolute;top:0;left:0;right:0;height:3px;
-  background:linear-gradient(90deg,#6366F1,#8B5CF6);
-  z-index:1;
-}
-/* per-tab colour overrides */
-.tab-table-wrap.green::before {background:linear-gradient(90deg,#059669,#10B981)}
-.tab-table-wrap.amber::before {background:linear-gradient(90deg,#D97706,#F59E0B)}
-.tab-table-wrap.red::before   {background:linear-gradient(90deg,#DC2626,#EF4444)}
-.tab-table-wrap.sky::before   {background:linear-gradient(90deg,#0284C7,#0EA5E9)}
-.tab-table-wrap.purple::before{background:linear-gradient(90deg,#7C3AED,#8B5CF6)}
+/* per-tab colour overrides — full border all sides */
+.tab-table-wrap.green  {border-color:#059669}
+.tab-table-wrap.amber  {border-color:#D97706}
+.tab-table-wrap.red    {border-color:#DC2626}
+.tab-table-wrap.sky    {border-color:#0284C7}
+.tab-table-wrap.purple {border-color:#7C3AED}
 /* applies to mem-table, veh-table, analytics inline tables */
 .mem-table,.veh-table{width:100%;border-collapse:collapse}
 .mem-table th,.veh-table th{
@@ -436,19 +430,16 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 /* both .vscard and .fcard2 map to the same visual */
 .vscard,.fcard2{
   background:#fff;border-radius:var(--r-lg);
-  padding:14px 16px;border:1px solid var(--border);
+  padding:14px 16px;
+  border:1.5px solid #6366F1;
   display:flex;align-items:center;gap:12px;
   position:relative;overflow:hidden;
 }
-.vscard::before,.fcard2::before{
-  content:'';position:absolute;top:0;left:0;right:0;height:3px;
-  background:linear-gradient(90deg,#6366F1,#8B5CF6);
-}
-.vscard.green::before,.fcard2.green::before{background:linear-gradient(90deg,#059669,#10B981)}
-.vscard.amber::before,.fcard2.amber::before{background:linear-gradient(90deg,#D97706,#F59E0B)}
-.vscard.red::before,  .fcard2.red::before  {background:linear-gradient(90deg,#DC2626,#EF4444)}
-.vscard.sky::before,  .fcard2.sky::before  {background:linear-gradient(90deg,#0284C7,#0EA5E9)}
-.vscard.indigo::before,.fcard2.indigo::before{background:linear-gradient(90deg,#6366F1,#8B5CF6)}
+.vscard.green,.fcard2.green{border-color:#059669}
+.vscard.amber,.fcard2.amber{border-color:#D97706}
+.vscard.red,  .fcard2.red  {border-color:#DC2626}
+.vscard.sky,  .fcard2.sky  {border-color:#0284C7}
+.vscard.indigo,.fcard2.indigo{border-color:#6366F1}
 .vscard-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
 .vscard-icon.tw {background:var(--indigo-bg);color:var(--indigo)}
 .vscard-icon.fw {background:var(--green-bg); color:var(--green)}
@@ -501,10 +492,8 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .micon.veh{background:linear-gradient(135deg,rgba(2,132,199,.12),rgba(8,145,178,.08));color:var(--sky)}
 
 /* ── Analytics/Expenses shared panels ── */
-.exp-records-panel{background:#fff;border:1px solid var(--border2);border-radius:var(--r-lg);overflow:hidden;position:relative}
-.exp-records-panel::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#6366F1,#8B5CF6);z-index:1}
-.exp-pie-panel{background:#fff;border:1px solid var(--border2);border-radius:var(--r-lg);padding:16px;position:relative;overflow:hidden}
-.exp-pie-panel::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#7C3AED,#8B5CF6)}
+.exp-records-panel{background:#fff;border:1.5px solid #6366F1;border-radius:var(--r-lg);overflow:hidden;position:relative}
+.exp-pie-panel{background:#fff;border:1.5px solid #7C3AED;border-radius:var(--r-lg);padding:16px;position:relative;overflow:hidden}
 
 /* ── MODALS ── */
 .mbg{display:none;position:fixed;inset:0;z-index:500;
@@ -1003,6 +992,14 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   <div id="presView" style="display:none;padding:14px">
     <div id="presBanner"></div>
 
+    <!-- Filters row — above everything, full width -->
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+      <select id="histMonthFilter" class="ctrl" style="font-size:11px;height:30px;padding:0 8px;min-width:120px" onchange="rPresident()"></select>
+      <select id="histCatFilter"   class="ctrl" style="font-size:11px;height:30px;padding:0 8px;min-width:120px" onchange="rPresident()"></select>
+      <div style="font-size:11px;color:var(--muted)" id="histTotal"></div>
+      <button class="btn btn-indigo" style="margin-left:auto" onclick="window._oPresExp()"><i class="ti ti-plus"></i> Add Expense</button>
+    </div>
+
     <!-- Single 2-col grid: left 58% = summary cards + table, right 42% = chart -->
     <div style="display:grid;grid-template-columns:58fr 42fr;gap:14px;align-items:start" class="exp-layout-grid">
 
@@ -1011,14 +1008,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 
         <!-- Summary cards — full width of left col, 2 equal cols -->
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px" id="fundRow"></div>
-
-        <!-- Filters row -->
-        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-          <select id="histMonthFilter" class="ctrl" style="font-size:11px;height:30px;padding:0 8px;min-width:120px" onchange="rPresident()"></select>
-          <select id="histCatFilter"   class="ctrl" style="font-size:11px;height:30px;padding:0 8px;min-width:120px" onchange="rPresident()"></select>
-          <div style="margin-left:auto;font-size:11px;color:var(--muted)" id="histTotal"></div>
-          <button class="btn btn-indigo" onclick="window._oPresExp()"><i class="ti ti-plus"></i> Add Expense</button>
-        </div>
 
         <!-- Expense Records -->
         <div class="exp-records-panel tab-table-wrap">
@@ -1062,9 +1051,8 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   <!-- ANALYTICS VIEW -->
   <div id="analyticsView" style="display:none;padding:14px">
 
-    <!-- Header + Filters -->
-    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:6px">
-      <div style="font-size:15px;font-weight:800;color:var(--text)"><i class="ti ti-chart-pie" style="color:var(--indigo)"></i> Analytics</div>
+    <!-- Filters only — no title, no month label -->
+    <div style="display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:8px;margin-bottom:14px">
       <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
         <select id="anFilterType" class="ctrl" style="font-size:11px;height:30px;padding:0 8px" onchange="rAnalytics()">
           <option value="month">Month</option>
@@ -1074,7 +1062,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
         <select id="anFilterYear"  class="ctrl" style="font-size:11px;height:30px;padding:0 8px;display:none"    onchange="rAnalytics()"></select>
       </div>
     </div>
-    <div style="font-size:11px;color:var(--muted);margin-bottom:12px" id="analyticsMonth"></div>
 
     <!-- Single 2-col grid: left 55% = chips + table stacked, right 45% = chart -->
     <div style="display:grid;grid-template-columns:55fr 45fr;gap:14px;align-items:start" class="an-layout-grid">
@@ -3731,8 +3718,6 @@ function rAnalytics() {
   const labelText = filterType==='month'
     ? new Date(selMonth+'-01').toLocaleDateString('en-IN',{month:'long',year:'numeric'})
     : selYear;
-  const el = document.getElementById('analyticsMonth');
-  if (el) el.textContent = 'Showing data for: ' + labelText;
 
   /* ── Payment status pie ── */
   const all     = [...flats.values()].filter(f=>matchM(f.month));
