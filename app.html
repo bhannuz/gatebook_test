@@ -90,43 +90,59 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 /* ── Tab bar ── */
 .tab-bar-wrap{
   position:sticky;top:56px;z-index:90;
-  background:#fff;
+  background:#f8f8fc;
   border-bottom:1px solid var(--border);
-  padding:0 2rem;
+  padding:0 1.5rem;
   margin-bottom:1.4rem;
 }
 .view-tabs{
-  display:flex;gap:2px;
+  display:flex;gap:6px;
   width:100%;
   overflow-x:auto;
   scrollbar-width:none;
   -ms-overflow-style:none;
+  padding:8px 0;
 }
 .view-tabs::-webkit-scrollbar{display:none}
+
+/* Base tab = chip shape */
 .vtab{
   flex-shrink:0;
-  padding:0 16px;height:46px;
-  font-size:13px;font-weight:600;
-  color:var(--text2);cursor:pointer;border:none;background:transparent;
-  font-family:var(--font);transition:color .15s,background .15s;
-  display:flex;align-items:center;gap:7px;
-  border-bottom:2px solid transparent;
+  padding:0 14px;height:34px;
+  font-size:12px;font-weight:700;
+  cursor:pointer;border-radius:8px;
+  font-family:var(--font);
+  display:inline-flex;align-items:center;gap:6px;
   white-space:nowrap;
-  position:relative;top:1px;
+  transition:background .15s,color .15s,border-color .15s,box-shadow .15s;
+  border:1.5px solid transparent;
+  background:#fff;
+  color:var(--text2);
 }
-.vtab i{font-size:15px}
-.vtab.active{
-  color:var(--indigo);
-  border-bottom-color:var(--indigo);
-  background:var(--indigo-bg);
-  border-radius:8px 8px 0 0;
-}
-.vtab:hover:not(.active){color:var(--text);background:var(--surface2);border-radius:8px 8px 0 0}
+.vtab i{font-size:13px}
+
+/* Per-tab inactive — light tint + coloured border */
+.vtab[data-v="analytics"]  {border-color:#6366F1;color:#6366F1;background:rgba(99,102,241,.06)}
+.vtab[data-v="president"]  {border-color:#7C3AED;color:#7C3AED;background:rgba(124,58,237,.06)}
+.vtab[data-v="payments"]   {border-color:#059669;color:#059669;background:rgba(5,150,105,.06)}
+.vtab[data-v="residents"]  {border-color:#0284C7;color:#0284C7;background:rgba(2,132,199,.06)}
+.vtab[data-v="issues"]     {border-color:#DC2626;color:#DC2626;background:rgba(220,38,38,.06)}
+
+/* Active — filled solid */
+.vtab[data-v="analytics"].active  {background:#6366F1;color:#fff;border-color:#6366F1;box-shadow:0 2px 8px rgba(99,102,241,.3)}
+.vtab[data-v="president"].active  {background:#7C3AED;color:#fff;border-color:#7C3AED;box-shadow:0 2px 8px rgba(124,58,237,.3)}
+.vtab[data-v="payments"].active   {background:#059669;color:#fff;border-color:#059669;box-shadow:0 2px 8px rgba(5,150,105,.3)}
+.vtab[data-v="residents"].active  {background:#0284C7;color:#fff;border-color:#0284C7;box-shadow:0 2px 8px rgba(2,132,199,.3)}
+.vtab[data-v="issues"].active     {background:#DC2626;color:#fff;border-color:#DC2626;box-shadow:0 2px 8px rgba(220,38,38,.3)}
+
+/* Hover — slightly deeper tint */
+.vtab:hover:not(.active){filter:brightness(.95)}
+
 .vtab-badge{
   font-size:10px;padding:1px 6px;border-radius:99px;font-weight:700;
-  background:var(--red-bg);color:var(--red);
+  background:rgba(255,255,255,.3);color:inherit;
 }
-.vtab.active .vtab-badge{background:var(--indigo-bg);color:var(--indigo)}
+.vtab:not(.active) .vtab-badge{background:var(--red-bg);color:var(--red)}
 
 .nav-right{display:flex;align-items:center;gap:12px}
 
@@ -751,7 +767,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   .dm{grid-template-columns:1fr 1fr}
   .fgrid{grid-template-columns:repeat(auto-fill,minmax(165px,1fr))}
   .user-chip span{display:none}
-  .vtab{padding:0 12px;font-size:12px}
+  .vtab{padding:0 10px;font-size:11px;height:30px}
   .exp-layout-grid{grid-template-columns:1fr!important}
   .an-layout-grid{grid-template-columns:1fr!important}
   .an-layout-grid #analyticsTotals{grid-template-columns:1fr 1fr}
