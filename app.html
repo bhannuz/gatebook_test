@@ -1100,10 +1100,11 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
             <table style="width:100%;border-collapse:collapse">
               <thead style="position:sticky;top:0;z-index:1">
                 <tr style="background:var(--surface3)">
-                  <th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border2)">Flat</th>
-                  <th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border2)">Owner</th>
-                  <th style="padding:9px 14px;text-align:center;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border2)">Status</th>
-                  <th style="padding:9px 14px;text-align:right;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border2)">Balance</th>
+                  <th style="padding:9px 14px;text-align:left;font-size:11px;font-weight:800;color:var(--text);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border2)">Flat</th>
+                  <th style="padding:9px 14px;text-align:left;font-size:11px;font-weight:800;color:var(--text);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border2)">Owner</th>
+                  <th style="padding:9px 14px;text-align:center;font-size:11px;font-weight:800;color:var(--text);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border2)">Status</th>
+                  <th style="padding:9px 14px;text-align:center;font-size:11px;font-weight:800;color:var(--text);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border2)">🏍2W / 🚗4W</th>
+                  <th style="padding:9px 14px;text-align:right;font-size:11px;font-weight:800;color:var(--text);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border2)">Balance</th>
                   <th style="padding:9px 14px;width:36px;border-bottom:1px solid var(--border2)"></th>
                 </tr>
               </thead>
@@ -2643,6 +2644,8 @@ function rIssues() {
       </tbody>
     </table>`;
 }
+}
+
 function fIss(f) {
   IF = f;
   document.querySelectorAll('.iff').forEach(b => b.classList.toggle('active', b.dataset.f === f));
@@ -3833,6 +3836,16 @@ function renderAnPayTable() {
     const s        = st(f);
     const bal      = (f.due||0) - (f.paid||0);
     const balColor = bal > 0 ? 'var(--red)' : 'var(--green)';
+    const v        = vehicles.get(f.flatId) || {};
+    const tw       = parseInt(v.tw) || 0;
+    const fw       = parseInt(v.fw) || 0;
+    const vehCell  = (tw === 0 && fw === 0)
+      ? `<span style="font-size:11px;color:var(--muted)">—</span>`
+      : `<span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700">
+           ${tw > 0 ? `<span style="color:var(--indigo)">🏍 ${tw}</span>` : ''}
+           ${tw > 0 && fw > 0 ? `<span style="color:var(--border3)">·</span>` : ''}
+           ${fw > 0 ? `<span style="color:var(--green-txt)">🚗 ${fw}</span>` : ''}
+         </span>`;
     return `<tr onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
       <td style="padding:10px 14px;font-weight:800;color:var(--indigo);font-size:13px;border-bottom:1px solid var(--border)">${f.flatId}</td>
       <td style="padding:10px 14px;font-size:13px;font-weight:500;color:var(--text);border-bottom:1px solid var(--border);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
@@ -3841,6 +3854,7 @@ function renderAnPayTable() {
       <td style="padding:10px 14px;text-align:center;border-bottom:1px solid var(--border)">
         <span class="tab-chip ${chipCls[s]||'muted'}">${chipLbl[s]||s}</span>
       </td>
+      <td style="padding:10px 14px;text-align:center;border-bottom:1px solid var(--border)">${vehCell}</td>
       <td style="padding:10px 14px;text-align:right;font-weight:800;color:${balColor};font-size:13px;border-bottom:1px solid var(--border)">${f.due ? inr(Math.abs(bal)) : '—'}</td>
       <td style="padding:10px 14px;text-align:center;border-bottom:1px solid var(--border)">
         <button onclick="window._oFlEdit('${f.flatId}')" title="Edit payment"
@@ -3855,8 +3869,11 @@ function renderAnPayTable() {
 
   // Totals row
   const totBal = rows.reduce((s,f)=>s+((f.due||0)-(f.paid||0)),0);
+  const totTw  = rows.reduce((s,f)=>s+(parseInt((vehicles.get(f.flatId)||{}).tw)||0),0);
+  const totFw  = rows.reduce((s,f)=>s+(parseInt((vehicles.get(f.flatId)||{}).fw)||0),0);
   tbody.innerHTML += `<tr style="background:var(--surface3);border-top:2px solid var(--border2)">
     <td style="padding:9px 14px;font-size:11px;font-weight:800;color:var(--text2)" colspan="3">Total (${rows.length} flats)</td>
+    <td style="padding:9px 14px;text-align:center;font-size:12px;font-weight:700;color:var(--text2)">🏍 ${totTw} · 🚗 ${totFw}</td>
     <td style="padding:9px 14px;text-align:right;font-weight:800;color:${totBal>0?'var(--red)':'var(--green)'};font-size:13px">${inr(Math.abs(totBal))}</td>
     <td></td>
   </tr>`;
