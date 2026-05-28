@@ -3038,11 +3038,11 @@ function rPresident() {
 
   /* ── Pie chart (always draw, even if empty) ── */
   if (typeof drawPie === 'function') {
-    requestAnimationFrame(() => {
+    requestAnimationFrame(() => requestAnimationFrame(() => {
       drawPie('expTabPie', expPieSegs2, 'expTabTooltip');
       if (typeof buildLegend === 'function')
         buildLegend('expTabLegend', expPieSegs2.map(s=>({...s,count:s.value})), visTotal);
-    });
+    }));
   }
 
   if(!vis.length){
@@ -3719,7 +3719,6 @@ function _buildAnalyticsFilters() {
   const months = new Set();
   [...flats.values()].forEach(f=>{ if(f.month) months.add(f.month); });
   socExps.forEach(e=>{ if(e.month) months.add(e.month); });
-  // Always include current month even if no data yet
   months.add(AM);
   const sorted = [...months].sort().reverse();
 
@@ -3727,21 +3726,22 @@ function _buildAnalyticsFilters() {
   const ySel = document.getElementById('anFilterYear');
   if (!mSel || !ySel) return;
 
-  // Always repopulate to keep in sync
-  const prevMonth = mSel.value || AM;
+  // Read current user selection BEFORE touching innerHTML
+  const prevMonth = mSel.value || _anSelMonth || AM;
+  const prevYear  = ySel.value  || _anSelYear  || new Date().getFullYear().toString();
+
   mSel.innerHTML = sorted.map(m => {
     const lbl = new Date(m+'-01').toLocaleDateString('en-IN',{month:'long',year:'numeric'});
-    return `<option value="${m}">${lbl}</option>`;
+    return `<option value="${m}"${m===prevMonth?' selected':''}>${lbl}</option>`;
   }).join('');
-  // Restore previous selection or default to AM
-  mSel.value = sorted.includes(prevMonth) ? prevMonth : AM;
-  if (!mSel.value) mSel.value = sorted[0] || AM;
+  // Force the value — some browsers ignore selected attribute
+  if (sorted.includes(prevMonth)) mSel.value = prevMonth;
+  else mSel.value = sorted[0] || AM;
 
   const years = [...new Set(sorted.map(m=>m.slice(0,4)))].sort().reverse();
-  const curYear = new Date().getFullYear().toString();
-  const prevYear = ySel.value || curYear;
-  ySel.innerHTML = years.map(y=>`<option value="${y}">${y}</option>`).join('');
-  ySel.value = years.includes(prevYear) ? prevYear : (years[0] || curYear);
+  ySel.innerHTML = years.map(y=>`<option value="${y}"${y===prevYear?' selected':''}>${y}</option>`).join('');
+  if (years.includes(prevYear)) ySel.value = prevYear;
+  else ySel.value = years[0] || new Date().getFullYear().toString();
 }
 
 function rAnalytics() {
@@ -3778,10 +3778,11 @@ function rAnalytics() {
     { label:'Vacant',  value:vacant.length,  color:'#d1d5db', amt:0,                                       displayValue:vacant.length  +' flats' },
   ].filter(s=>s.value>0);
 
-  requestAnimationFrame(() => {
+  // Double rAF: first frame lets the DOM paint, second guarantees layout dimensions
+  requestAnimationFrame(() => requestAnimationFrame(() => {
     drawPie('payPie', paySegs, 'payTooltip');
-    buildLegend('payLegend', paySegs.map(s=>({...s,count:s.value})), all.length);
-  });
+    buildLegend('payLegend', paySegs.map(s=>({...s, count:s.value})), all.length);
+  }));
 
   const totalCollected   = all.reduce((s,f)=>s+(f.paid||0),0);
   const totalDue         = all.reduce((s,f)=>s+(f.due||0),0);
@@ -3794,6 +3795,18 @@ function rAnalytics() {
   renderAnPayTable(filterType, selMonth, selYear);
 }
 window.rAnalytics = rAnalytics;
+
+// Redraw charts on resize so canvas dimensions stay correct
+let _resizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(_resizeTimer);
+  _resizeTimer = setTimeout(() => {
+    const av = document.getElementById('analyticsView');
+    if (av && av.style.display !== 'none') rAnalytics();
+    const pv = document.getElementById('presView');
+    if (pv && pv.style.display !== 'none') rPresident();
+  }, 150);
+});
 
 /* ── Pending Flats Modal ── */
 function showPending() {
@@ -3875,13 +3888,6 @@ function renderAnPayTable(filterType, selMonth, selYear) {
   const matchM = m => ft==='month' ? m===sm : (m||'').startsWith(sy);
 
   let rows = [...flats.values()].filter(f => matchM(f.month));
-
-  // Debug: if still empty and using month filter, show all flats for AM as fallback
-  if (!rows.length && ft==='month') {
-    rows = [...flats.values()].filter(f => f.month===AM);
-    _anSelMonth = AM;
-  }
-
   if (_anStatus !== 'all') rows = rows.filter(f => st(f) === _anStatus);
   rows.sort((a,b) => (a.flatId||'').localeCompare(b.flatId||''));
 
