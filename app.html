@@ -2455,10 +2455,10 @@ function rAll(){
   try{ rBTabs(); } catch(e){ console.error('rBTabs',e); }
   try{ rBlock(); } catch(e){ console.error('rBlock',e); }
   try{ rIssues(); } catch(e){ console.error('rIssues',e); }
-  const rv=document.getElementById('resView');
-  if(rv && rv.style.display!=='none') try{ rResidents(); } catch(e){ console.error('rResidents',e); }
   const p=document.getElementById('presView');
   if(p && p.style.display!=='none') try{ rPresident(); } catch(e){ console.error('rPresident',e); }
+  const av=document.getElementById('analyticsView');
+  if(av && av.style.display!=='none') try{ rAnalytics(); } catch(e){ console.error('rAnalytics',e); }
 }
 
 /* ════════════════════════════════
@@ -3864,11 +3864,14 @@ window.anSetStatus = anSetStatus;
 
 function renderAnPayTable() {
   const filterType = document.getElementById('anFilterType')?.value||'month';
-  const selMonth   = document.getElementById('anFilterMonth')?.value||AM;
-  const selYear    = document.getElementById('anFilterYear')?.value||new Date().getFullYear().toString();
-  const matchM     = m => filterType==='month' ? m===selMonth : (m||'').startsWith(selYear);
+  const mSel = document.getElementById('anFilterMonth');
+  const ySel = document.getElementById('anFilterYear');
+  const selMonth = (mSel?.value) || AM;
+  const selYear  = (ySel?.value) || new Date().getFullYear().toString();
+  const matchM   = m => filterType==='month' ? m===selMonth : (m||'').startsWith(selYear);
 
-  let rows = [...flats.values()].filter(f=>matchM(f.month));
+  // If no month selected yet, show current month flats
+  let rows = [...flats.values()].filter(f => matchM(f.month) || (!mSel?.value && f.month===AM));
   if (_anStatus !== 'all') rows = rows.filter(f=>st(f)===_anStatus);
   rows.sort((a,b)=>(a.flatId||'').localeCompare(b.flatId||''));
 
