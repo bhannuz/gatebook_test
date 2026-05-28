@@ -1463,6 +1463,9 @@ const exps   = new Map();
 const issues = [];
 
 let AB='', FS='all', SQ='', RTF='all', FLF='all', MF='all', AM=new Date().toISOString().slice(0,7), AV='analytics', IF='all';
+// Analytics tab state — declared here to avoid TDZ errors
+let _anStatus='all', _anFilterType='month', _anSelMonth=AM, _anSelYear=new Date().getFullYear().toString();
+const _pieSegs={};
 let eu=null, iu=null, vu=null, pu=null;
 const vehicles = new Map();   // flatId -> {tw,fw,nums,slot}
 const socExps  = [];          // society-level expenses
@@ -2292,7 +2295,7 @@ window._openExpEdit=openExpEdit; window._closeExpEdit=closeExpEdit; window._save
 window._oA   =oA;   window._oAFor=oAFor; window._cA=cA; window._sE=sE;
 window._oAF  =oAF;  window._cAF=cAF;    window._sNF=sNF;
 window._oRI  =oRI;  window._cRI=cRI;    window._sI=sI;
-window._oID  =oID;  window._cID=cID;    window._uIS=uIS;
+window._oID=oID; window._cID=cID;
 // vehicles.js
 window._oVehM   = oVehM;   window._oVehFor = oVehFor;
 window._cVehM   = cVehM;   window._sVeh    = sVeh;   window._delVeh = delVeh;
@@ -2470,7 +2473,6 @@ function listenVehicles(){
     vehicles.clear();
     snap.forEach(d=>vehicles.set(d.id,{...d.data()}));
     rStats();
-    if(document.getElementById('vehView').style.display!=='none')rVehicles();
   },e=>console.error('veh listener',e));
 }
 function listenSocExp(){
@@ -2707,6 +2709,7 @@ function rIssues() {
       </tbody>
     </table>`;
 }
+
 function fIss(f) {
   IF = f;
   document.querySelectorAll('.iff').forEach(b => b.classList.toggle('active', b.dataset.f === f));
@@ -3594,9 +3597,6 @@ async function boot(){
 
 /* ══ ANALYTICS TAB ══ */
 
-// Store segments per canvas for tooltip hit-testing
-const _pieSegs = {};
-
 function _getCanvasSize(canvas) {
   const rect = canvas.getBoundingClientRect();
   return { W: rect.width, H: rect.height };
@@ -3853,11 +3853,6 @@ function closePending() {
 }
 window._showPending  = showPending;
 window._closePending = closePending;
-
-let _anStatus = 'all';
-let _anFilterType = 'month';
-let _anSelMonth = AM;
-let _anSelYear  = new Date().getFullYear().toString();
 
 function anSetStatus(s) {
   _anStatus = s;
