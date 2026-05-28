@@ -125,14 +125,12 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .vtab[data-v="analytics"]  {border-color:#6366F1;color:#6366F1;background:rgba(99,102,241,.06)}
 .vtab[data-v="president"]  {border-color:#7C3AED;color:#7C3AED;background:rgba(124,58,237,.06)}
 .vtab[data-v="payments"]   {border-color:#059669;color:#059669;background:rgba(5,150,105,.06)}
-.vtab[data-v="residents"]  {border-color:#0284C7;color:#0284C7;background:rgba(2,132,199,.06)}
 .vtab[data-v="issues"]     {border-color:#DC2626;color:#DC2626;background:rgba(220,38,38,.06)}
 
 /* Active — filled solid */
 .vtab[data-v="analytics"].active  {background:#6366F1;color:#fff;border-color:#6366F1;box-shadow:0 2px 8px rgba(99,102,241,.3)}
 .vtab[data-v="president"].active  {background:#7C3AED;color:#fff;border-color:#7C3AED;box-shadow:0 2px 8px rgba(124,58,237,.3)}
 .vtab[data-v="payments"].active   {background:#059669;color:#fff;border-color:#059669;box-shadow:0 2px 8px rgba(5,150,105,.3)}
-.vtab[data-v="residents"].active  {background:#0284C7;color:#fff;border-color:#0284C7;box-shadow:0 2px 8px rgba(2,132,199,.3)}
 .vtab[data-v="issues"].active     {background:#DC2626;color:#fff;border-color:#DC2626;box-shadow:0 2px 8px rgba(220,38,38,.3)}
 
 /* Hover — slightly deeper tint */
@@ -352,14 +350,14 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   border-radius:var(--r-lg);
   overflow:hidden;
   position:relative;
-  border:1.5px solid #6366F1;
+  border:1px solid var(--border2);
+  border-top:3px solid #6366F1;
 }
-/* per-tab colour overrides — full border all sides */
-.tab-table-wrap.green  {border-color:#059669}
-.tab-table-wrap.amber  {border-color:#D97706}
-.tab-table-wrap.red    {border-color:#DC2626}
-.tab-table-wrap.sky    {border-color:#0284C7}
-.tab-table-wrap.purple {border-color:#7C3AED}
+.tab-table-wrap.green  {border-top-color:#059669}
+.tab-table-wrap.amber  {border-top-color:#D97706}
+.tab-table-wrap.red    {border-top-color:#DC2626}
+.tab-table-wrap.sky    {border-top-color:#0284C7}
+.tab-table-wrap.purple {border-top-color:#7C3AED}
 /* applies to mem-table, veh-table, analytics inline tables */
 .mem-table,.veh-table{width:100%;border-collapse:collapse}
 .mem-table th,.veh-table th{
@@ -441,21 +439,21 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 
 .hist-chip{display:inline-flex;align-items:center;font-size:10px;font-weight:700;padding:3px 9px;border-radius:5px;background:var(--surface3);color:var(--text2);margin:1px}
 
-/* ── Unified summary stat cards (replaces vscard, fcard2) ── */
+/* ── Unified summary stat cards ── */
 .tab-stat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:1.4rem}
-/* both .vscard and .fcard2 map to the same visual */
 .vscard,.fcard2{
   background:#fff;border-radius:var(--r-lg);
   padding:14px 16px;
-  border:1.5px solid #6366F1;
+  border:1px solid var(--border2);
+  border-top:3px solid #6366F1;
   display:flex;align-items:center;gap:12px;
   position:relative;overflow:hidden;
 }
-.vscard.green,.fcard2.green{border-color:#059669}
-.vscard.amber,.fcard2.amber{border-color:#D97706}
-.vscard.red,  .fcard2.red  {border-color:#DC2626}
-.vscard.sky,  .fcard2.sky  {border-color:#0284C7}
-.vscard.indigo,.fcard2.indigo{border-color:#6366F1}
+.vscard.green,.fcard2.green{border-top-color:#059669}
+.vscard.amber,.fcard2.amber{border-top-color:#D97706}
+.vscard.red,  .fcard2.red  {border-top-color:#DC2626}
+.vscard.sky,  .fcard2.sky  {border-top-color:#0284C7}
+.vscard.indigo,.fcard2.indigo{border-top-color:#6366F1}
 .vscard-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
 .vscard-icon.tw {background:var(--indigo-bg);color:var(--indigo)}
 .vscard-icon.fw {background:var(--green-bg); color:var(--green)}
@@ -508,8 +506,8 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .micon.veh{background:linear-gradient(135deg,rgba(2,132,199,.12),rgba(8,145,178,.08));color:var(--sky)}
 
 /* ── Analytics/Expenses shared panels ── */
-.exp-records-panel{background:#fff;border:1.5px solid #6366F1;border-radius:var(--r-lg);overflow:hidden;position:relative}
-.exp-pie-panel{background:#fff;border:1.5px solid #7C3AED;border-radius:var(--r-lg);padding:16px;position:relative;overflow:hidden}
+.exp-records-panel{background:#fff;border:1px solid var(--border2);border-top:3px solid #6366F1;border-radius:var(--r-lg);overflow:hidden;position:relative}
+.exp-pie-panel{background:#fff;border:1px solid var(--border2);border-top:3px solid #7C3AED;border-radius:var(--r-lg);padding:16px;position:relative;overflow:hidden}
 
 /* ── MODALS ── */
 .mbg{display:none;position:fixed;inset:0;z-index:500;
@@ -929,7 +927,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
       <button class="vtab active" data-v="analytics" onclick="switchView('analytics')"><i class="ti ti-chart-pie"></i> Analytics</button>
       <button class="vtab" data-v="president" onclick="switchView('president')"><i class="ti ti-receipt"></i> Expenses</button>
       <button class="vtab" data-v="payments" onclick="switchView('payments')"><i class="ti ti-credit-card"></i> Payments</button>
-      <button class="vtab" data-v="residents" onclick="switchView('residents')"><i class="ti ti-users"></i> Residents</button>
       <button class="vtab" data-v="issues" onclick="switchView('issues')">
         <i class="ti ti-alert-circle"></i> Issues
         <span class="vtab-badge" id="openCnt">0</span>
@@ -979,37 +976,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   </div><!-- /#iView -->
 
   <!-- RESIDENTS VIEW (Members + Vehicles merged) -->
-  <div id="resView" style="display:none">
-    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:1rem">
-      <div class="mem-filters" id="mFil">
-        <button class="mff active" data-t="all"    onclick="fMem('all')"><i class="ti ti-users"></i> All</button>
-        <button class="mff" data-t="owner"  onclick="fMem('owner')"><i class="ti ti-home"></i> Owners</button>
-        <button class="mff" data-t="tenant" onclick="fMem('tenant')"><i class="ti ti-key"></i> Tenants</button>
-        <button class="mff" data-t="vacant" onclick="fMem('vacant')"><i class="ti ti-door"></i> Vacant</button>
-      </div>
-      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-        <div class="sw" style="min-width:180px"><i class="ti ti-search"></i>
-          <input class="ctrl" type="text" id="memQ" placeholder="Search name or flat…" oninput="rResidents()"/>
-        </div>
-        <select class="ctrl" id="resTF" onchange="rResidents()">
-          <option value="all">All Vehicles</option>
-          <option value="2w">🏍 Has 2-Wheeler</option>
-          <option value="4w">🚗 Has 4-Wheeler</option>
-          <option value="none">No Vehicles</option>
-        </select>
-      </div>
-    </div>
-    <div class="veh-sum" id="vehSum" style="margin-bottom:1rem"></div>
-    <div class="veh-table-wrap tab-table-wrap sky">
-      <table class="veh-table">
-        <thead><tr>
-          <th>Flat</th><th>Resident</th><th>🏍 2W</th><th>🚗 4W</th><th style="text-align:right">Action</th>
-        </tr></thead>
-        <tbody id="resBody"></tbody>
-      </table>
-    </div>
-  </div><!-- /#resView -->
-
   <!-- PRESIDENT VIEW -->
   <div id="presView" style="display:none;padding:14px">
     <div id="presBanner"></div>
@@ -2144,31 +2110,73 @@ async function sI(){
    ISSUE DETAIL MODAL
 ════════════════════════════════ */
 function oID(id){
-  const iss=issues.find(i=>i.id===id);if(!iss)return;
-  const sc={open:'var(--red)',['in-progress']:'var(--amber)',resolved:'var(--green)'}[iss.status];
-  const pc={high:'var(--red)',medium:'var(--amber)',low:'var(--green)'}[iss.priority];
-  document.getElementById('idT').textContent=iss.title;
-  document.getElementById('idS').textContent=`${iss.cat} · Reported by ${iss.reporter}`;
-  const sL=iss.status==='in-progress'?'In Progress':iss.status.charAt(0).toUpperCase()+iss.status.slice(1);
-  document.getElementById('idC').innerHTML=`
-    <div class="dm">
-      <div class="dm-card"><div class="dm-label">Status</div><div class="dm-value" style="font-size:14px;color:${sc}">${sL}</div></div>
-      <div class="dm-card"><div class="dm-label">Priority</div><div class="dm-value" style="font-size:14px;color:${pc}">${iss.priority.charAt(0).toUpperCase()+iss.priority.slice(1)}</div></div>
-      <div class="dm-card"><div class="dm-label">Location</div><div class="dm-value" style="font-size:14px">${iss.flat||iss.block}</div></div>
+  const iss=issues.find(i=>i.id===id); if(!iss)return;
+  document.getElementById('idT').textContent = iss.title;
+  document.getElementById('idS').textContent = `${iss.cat} · Reported by ${iss.reporter}`;
+
+  const cats = ['Plumbing','Electrical','Lift','Security','Cleaning','Parking','Noise','Internet','Other'];
+  const flatOpts = [...flats.values()].filter(f=>f.month===AM)
+    .map(f=>`<option value="${f.flatId}"${f.flatId===(iss.flat||iss.block)?'selected':''}>${f.flatId}${f.owner?' — '+f.owner:''}</option>`).join('');
+
+  document.getElementById('idC').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+      <div>
+        <label style="font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Title</label>
+        <input id="ie_title" type="text" value="${(iss.title||'').replace(/"/g,'&quot;')}"
+          style="width:100%;box-sizing:border-box;height:32px;padding:0 8px;background:var(--surface);border:1.5px solid var(--border);color:var(--text);font-family:var(--font);font-size:12px;font-weight:600;border-radius:var(--r-md);outline:none"
+          onfocus="this.style.borderColor='var(--indigo)'" onblur="this.style.borderColor='var(--border)'"/>
+      </div>
+      <div>
+        <label style="font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Flat / Location</label>
+        <select id="ie_flat" style="width:100%;box-sizing:border-box;height:32px;padding:0 8px;background:var(--surface);border:1.5px solid var(--border);color:var(--text);font-family:var(--font);font-size:12px;font-weight:600;border-radius:var(--r-md);outline:none">
+          ${flatOpts}
+        </select>
+      </div>
+      <div>
+        <label style="font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Category</label>
+        <select id="ie_cat" style="width:100%;box-sizing:border-box;height:32px;padding:0 8px;background:var(--surface);border:1.5px solid var(--border);color:var(--text);font-family:var(--font);font-size:12px;font-weight:600;border-radius:var(--r-md);outline:none">
+          ${cats.map(c=>`<option value="${c}"${c===iss.cat?'selected':''}>${c}</option>`).join('')}
+        </select>
+      </div>
+      <div>
+        <label style="font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Priority</label>
+        <select id="ie_priority" style="width:100%;box-sizing:border-box;height:32px;padding:0 8px;background:var(--surface);border:1.5px solid var(--border);color:var(--text);font-family:var(--font);font-size:12px;font-weight:600;border-radius:var(--r-md);outline:none">
+          <option value="high"   ${iss.priority==='high'   ?'selected':''}>🔴 High</option>
+          <option value="medium" ${iss.priority==='medium' ?'selected':''}>🟡 Medium</option>
+          <option value="low"    ${iss.priority==='low'    ?'selected':''}>🟢 Low</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Status</label>
+        <select id="ie_status" style="width:100%;box-sizing:border-box;height:32px;padding:0 8px;background:var(--surface);border:1.5px solid var(--border);color:var(--text);font-family:var(--font);font-size:12px;font-weight:600;border-radius:var(--r-md);outline:none">
+          <option value="open"        ${iss.status==='open'       ?'selected':''}>⭕ Open</option>
+          <option value="in-progress" ${iss.status==='in-progress'?'selected':''}>🔄 In Progress</option>
+          <option value="resolved"    ${iss.status==='resolved'   ?'selected':''}>✅ Resolved</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Reported by</label>
+        <input id="ie_reporter" type="text" value="${(iss.reporter||'').replace(/"/g,'&quot;')}"
+          style="width:100%;box-sizing:border-box;height:32px;padding:0 8px;background:var(--surface);border:1.5px solid var(--border);color:var(--text);font-family:var(--font);font-size:12px;font-weight:600;border-radius:var(--r-md);outline:none"
+          onfocus="this.style.borderColor='var(--indigo)'" onblur="this.style.borderColor='var(--border)'"/>
+      </div>
     </div>
-    <div class="etitle"><i class="ti ti-file-description"></i>Full Description</div>
-    <div style="background:var(--surface2);border:1.5px solid var(--border2);border-radius:var(--r-lg);padding:15px;font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:16px;font-weight:500">${iss.desc}</div>
-    <div style="display:flex;gap:20px;font-size:12px;color:var(--muted);font-weight:600;margin-bottom:20px">
-      <span><i class="ti ti-user" style="vertical-align:-2px;margin-right:4px"></i>${iss.reporter}</span>
-      <span><i class="ti ti-calendar" style="vertical-align:-2px;margin-right:4px"></i>${fdt(iss.createdAt)}</span>
+    <div style="margin-bottom:14px">
+      <label style="font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Description</label>
+      <textarea id="ie_desc" rows="3"
+        style="width:100%;box-sizing:border-box;padding:8px;background:var(--surface);border:1.5px solid var(--border);color:var(--text);font-family:var(--font);font-size:12px;border-radius:var(--r-md);outline:none;resize:vertical;line-height:1.6"
+        onfocus="this.style.borderColor='var(--indigo)'" onblur="this.style.borderColor='var(--border)'">${iss.desc||''}</textarea>
     </div>
-    ${iss.status!=='resolved'
-      ?`<div style="display:flex;gap:10px;flex-wrap:wrap">
-          ${iss.status==='open'?`<button class="btn btn-white btn-sm" onclick="window._uIS('${id}','in-progress')"><i class="ti ti-progress"></i> Mark In Progress</button>`:''}
-          <button class="btn btn-green btn-sm" onclick="window._uIS('${id}','resolved')"><i class="ti ti-circle-check"></i> Mark as Resolved</button>
-        </div>`
-      :`<div style="display:flex;align-items:center;gap:8px;color:var(--green);font-size:13px;font-weight:800"><i class="ti ti-circle-check" style="font-size:20px"></i>Issue has been resolved</div>`}
+    <div style="display:flex;gap:8px;justify-content:flex-end;padding-top:4px;border-top:1px solid var(--border)">
+      <button onclick="window._cID()"
+        style="background:none;border:1px solid var(--border2);border-radius:6px;padding:6px 16px;cursor:pointer;color:var(--text2);font-size:12px;font-weight:600;font-family:var(--font)">Cancel</button>
+      <button onclick="window._saveIss('${id}')"
+        style="background:var(--indigo);border:none;border-radius:6px;padding:6px 18px;cursor:pointer;color:#fff;font-size:12px;font-weight:700;font-family:var(--font);display:inline-flex;align-items:center;gap:5px">
+        <i class="ti ti-check" style="font-size:12px"></i> Save Changes
+      </button>
+    </div>
   `;
+
   const tl=iss.timeline||[{action:'Issue reported',by:iss.reporter,status:'open',ts:null}];
   const tlDotColor={open:'var(--red)',created:'var(--indigo)','in-progress':'var(--amber)',resolved:'var(--green)'};
   document.getElementById('idTL').innerHTML=`
@@ -2189,16 +2197,27 @@ function oID(id){
 }
 function cID(){document.getElementById('idM').classList.remove('open');}
 
-async function uIS(id,ns){
-  const iss=issues.find(i=>i.id===id);if(!iss)return;
+async function saveIss(id){
+  const iss = issues.find(i=>i.id===id); if(!iss)return;
+  const title    = (document.getElementById('ie_title')?.value||'').trim();
+  const flat     = document.getElementById('ie_flat')?.value||iss.flat||iss.block;
+  const cat      = document.getElementById('ie_cat')?.value||iss.cat;
+  const priority = document.getElementById('ie_priority')?.value||iss.priority;
+  const status   = document.getElementById('ie_status')?.value||iss.status;
+  const reporter = (document.getElementById('ie_reporter')?.value||'').trim();
+  const desc     = document.getElementById('ie_desc')?.value||'';
+  if(!title){ toast('Title is required.','error'); return; }
+  const changed = [];
+  if(status!==iss.status) changed.push({action:`Status changed to ${status}`,by:'Admin',status,ts:new Date().toISOString()});
+  if(priority!==iss.priority) changed.push({action:`Priority changed to ${priority}`,by:'Admin',status,ts:new Date().toISOString()});
+  const timeline = [...(iss.timeline||[]), ...changed];
   sync('saving');
-  const actionLabel={open:'Issue opened','in-progress':'Marked as In Progress',resolved:'Marked as Resolved'}[ns]||ns;
-  const updatedTimeline=[...(iss.timeline||[]),{action:actionLabel,by:'Admin',status:ns,ts:new Date().toISOString()}];
   try{
-    await updateDoc(issueRef(id),{status:ns,timeline:updatedTimeline});
-    sync('live');cID();toast(ns==='resolved'?'Marked as resolved ✓':'Status updated ✓');
-  }catch(e){console.error(e);sync('error');toast('Update failed.','error');}
+    await updateDoc(issueRef(id),{title,flat,cat,priority,status,reporter,desc,timeline});
+    sync('live'); cID(); toast('Issue updated ✓');
+  }catch(e){ console.error(e); sync('error'); toast('Update failed.','error'); }
 }
+window._saveIss = saveIss;
 
 /* ════════════════════════════════
    FIRESTORE LISTENERS
@@ -2419,12 +2438,10 @@ function switchView(v) {
   refreshAPP();
   document.getElementById('pView').style.display         = v==='payments'  ? 'block' : 'none';
   document.getElementById('iView').style.display         = v==='issues'    ? 'block' : 'none';
-  document.getElementById('resView').style.display       = v==='residents' ? 'block' : 'none';
   document.getElementById('presView').style.display      = v==='president' ? 'block' : 'none';
   document.getElementById('analyticsView').style.display = v==='analytics' ? 'block' : 'none';
   document.querySelectorAll('.vtab').forEach(p => p.classList.toggle('active', p.dataset.v===v));
   document.querySelectorAll('.bnav-item').forEach(p => p.classList.toggle('active', p.dataset.v===v));
-  if(v==='residents') try{ rResidents(); } catch(e){ console.error(e); }
   if(v==='analytics') try{ rAnalytics(); } catch(e){ console.error(e); }
   if(v==='president') {
     try{ rPresident(); } catch(e){ console.error(e); }
