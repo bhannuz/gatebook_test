@@ -1719,6 +1719,8 @@ function oFlEdit(fid) {
 
   document.getElementById('dTitle').textContent = f.flatId + (f.owner?' — '+f.owner:'');
   document.getElementById('dSub').textContent   = (f.block?'Block '+f.block+' · ':'')+month;
+  const veh = vehicles.get(fid) || { tw:0, fw:0 };
+  const tw = parseInt(veh.tw)||0, fw = parseInt(veh.fw)||0;
 
   document.getElementById('dBody').innerHTML = `
     <!-- ── Resident Info Edit Panel ── -->
@@ -1764,6 +1766,20 @@ function oFlEdit(fid) {
             style="width:100%;box-sizing:border-box;height:32px;padding:0 8px;background:var(--surface);border:1.5px solid var(--border);color:var(--text);font-family:var(--font);font-size:12px;font-weight:600;border-radius:var(--r-md);outline:none"
             onfocus="this.style.borderColor='var(--indigo)'" onblur="this.style.borderColor='var(--border)';autoSaveFlat('${fid}')"
             onchange="autoSaveFlat('${fid}')"/>
+        </div>
+        <div>
+          <label style="font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">🏍 2-Wheelers</label>
+          <input id="edTw" type="number" value="${tw}" min="0" max="10"
+            style="width:100%;box-sizing:border-box;height:32px;padding:0 8px;background:var(--surface);border:1.5px solid var(--border);color:var(--text);font-family:var(--font);font-size:12px;font-weight:600;border-radius:var(--r-md);outline:none"
+            onfocus="this.style.borderColor='var(--indigo)'" onblur="this.style.borderColor='var(--border)';autoSaveVeh('${fid}')"
+            onchange="autoSaveVeh('${fid}')"/>
+        </div>
+        <div>
+          <label style="font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">🚗 4-Wheelers</label>
+          <input id="edFw" type="number" value="${fw}" min="0" max="10"
+            style="width:100%;box-sizing:border-box;height:32px;padding:0 8px;background:var(--surface);border:1.5px solid var(--border);color:var(--text);font-family:var(--font);font-size:12px;font-weight:600;border-radius:var(--r-md);outline:none"
+            onfocus="this.style.borderColor='var(--indigo)'" onblur="this.style.borderColor='var(--border)';autoSaveVeh('${fid}')"
+            onchange="autoSaveVeh('${fid}')"/>
         </div>
       </div>
       <div id="ownerSection" style="display:${isTenant?'grid':'none'};grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">
@@ -1947,6 +1963,23 @@ async function autoSaveFlat(fid) {
     } catch(e){ console.error(e);sync('error');toast('Save failed.','error'); }
   }, 400);
 }
+
+async function autoSaveVeh(fid) {
+  clearTimeout(_autoSaveVehTimer);
+  _autoSaveVehTimer = setTimeout(async()=>{
+    const tw = parseInt(document.getElementById('edTw')?.value)||0;
+    const fw = parseInt(document.getElementById('edFw')?.value)||0;
+    sync('saving');
+    try {
+      await setDoc(vehRef(fid),{flatId:fid,tw,fw,updatedAt:serverTimestamp()},{merge:true});
+      vehicles.set(fid,{...(vehicles.get(fid)||{}),tw,fw});
+      sync('live');
+      toast('Vehicles saved ✓');
+      renderAnPayTable();
+    } catch(e){ console.error(e);sync('error');toast('Save failed.','error'); }
+  }, 400);
+}
+let _autoSaveVehTimer = null;
 
 function toggleOwnerFields(resType) {
   const sec = document.getElementById('ownerSection');
@@ -2223,6 +2256,7 @@ window._sB = b => { AB=b; FLF='all'; const flf=document.getElementById('flf'); i
 window._oFl  =oFl;  window._oFlEdit=oFlEdit;  window._cM=cD;
 window._autoSaveFlat=autoSaveFlat;
 window._toggleOwnerFields=toggleOwnerFields;
+window.autoSaveVeh=autoSaveVeh;
 window._openExpEdit=openExpEdit; window._closeExpEdit=closeExpEdit; window._saveExpEdit=saveExpEdit; window._delExp=delExp;
 window._oA   =oA;   window._oAFor=oAFor; window._cA=cA; window._sE=sE;
 window._oAF  =oAF;  window._cAF=cAF;    window._sNF=sNF;
@@ -3844,10 +3878,20 @@ function renderAnPayTable() {
            ${tw > 0 && fw > 0 ? `<span style="color:var(--border3)">·</span>` : ''}
            ${fw > 0 ? `<span style="color:var(--green-txt)">🚗 ${fw}</span>` : ''}
          </span>`;
+    const isVacant = !(f.owner||'').trim();
+    const resType  = isVacant ? 'vacant' : (f.resType||'owner');
+    const typeBadge = isVacant
+      ? `<span style="font-size:9px;font-weight:700;color:var(--muted)">Vacant</span>`
+      : resType === 'tenant'
+        ? `<span style="font-size:9px;font-weight:700;color:var(--amber)">🔑 Tenant</span>`
+        : `<span style="font-size:9px;font-weight:700;color:var(--indigo)">🏠 Owner</span>`;
     return `<tr onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
       <td style="padding:10px 14px;font-weight:800;color:var(--indigo);font-size:13px;border-bottom:1px solid var(--border)">${f.flatId}</td>
-      <td style="padding:10px 14px;font-size:13px;font-weight:500;color:var(--text);border-bottom:1px solid var(--border);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
-        ${f.owner||'<em style="color:var(--muted);font-weight:400">Vacant</em>'}
+      <td style="padding:10px 14px;border-bottom:1px solid var(--border);max-width:130px">
+        <div style="font-size:13px;font-weight:500;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+          ${f.owner||'<em style="color:var(--muted);font-weight:400">Vacant</em>'}
+        </div>
+        <div style="margin-top:2px">${typeBadge}</div>
       </td>
       <td style="padding:10px 14px;text-align:center;border-bottom:1px solid var(--border)">
         <span class="tab-chip ${chipCls[s]||'muted'}">${chipLbl[s]||s}</span>
@@ -3855,7 +3899,7 @@ function renderAnPayTable() {
       <td style="padding:10px 14px;text-align:center;border-bottom:1px solid var(--border)">${vehCell}</td>
       <td style="padding:10px 14px;text-align:right;font-weight:800;color:${balColor};font-size:13px;border-bottom:1px solid var(--border)">${f.due ? inr(Math.abs(bal)) : '—'}</td>
       <td style="padding:10px 14px;text-align:center;border-bottom:1px solid var(--border)">
-        <button onclick="window._oFlEdit('${f.flatId}')" title="Edit payment"
+        <button onclick="window._oFlEdit('${f.flatId}')" title="Edit"
           style="background:none;border:1px solid var(--border2);border-radius:6px;width:28px;height:28px;cursor:pointer;color:var(--indigo);display:inline-flex;align-items:center;justify-content:center;transition:background .15s,border-color .15s"
           onmouseover="this.style.background='var(--indigo-bg)';this.style.borderColor='var(--indigo)'"
           onmouseout="this.style.background='none';this.style.borderColor='var(--border2)'">
