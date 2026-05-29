@@ -2229,14 +2229,15 @@ function listenFlats(){
 
 function listenExp(){
   if(eu)eu();
-  const q=query(expColl(),where('month','==',AM),orderBy('createdAt','asc'));
+  // Load ALL expenses across all months for analytics history
+  const q=query(expColl(),orderBy('createdAt','asc'));
   eu=onSnapshot(q,snap=>{
     exps.clear();
     snap.forEach(d=>{const e={expId:d.id,...d.data()};const a=exps.get(e.flatId)||[];a.push(e);exps.set(e.flatId,a);});
     rAll();
   },()=>{
-    const q2=query(expColl(),where('month','==',AM));
-    eu=onSnapshot(q2,snap=>{exps.clear();snap.forEach(d=>{const e={expId:d.id,...d.data()};const a=exps.get(e.flatId)||[];a.push(e);exps.set(e.flatId,a);});rAll();});
+    // Fallback without orderBy
+    eu=onSnapshot(expColl(),snap=>{exps.clear();snap.forEach(d=>{const e={expId:d.id,...d.data()};const a=exps.get(e.flatId)||[];a.push(e);exps.set(e.flatId,a);});rAll();});
   });
 }
 
@@ -3699,6 +3700,8 @@ function _buildAnalyticsFilters() {
   const months = new Set();
   [...flats.values()].forEach(f=>{ if(f.month) months.add(f.month); });
   socExps.forEach(e=>{ if(e.month) months.add(e.month); });
+  // Also include months from payment transactions (historical data)
+  exps.forEach(records => records.forEach(e=>{ if(e.month) months.add(e.month); }));
   months.add(AM);
   const sorted = [...months].sort().reverse();
 
@@ -3724,48 +3727,88 @@ function _buildAnalyticsFilters() {
   else ySel.value = years[0] || new Date().getFullYear().toString();
 }
 
+function _buildFlatSummary(filterType, selMonth, selYear) {
+  const matchM = m => filterType==='month' ? m===selMonth : (m||'').startsWith(selYear);
+
+  // Aggregate all payment transactions for the period from the expenses collection
+  const byFlat = new Map();
+  exps.forEach((records, fid) => {
+    records.forEach(e => {
+      if (!matchM(e.month)) return;
+      if (!byFlat.has(fid)) byFlat.set(fid, { flatId:fid, paid:0, due:0, owner:'', resType:'owner', block:'', exps:[] });
+      const rec = byFlat.get(fid);
+      rec.paid += (e.amt || 0);
+      rec.exps.push(e);
+    });
+  });
+
+  // Cross-reference with current flat records for owner/due/resType
+  byFlat.forEach((rec, fid) => {
+    const f = flats.get(fid);
+    if (f) {
+      rec.owner   = f.owner   || rec.owner;
+      rec.due     = f.due     || rec.due;
+      rec.resType = f.resType || rec.resType;
+      rec.block   = f.block   || rec.block;
+    } else {
+      const s = rec.exps[0];
+      rec.owner = s?.owner || s?.block || '';
+      rec.block = s?.block || '';
+    }
+  });
+
+  // For current month: also include flats with no payments yet (truly pending)
+  if (filterType === 'month' && selMonth === AM) {
+    flats.forEach((f, fid) => {
+      if (f.month === AM && !byFlat.has(fid)) {
+        byFlat.set(fid, { flatId:fid, paid:0, due:f.due||0, owner:f.owner||'', resType:f.resType||'owner', block:f.block||'', exps:[] });
+      }
+    });
+  }
+
+  const result = [];
+  byFlat.forEach(rec => {
+    const isVacant = !(rec.owner||'').trim();
+    rec._status = isVacant ? 'vacant' : (rec.paid >= rec.due && rec.due > 0 ? 'paid' : rec.paid > 0 ? 'partial' : 'pending');
+    result.push(rec);
+  });
+  return result.sort((a,b) => (a.flatId||'').localeCompare(b.flatId||''));
+}
+
 function rAnalytics() {
   _buildAnalyticsFilters();
 
-  const filterType = document.getElementById('anFilterType')?.value||'month';
+  const filterType = document.getElementById('anFilterType')?.value || 'month';
   const mSel = document.getElementById('anFilterMonth');
   const ySel = document.getElementById('anFilterYear');
 
   if (mSel) mSel.style.display = filterType==='month' ? '' : 'none';
   if (ySel) ySel.style.display = filterType==='year'  ? '' : 'none';
 
-  // Use dropdown value — guaranteed set by _buildAnalyticsFilters
   const selMonth = mSel?.value || AM;
   const selYear  = ySel?.value || new Date().getFullYear().toString();
+  _anFilterType = filterType; _anSelMonth = selMonth; _anSelYear = selYear;
 
-  // Persist immediately so renderAnPayTable has them even if DOM is hidden
-  _anFilterType = filterType;
-  _anSelMonth   = selMonth;
-  _anSelYear    = selYear;
-
-  const matchM = m => filterType==='month' ? m===selMonth : (m||'').startsWith(selYear);
-
-  const all     = [...flats.values()].filter(f=>matchM(f.month));
-  const paid    = all.filter(f=>st(f)==='paid');
-  const partial = all.filter(f=>st(f)==='partial');
-  const pending = all.filter(f=>st(f)==='pending');
-  const vacant  = all.filter(f=>st(f)==='vacant');
+  const all     = _buildFlatSummary(filterType, selMonth, selYear);
+  const paid    = all.filter(f => f._status==='paid');
+  const partial = all.filter(f => f._status==='partial');
+  const pending = all.filter(f => f._status==='pending');
+  const vacant  = all.filter(f => f._status==='vacant');
 
   const paySegs = [
     { label:'Paid',    value:paid.length,    color:'#22c55e', amt:paid.reduce((s,f)=>s+(f.paid||0),0),    displayValue:paid.length    +' flats' },
     { label:'Partial', value:partial.length, color:'#f59e0b', amt:partial.reduce((s,f)=>s+(f.paid||0),0), displayValue:partial.length +' flats' },
     { label:'Pending', value:pending.length, color:'#ef4444', amt:0,                                       displayValue:pending.length +' flats' },
     { label:'Vacant',  value:vacant.length,  color:'#d1d5db', amt:0,                                       displayValue:vacant.length  +' flats' },
-  ].filter(s=>s.value>0);
+  ].filter(s => s.value > 0);
 
-  // Double rAF: first frame lets the DOM paint, second guarantees layout dimensions
   requestAnimationFrame(() => requestAnimationFrame(() => {
     drawPie('payPie', paySegs, 'payTooltip');
     buildLegend('payLegend', paySegs.map(s=>({...s, count:s.value})), all.length);
   }));
 
-  const totalCollected   = all.reduce((s,f)=>s+(f.paid||0),0);
-  const totalDue         = all.reduce((s,f)=>s+(f.due||0),0);
+  const totalCollected   = all.reduce((s,f) => s+(f.paid||0), 0);
+  const totalDue         = all.reduce((s,f) => s+(f.due||0),  0);
   const totalOutstanding = Math.max(0, totalDue - totalCollected);
   const doc1 = document.getElementById('analyticsTotals');
   if (doc1) doc1.innerHTML = `
@@ -3776,7 +3819,6 @@ function rAnalytics() {
 }
 window.rAnalytics = rAnalytics;
 
-// Redraw charts on resize so canvas dimensions stay correct
 let _resizeTimer;
 window.addEventListener('resize', () => {
   clearTimeout(_resizeTimer);
@@ -3858,19 +3900,16 @@ function anSetStatus(s) {
 window.anSetStatus = anSetStatus;
 
 function renderAnPayTable(filterType, selMonth, selYear) {
-  // Always update stored params when called with args
   if (filterType !== undefined) _anFilterType = filterType;
-  if (selMonth   !== undefined) _anSelMonth   = selMonth   || AM;
-  if (selYear    !== undefined) _anSelYear    = selYear    || new Date().getFullYear().toString();
+  if (selMonth   !== undefined) _anSelMonth   = selMonth || AM;
+  if (selYear    !== undefined) _anSelYear    = selYear  || new Date().getFullYear().toString();
 
   const ft = _anFilterType || 'month';
   const sm = _anSelMonth   || AM;
   const sy = _anSelYear    || new Date().getFullYear().toString();
-  const matchM = m => ft==='month' ? m===sm : (m||'').startsWith(sy);
 
-  let rows = [...flats.values()].filter(f => matchM(f.month));
-  if (_anStatus !== 'all') rows = rows.filter(f => st(f) === _anStatus);
-  rows.sort((a,b) => (a.flatId||'').localeCompare(b.flatId||''));
+  let rows = _buildFlatSummary(ft, sm, sy);
+  if (_anStatus !== 'all') rows = rows.filter(f => f._status === _anStatus);
 
   const tbody   = document.getElementById('anPayTable');
   const empty   = document.getElementById('anPayEmpty');
@@ -3890,7 +3929,7 @@ function renderAnPayTable(filterType, selMonth, selYear) {
   const chipLbl = { paid:'Paid', partial:'Partial', pending:'Pending', vacant:'Vacant' };
 
   tbody.innerHTML = rows.map((f,i) => {
-    const s        = st(f);
+    const s        = f._status || 'pending';
     const bal      = (f.due||0) - (f.paid||0);
     const balColor = bal > 0 ? 'var(--red)' : 'var(--green)';
     const v        = vehicles.get(f.flatId) || {};
