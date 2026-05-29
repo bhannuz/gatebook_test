@@ -330,19 +330,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .iff:hover:not(.active),.mff:hover:not(.active){
   border-color:var(--border3);color:var(--text);background:var(--surface2);
 }
-/* Analytics status filter buttons — same shape */
-.an-sf-btn{
-  display:inline-flex;align-items:center;gap:5px;
-  padding:5px 14px;border-radius:6px;
-  font-size:12px;font-weight:600;
-  border:1px solid var(--border2);
-  background:#fff;color:var(--text2);
-  cursor:pointer;font-family:var(--font);
-  transition:background .15s,color .15s,border-color .15s;
-  white-space:nowrap;
-}
-.an-sf-btn.active{background:var(--indigo);color:#fff;border-color:var(--indigo)}
-.an-sf-btn:hover:not(.active){border-color:var(--border3);color:var(--text);background:var(--surface2)}
+/* an-sf-btn replaced by .iff */
 
 /* ── Unified table wrapper + table ── */
 .tab-table-wrap{
@@ -926,25 +914,27 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 
   <!-- PAYMENTS VIEW -->
   <div id="pView">
-    <div class="controls">
-      <select class="ctrl" id="sf">
-        <option value="all">All statuses</option>
-        <option value="paid">✅ Paid</option>
-        <option value="partial">⚠️ Partial</option>
-        <option value="pending">❌ Pending</option>
-      </select>
-      <select class="ctrl" id="rtf">
-        <option value="all">All types</option>
-        <option value="owner">🏠 Owners</option>
-        <option value="tenant">🔑 Tenants</option>
-        <option value="vacant">🚪 Vacant</option>
-      </select>
-      <select class="ctrl" id="flf" style="display:none">
+    <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:1rem">
+      <!-- Status pills -->
+      <button class="iff active" data-f="all"     onclick="window.fPayStatus('all')">All</button>
+      <button class="iff"        data-f="paid"    onclick="window.fPayStatus('paid')">✅ Paid</button>
+      <button class="iff"        data-f="partial" onclick="window.fPayStatus('partial')">⚠️ Partial</button>
+      <button class="iff"        data-f="pending" onclick="window.fPayStatus('pending')">❌ Pending</button>
+      <!-- Divider -->
+      <span style="width:1px;height:20px;background:var(--border2);margin:0 2px"></span>
+      <!-- Type pills -->
+      <button class="iff active" data-r="all"    onclick="window.fPayType('all')">All Types</button>
+      <button class="iff"        data-r="owner"  onclick="window.fPayType('owner')">🏠 Owner</button>
+      <button class="iff"        data-r="tenant" onclick="window.fPayType('tenant')">🔑 Tenant</button>
+      <button class="iff"        data-r="vacant" onclick="window.fPayType('vacant')">🚪 Vacant</button>
+      <!-- Floor (hidden until blocks) -->
+      <select class="ctrl" id="flf" style="display:none;height:30px;font-size:11px;padding:0 8px" onchange="fFLF()">
         <option value="all">All floors</option>
       </select>
-      <div class="sw">
+      <!-- Search -->
+      <div class="sw" style="margin-left:auto">
         <i class="ti ti-search"></i>
-        <input class="ctrl" type="text" id="qi" placeholder="Search flat or owner…"/>
+        <input class="ctrl" type="text" id="qi" placeholder="Search flat or owner…" style="height:30px;font-size:12px"/>
       </div>
     </div>
     <div class="btabs" id="btabs"></div>
@@ -953,14 +943,12 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 
   <!-- ISSUES VIEW -->
   <div id="iView" style="display:none">
-    <div class="iss-toolbar" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
-      <div class="iss-filters" id="iFil">
-        <button class="iff active" data-f="all"        onclick="fIss('all')">All Issues</button>
-        <button class="iff" data-f="open"              onclick="fIss('open')">🔴 Open</button>
-        <button class="iff" data-f="in-progress"       onclick="fIss('in-progress')">🟡 In Progress</button>
-        <button class="iff" data-f="resolved"          onclick="fIss('resolved')">🟢 Resolved</button>
-      </div>
-      <button class="btn btn-indigo btn-sm" onclick="window._oRI()"><i class="ti ti-plus"></i> Raise Issue</button>
+    <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:1rem">
+      <button class="iff active" data-f="all"         onclick="fIss('all')">All</button>
+      <button class="iff"        data-f="open"        onclick="fIss('open')">🔴 Open</button>
+      <button class="iff"        data-f="in-progress" onclick="fIss('in-progress')">🟡 In Progress</button>
+      <button class="iff"        data-f="resolved"    onclick="fIss('resolved')">🟢 Resolved</button>
+      <button class="btn btn-indigo btn-sm" style="margin-left:auto" onclick="window._oRI()"><i class="ti ti-plus"></i> Raise Issue</button>
     </div>
     <div class="tab-table-wrap red" id="iList"></div>
   </div><!-- /#iView -->
@@ -1058,10 +1046,10 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
           <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border2);flex-wrap:wrap;gap:6px">
             <div style="font-size:11px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.4px"><i class="ti ti-table" style="color:var(--indigo)"></i> Payment Records <span id="anPayCount" style="font-size:10px;color:var(--muted);font-weight:600;text-transform:none;letter-spacing:0"></span></div>
             <div style="display:flex;gap:5px;flex-wrap:wrap">
-              <button class="an-sf-btn active" data-s="all"     onclick="anSetStatus('all')"    >All</button>
-              <button class="an-sf-btn"        data-s="paid"    onclick="anSetStatus('paid')"   >✅ Paid</button>
-              <button class="an-sf-btn"        data-s="partial" onclick="anSetStatus('partial')">⚠️ Partial</button>
-              <button class="an-sf-btn"        data-s="pending" onclick="anSetStatus('pending')">❌ Pending</button>
+              <button class="iff active" data-s="all"     onclick="anSetStatus('all')"    >All</button>
+              <button class="iff"        data-s="paid"    onclick="anSetStatus('paid')"   >✅ Paid</button>
+              <button class="iff"        data-s="partial" onclick="anSetStatus('partial')">⚠️ Partial</button>
+              <button class="iff"        data-s="pending" onclick="anSetStatus('pending')">❌ Pending</button>
             </div>
           </div>
           <div style="overflow-x:auto;max-height:340px;overflow-y:auto">
@@ -2262,8 +2250,25 @@ function listenIssues(){
 /* ════════════════════════════════
    DOM EVENTS
 ════════════════════════════════ */
-document.getElementById('sf').addEventListener('change',e=>{FS=e.target.value;rBlock();});
-document.getElementById('rtf').addEventListener('change',e=>{RTF=e.target.value;rBlock();});
+// Payments tab pill filter functions
+window.fPayStatus = function(s) {
+  FS = s;
+  document.querySelectorAll('[data-f]').forEach(b => {
+    if (['all','paid','partial','pending'].includes(b.dataset.f))
+      b.classList.toggle('active', b.dataset.f===s);
+  });
+  rBlock();
+};
+window.fRT = function() {};  // replaced by fPayType
+window.fPayType = function(r) {
+  RTF = r;
+  document.querySelectorAll('[data-r]').forEach(b => b.classList.toggle('active', b.dataset.r===r));
+  rBlock();
+};
+window.fFLF = function() {
+  const el = document.getElementById('flf');
+  if (el) { FLF = el.value; rBlock(); }
+};
 document.getElementById('flf').addEventListener('change',e=>{FLF=e.target.value;rBlock();});
 document.getElementById('qi').addEventListener('input', e=>{SQ=e.target.value.toLowerCase().trim();rBlock();});
 // #mf month dropdown removed from UI — AM stays as current month
@@ -2701,6 +2706,7 @@ function rIssues() {
       </tbody>
     </table>`;
 }
+
 function fIss(f) {
   IF = f;
   document.querySelectorAll('.iff').forEach(b => b.classList.toggle('active', b.dataset.f === f));
@@ -3860,7 +3866,7 @@ window._closePending = closePending;
 
 function anSetStatus(s) {
   _anStatus = s;
-  document.querySelectorAll('.an-sf-btn').forEach(b => b.classList.toggle('active', b.dataset.s===s));
+  document.querySelectorAll('[data-s]').forEach(b => b.classList.toggle('active', b.dataset.s===s));
   renderAnPayTable(_anFilterType, _anSelMonth, _anSelYear);
 }
 window.anSetStatus = anSetStatus;
