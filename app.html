@@ -914,27 +914,25 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 
   <!-- PAYMENTS VIEW -->
   <div id="pView">
-    <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:1rem">
-      <!-- Status pills -->
-      <button class="iff active" data-f="all"     onclick="window.fPayStatus('all')">All</button>
-      <button class="iff"        data-f="paid"    onclick="window.fPayStatus('paid')">✅ Paid</button>
-      <button class="iff"        data-f="partial" onclick="window.fPayStatus('partial')">⚠️ Partial</button>
-      <button class="iff"        data-f="pending" onclick="window.fPayStatus('pending')">❌ Pending</button>
-      <!-- Divider -->
-      <span style="width:1px;height:20px;background:var(--border2);margin:0 2px"></span>
-      <!-- Type pills -->
-      <button class="iff active" data-r="all"    onclick="window.fPayType('all')">All Types</button>
-      <button class="iff"        data-r="owner"  onclick="window.fPayType('owner')">🏠 Owner</button>
-      <button class="iff"        data-r="tenant" onclick="window.fPayType('tenant')">🔑 Tenant</button>
-      <button class="iff"        data-r="vacant" onclick="window.fPayType('vacant')">🚪 Vacant</button>
-      <!-- Floor (hidden until blocks) -->
-      <select class="ctrl" id="flf" style="display:none;height:30px;font-size:11px;padding:0 8px" onchange="fFLF()">
-        <option value="all">All floors</option>
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:1rem">
+      <select class="ctrl" id="sf" style="height:32px;font-size:12px;padding:0 10px;border-radius:6px;border:1px solid var(--border2);background:#fff;color:var(--text);font-family:var(--font);cursor:pointer" onchange="FS=this.value;rBlock()">
+        <option value="all">All Status</option>
+        <option value="paid">✅ Paid</option>
+        <option value="partial">⚠️ Partial</option>
+        <option value="pending">❌ Pending</option>
       </select>
-      <!-- Search -->
+      <select class="ctrl" id="rtf" style="height:32px;font-size:12px;padding:0 10px;border-radius:6px;border:1px solid var(--border2);background:#fff;color:var(--text);font-family:var(--font);cursor:pointer" onchange="RTF=this.value;rBlock()">
+        <option value="all">All Types</option>
+        <option value="owner">🏠 Owner</option>
+        <option value="tenant">🔑 Tenant</option>
+        <option value="vacant">🚪 Vacant</option>
+      </select>
+      <select class="ctrl" id="flf" style="display:none;height:32px;font-size:12px;padding:0 10px;border-radius:6px;border:1px solid var(--border2);background:#fff;color:var(--text);font-family:var(--font);cursor:pointer" onchange="FLF=this.value;rBlock()">
+        <option value="all">All Floors</option>
+      </select>
       <div class="sw" style="margin-left:auto">
         <i class="ti ti-search"></i>
-        <input class="ctrl" type="text" id="qi" placeholder="Search flat or owner…" style="height:30px;font-size:12px"/>
+        <input class="ctrl" type="text" id="qi" placeholder="Search flat or owner…" style="height:32px;font-size:12px"/>
       </div>
     </div>
     <div class="btabs" id="btabs"></div>
@@ -943,11 +941,13 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 
   <!-- ISSUES VIEW -->
   <div id="iView" style="display:none">
-    <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:1rem">
-      <button class="iff active" data-f="all"         onclick="fIss('all')">All</button>
-      <button class="iff"        data-f="open"        onclick="fIss('open')">🔴 Open</button>
-      <button class="iff"        data-f="in-progress" onclick="fIss('in-progress')">🟡 In Progress</button>
-      <button class="iff"        data-f="resolved"    onclick="fIss('resolved')">🟢 Resolved</button>
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:1rem">
+      <select id="issStatusFilter" style="height:32px;font-size:12px;padding:0 10px;border-radius:6px;border:1px solid var(--border2);background:#fff;color:var(--text);font-family:var(--font);cursor:pointer" onchange="fIss(this.value)">
+        <option value="all">All Issues</option>
+        <option value="open">🔴 Open</option>
+        <option value="in-progress">🟡 In Progress</option>
+        <option value="resolved">🟢 Resolved</option>
+      </select>
       <button class="btn btn-indigo btn-sm" style="margin-left:auto" onclick="window._oRI()"><i class="ti ti-plus"></i> Raise Issue</button>
     </div>
     <div class="tab-table-wrap red" id="iList"></div>
@@ -1045,12 +1045,12 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
         <div class="exp-records-panel tab-table-wrap">
           <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border2);flex-wrap:wrap;gap:6px">
             <div style="font-size:11px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.4px"><i class="ti ti-table" style="color:var(--indigo)"></i> Payment Records <span id="anPayCount" style="font-size:10px;color:var(--muted);font-weight:600;text-transform:none;letter-spacing:0"></span></div>
-            <div style="display:flex;gap:5px;flex-wrap:wrap">
-              <button class="iff active" data-s="all"     onclick="anSetStatus('all')"    >All</button>
-              <button class="iff"        data-s="paid"    onclick="anSetStatus('paid')"   >✅ Paid</button>
-              <button class="iff"        data-s="partial" onclick="anSetStatus('partial')">⚠️ Partial</button>
-              <button class="iff"        data-s="pending" onclick="anSetStatus('pending')">❌ Pending</button>
-            </div>
+            <select id="anStatusFilter" style="height:28px;font-size:11px;padding:0 8px;border-radius:6px;border:1px solid var(--border2);background:#fff;color:var(--text);font-family:var(--font);cursor:pointer" onchange="anSetStatus(this.value)">
+              <option value="all">All</option>
+              <option value="paid">✅ Paid</option>
+              <option value="partial">⚠️ Partial</option>
+              <option value="pending">❌ Pending</option>
+            </select>
           </div>
           <div style="overflow-x:auto;max-height:340px;overflow-y:auto">
             <table style="width:100%;border-collapse:collapse">
@@ -2250,21 +2250,6 @@ function listenIssues(){
 /* ════════════════════════════════
    DOM EVENTS
 ════════════════════════════════ */
-// Payments tab pill filter functions
-window.fPayStatus = function(s) {
-  FS = s;
-  document.querySelectorAll('[data-f]').forEach(b => {
-    if (['all','paid','partial','pending'].includes(b.dataset.f))
-      b.classList.toggle('active', b.dataset.f===s);
-  });
-  rBlock();
-};
-window.fRT = function() {};  // replaced by fPayType
-window.fPayType = function(r) {
-  RTF = r;
-  document.querySelectorAll('[data-r]').forEach(b => b.classList.toggle('active', b.dataset.r===r));
-  rBlock();
-};
 window.fFLF = function() {
   const el = document.getElementById('flf');
   if (el) { FLF = el.value; rBlock(); }
@@ -2706,10 +2691,10 @@ function rIssues() {
       </tbody>
     </table>`;
 }
-
 function fIss(f) {
   IF = f;
-  document.querySelectorAll('.iff').forEach(b => b.classList.toggle('active', b.dataset.f === f));
+  const el = document.getElementById('issStatusFilter');
+  if (el) el.value = f;
   rIssues();
 }
 
@@ -3866,7 +3851,8 @@ window._closePending = closePending;
 
 function anSetStatus(s) {
   _anStatus = s;
-  document.querySelectorAll('[data-s]').forEach(b => b.classList.toggle('active', b.dataset.s===s));
+  const el = document.getElementById('anStatusFilter');
+  if (el) el.value = s;
   renderAnPayTable(_anFilterType, _anSelMonth, _anSelYear);
 }
 window.anSetStatus = anSetStatus;
