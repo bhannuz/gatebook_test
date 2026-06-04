@@ -748,8 +748,11 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   .an-layout-grid{grid-template-columns:1fr!important}
   .an-layout-grid #analyticsTotals{grid-template-columns:1fr 1fr}
   .exp-layout-grid #fundRow{grid-template-columns:1fr 1fr}
-  .exp-pie-panel{order:-1}
   .exp-records-panel{max-height:none!important}
+  /* Charts stay below tables on mobile — no order override */
+  .exp-pie-panel{position:static!important}
+  /* Reduce canvas height on mobile */
+  .exp-pie-panel .chart-wrap{height:220px!important}
 }
 @media(min-width:601px){
   .bottom-nav-bar{display:none!important}
@@ -999,7 +1002,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
           <div style="font-size:11px;font-weight:800;color:var(--text);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">
             <i class="ti ti-chart-pie" style="color:var(--indigo)"></i> By Category
           </div>
-          <div style="width:100%;height:360px;position:relative">
+          <div class="chart-wrap" style="width:100%;height:360px;position:relative">
             <canvas id="expTabPie" style="position:absolute;inset:0;width:100%;height:100%;cursor:pointer"></canvas>
           </div>
           <div id="expTabTooltip" style="display:none;position:fixed;background:rgba(0,0,0,0.82);color:#fff;font-size:11px;font-weight:700;padding:5px 10px;border-radius:8px;pointer-events:none;z-index:9999;white-space:nowrap"></div>
@@ -1076,7 +1079,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
       <div style="display:flex;flex-direction:column;gap:10px">
         <div class="exp-pie-panel">
           <div style="font-size:11px;font-weight:800;color:var(--text);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px"><i class="ti ti-credit-card" style="color:var(--indigo)"></i> Payment Status</div>
-          <div style="width:100%;height:360px;position:relative">
+          <div class="chart-wrap" style="width:100%;height:360px;position:relative">
             <canvas id="payPie" style="position:absolute;inset:0;width:100%;height:100%;cursor:pointer"></canvas>
           </div>
           <div id="payTooltip" style="display:none;position:fixed;background:rgba(0,0,0,0.82);color:#fff;font-size:11px;font-weight:700;padding:5px 10px;border-radius:8px;pointer-events:none;z-index:9999;white-space:nowrap"></div>
@@ -1965,7 +1968,7 @@ async function saveExpEdit(eid, fid) {
   sync('saving');
   try {
     await updateDoc(expDocRef,{cat,amt,date,rawDate,note});
-    const allEx = exps.get(fid)||[];
+    const allEx = (exps.get(fid)||[]).filter(e => e.month === AM);
     const totalPaid = allEx.reduce((s,e)=> (e.expId||e.id)===eid ? s+amt : s+(e.amt||0), 0);
     await updateDoc(flatRef(fid),{paid:totalPaid});
     sync('live'); toast('Saved ✓'); closeExpEdit(eid);
@@ -1979,7 +1982,7 @@ async function delExp(expId, fid) {
   sync('saving');
   try {
     await deleteDoc(expDocRef);
-    const allEx = (exps.get(fid)||[]).filter(e=>(e.expId||e.id)!==expId);
+    const allEx = (exps.get(fid)||[]).filter(e => e.month === AM && (e.expId||e.id)!==expId);
     const totalPaid = allEx.reduce((s,e)=>s+(e.amt||0),0);
     await updateDoc(flatRef(fid),{paid:totalPaid});
     sync('live'); toast('Deleted ✓');
@@ -2692,6 +2695,8 @@ function rIssues() {
       </tbody>
     </table>`;
 }
+}
+
 function fIss(f) {
   IF = f;
   const el = document.getElementById('issStatusFilter');
