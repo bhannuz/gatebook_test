@@ -1472,7 +1472,7 @@ const fdt = ts => {
   return d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
 };
 const bks = () => [...new Set([...flats.values()].map(f=>f.block))].sort();
-const bfl = b => [...flats.values()].filter(f=>f.block===b&&f.month===AM);
+const bfl = b => [...flats.values()].filter(f=>f.block===b);
 const fex = id => exps.get(id)||[];
 
 /* ── Shared APP context for tab modules ── */
@@ -1525,7 +1525,7 @@ function toast(msg, t='success') {
    RENDER
 ════════════════════════════════ */
 function rStats() {
-  const all=([...flats.values()]).filter(f=>f.month===AM);
+  const all=[...flats.values()];
   const due=all.reduce((s,f)=>s+f.due,0);
   const paid=all.reduce((s,f)=>s+f.paid,0);
   const pc=all.filter(f=>st(f)==='paid').length;
@@ -2101,7 +2101,7 @@ function oID(id){
   document.getElementById('idS').textContent = `${iss.cat} · Reported by ${iss.reporter}`;
 
   const cats = ['Plumbing','Electrical','Lift','Security','Cleaning','Parking','Noise','Internet','Other'];
-  const flatOpts = [...flats.values()].filter(f=>f.month===AM)
+  const flatOpts = [...flats.values()]
     .map(f=>`<option value="${f.flatId}"${f.flatId===(iss.flat||iss.block)?'selected':''}>${f.flatId}${f.owner?' — '+f.owner:''}</option>`).join('');
 
   document.getElementById('idC').innerHTML = `
@@ -2515,7 +2515,7 @@ function rBTabs() {
     const bs = bks();
     if (!bs.includes(AB)) { AB = bs[0] || ''; setAB(AB); }
     document.getElementById('btabs').innerHTML = bs.map(b => {
-      const bf = [...flats.values()].filter(f => f.block === b && f.month === AM);
+      const bf = [...flats.values()].filter(f => f.block === b);
       const pc = bf.filter(f => st(f) === 'paid').length;
       return `<button class="btab${b === AB ? ' active' : ''}" onclick="window._sB('${b}')">
         <i class="ti ti-building"></i> Block ${b}
@@ -2525,7 +2525,7 @@ function rBTabs() {
     updateFloorFilter(AB);
   } else {
     // No blocks — show floor tabs
-    const all = [...flats.values()].filter(f => f.month === AM);
+    const all = [...flats.values()];
     const floors = [...new Set(all.map(f => f.floor).filter(x => x != null))].sort((a,b) => a - b);
     const flNums = floors.map(String);
     if (!flNums.includes(String(AB))) { AB = String(floors[0] || 1); setAB(AB); }
@@ -2544,7 +2544,7 @@ function rBTabs() {
 function rBlock() {
   const useBlocks = hasBlocks();
 
-  let bf = [...flats.values()].filter(f => f.month === AM);
+  let bf = [...flats.values()];
   if (useBlocks) {
     bf = bf.filter(f => f.block === AB);
   } else {
@@ -2818,7 +2818,7 @@ function rVehicles() {
   const q  = (document.getElementById('vehQ')?.value || '').toLowerCase().trim();
   const bf = document.getElementById('vehBF')?.value || 'all';
   const tf = document.getElementById('vehTF')?.value || 'all';
-  const all = [...flats.values()].filter(f => f.month === AM);
+  const all = [...flats.values()];
 
   // Rebuild block filter dropdown
   const bs = bks();
@@ -2878,7 +2878,7 @@ function rVehicles() {
 }
 
 function oVehM() {
-  const first = [...flats.values()].find(f => f.month === AM);
+  const first = [...flats.values()][0];
   if (first) oVehFor(first.flatId);
   else toast('No flats found.', 'error');
 }
@@ -3178,7 +3178,7 @@ window.rPresHistory = rPresHistory;
 function oPresM() {
   const pres = president;
   document.getElementById('presFlat').innerHTML = [...flats.values()]
-    .filter(f => f.month === AM && (f.owner || '').trim())
+    .filter(f => (f.owner || '').trim())
     .map(f => `<option value="${f.flatId}"${pres && pres.flatId === f.flatId ? ' selected' : ''}>${f.flatId} — ${f.owner}</option>`)
     .join('');
   document.getElementById('presName').value  = pres?.name || '';
@@ -3294,7 +3294,7 @@ async function saveSEEdit(id) {
 function rResidents() {
   // re-use rMembers for now — members tab shows in resView
   // Vehicle summary cards
-  const all = [...flats.values()].filter(f => f.month === AM);
+  const all = [...flats.values()];
   const totTw   = [...vehicles.values()].reduce((s,v)=>s+(parseInt(v.tw)||0),0);
   const totFw   = [...vehicles.values()].reduce((s,v)=>s+(parseInt(v.fw)||0),0);
   const withVeh = all.filter(f=>{const v=vehicles.get(f.flatId)||{};return (parseInt(v.tw)||0)+(parseInt(v.fw)||0)>0;}).length;
@@ -3760,10 +3760,10 @@ function _buildFlatSummary(filterType, selMonth, selYear) {
     }
   });
 
-  // For current month: also include flats with no payments yet (truly pending)
-  if (filterType === 'month' && selMonth === AM) {
+  // Include all flats with no payments for the period (truly pending/not paid)
+  if (filterType === 'month') {
     flats.forEach((f, fid) => {
-      if (f.month === AM && !byFlat.has(fid)) {
+      if (!byFlat.has(fid)) {
         byFlat.set(fid, { flatId:fid, paid:0, due:f.due||0, owner:f.owner||'', resType:f.resType||'owner', block:f.block||'', exps:[] });
       }
     });
@@ -3835,7 +3835,7 @@ window.addEventListener('resize', () => {
 
 /* ── Pending Flats Modal ── */
 function showPending() {
-  const all     = [...flats.values()].filter(f=>f.month===AM);
+  const all     = [...flats.values()];
   const pending = all.filter(f=>st(f)==='pending').sort((a,b)=>(b.due-b.paid)-(a.due-a.paid));
   const partial = all.filter(f=>st(f)==='partial').sort((a,b)=>(b.due-b.paid)-(a.due-a.paid));
   const rows    = [...pending, ...partial];
