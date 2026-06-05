@@ -2075,7 +2075,6 @@ async function saveFlat(fid) {
     if (btn) { btn.disabled = false; btn.innerHTML = '<i class="ti ti-device-floppy" style="font-size:15px"></i> Save Changes'; }
   }
 }
-let _autoSaveTimer = null;
 // Keep autoSaveFlat as alias for legacy callers
 async function autoSaveFlat(fid) { return saveFlat(fid); }
 
