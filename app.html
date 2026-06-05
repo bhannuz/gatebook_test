@@ -983,6 +983,9 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   <!-- PAYMENTS VIEW -->
   <div id="pView" style="display:none">
     <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:1rem">
+      <select class="ctrl" id="pbf" style="height:32px;font-size:12px;padding:0 10px;border-radius:6px;border:1px solid var(--border2);background:#fff;color:var(--text);font-family:var(--font);cursor:pointer" onchange="AB=this.value==='all'?(bks()[0]||''):this.value;rBTabs();rBlock()">
+        <option value="all">All Blocks</option>
+      </select>
       <select class="ctrl" id="sf" style="height:32px;font-size:12px;padding:0 10px;border-radius:6px;border:1px solid var(--border2);background:#fff;color:var(--text);font-family:var(--font);cursor:pointer" onchange="FS=this.value;rBlock()">
         <option value="all">All Status</option>
         <option value="paid">✅ Paid</option>
@@ -1091,6 +1094,9 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
     <!-- Filters only — right-aligned, tight to tab bar -->
     <div style="display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:8px;margin-bottom:10px">
       <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+        <select id="anBlockFilter" class="ctrl" style="font-size:11px;height:30px;padding:0 8px;display:none" onchange="rAnalytics()">
+          <option value="all">All Blocks</option>
+        </select>
         <select id="anFilterType" class="ctrl" style="font-size:11px;height:30px;padding:0 8px" onchange="rAnalytics()">
           <option value="month">Month</option>
           <option value="year">Year</option>
@@ -1113,12 +1119,15 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
         <div class="exp-records-panel tab-table-wrap">
           <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border2);flex-wrap:wrap;gap:6px">
             <div style="font-size:11px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.4px"><i class="ti ti-table" style="color:var(--indigo)"></i> Payment Records <span id="anPayCount" style="font-size:10px;color:var(--muted);font-weight:600;text-transform:none;letter-spacing:0"></span></div>
-            <select id="anStatusFilter" style="height:28px;font-size:11px;padding:0 8px;border-radius:6px;border:1px solid var(--border2);background:#fff;color:var(--text);font-family:var(--font);cursor:pointer" onchange="anSetStatus(this.value)">
-              <option value="all">All</option>
-              <option value="paid">✅ Paid</option>
-              <option value="partial">⚠️ Partial</option>
-              <option value="pending">❌ Pending</option>
-            </select>
+            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+              <select id="anBlockFilter2" style="height:28px;font-size:11px;padding:0 8px;border-radius:6px;border:1px solid var(--border2);background:#fff;color:var(--text);font-family:var(--font);cursor:pointer;display:none" onchange="anSetBlock(this.value)">
+              <select id="anStatusFilter" style="height:28px;font-size:11px;padding:0 8px;border-radius:6px;border:1px solid var(--border2);background:#fff;color:var(--text);font-family:var(--font);cursor:pointer" onchange="anSetStatus(this.value)">
+                <option value="all">All</option>
+                <option value="paid">✅ Paid</option>
+                <option value="partial">⚠️ Partial</option>
+                <option value="pending">❌ Pending</option>
+              </select>
+            </div>
           </div>
           <div style="overflow-x:auto;max-height:340px;overflow-y:auto">
             <table style="width:100%;border-collapse:collapse">
@@ -1574,7 +1583,7 @@ const issues = [];
 
 let AB='', FS='all', SQ='', RTF='all', FLF='all', MF='all', AM=new Date().toISOString().slice(0,7), AV='analytics', IF='all';
 // Analytics tab state — declared here to avoid TDZ errors
-let _anStatus='all', _anFilterType='month', _anSelMonth=AM, _anSelYear=new Date().getFullYear().toString();
+let _anStatus='all', _anFilterType='month', _anSelMonth=AM, _anSelYear=new Date().getFullYear().toString(), _anBlock='all';
 const _pieSegs={};
 let eu=null, iu=null, vu=null, pu=null;
 const vehicles = new Map();   // flatId -> {tw,fw,nums,slot}
@@ -2652,6 +2661,17 @@ function updateFloorFilter(block) {
 
 function rBTabs() {
   const useBlocks = hasBlocks();
+
+  // Populate payments block filter dropdown
+  const pbf = document.getElementById('pbf');
+  if (pbf) {
+    const curPbf = pbf.value;
+    const allBlocks = bks();
+    pbf.innerHTML = `<option value="all">All Blocks</option>` +
+      allBlocks.map(b => `<option value="${b}"${b === curPbf ? ' selected' : ''}>Block ${b}</option>`).join('');
+    if (allBlocks.length <= 1) pbf.style.display = 'none';
+    else pbf.style.display = '';
+  }
 
   if (useBlocks) {
     const bs = bks();
@@ -3853,7 +3873,21 @@ function _buildAnalyticsFilters() {
 
   const mSel = document.getElementById('anFilterMonth');
   const ySel = document.getElementById('anFilterYear');
+  const bSel  = document.getElementById('anBlockFilter');
+  const bSel2 = document.getElementById('anBlockFilter2');
   if (!mSel || !ySel) return;
+
+  // Populate block filter (both top filter bar + table header)
+  const allBlocks = [...new Set([...flats.values()].map(f => f.block).filter(Boolean))].sort();
+  [bSel, bSel2].forEach(sel => {
+    if (!sel) return;
+    const curB = sel.value || _anBlock;
+    sel.innerHTML = `<option value="all">All Blocks</option>` +
+      allBlocks.map(b => `<option value="${b}"${b === curB ? ' selected' : ''}>Block ${b}</option>`).join('');
+    if (allBlocks.length > 1) sel.style.display = '';
+    else sel.style.display = 'none';
+    if (allBlocks.includes(curB)) sel.value = curB;
+  });
 
   // Read current user selection BEFORE touching innerHTML
   const prevMonth = mSel.value || _anSelMonth || AM;
@@ -3873,14 +3907,17 @@ function _buildAnalyticsFilters() {
   else ySel.value = years[0] || new Date().getFullYear().toString();
 }
 
-function _buildFlatSummary(filterType, selMonth, selYear) {
+function _buildFlatSummary(filterType, selMonth, selYear, selBlock) {
   const matchM = m => filterType==='month' ? m===selMonth : (m||'').startsWith(selYear);
+  const matchB = b => !selBlock || selBlock === 'all' || b === selBlock;
 
   // Aggregate all payment transactions for the period from the expenses collection
   const byFlat = new Map();
   exps.forEach((records, fid) => {
     records.forEach(e => {
       if (!matchM(e.month)) return;
+      const f = flats.get(fid);
+      if (!matchB(f?.block || e.block || '')) return;
       if (!byFlat.has(fid)) byFlat.set(fid, { flatId:fid, paid:0, due:0, owner:'', resType:'owner', block:'', exps:[] });
       const rec = byFlat.get(fid);
       rec.paid += (e.amt || 0);
@@ -3906,6 +3943,7 @@ function _buildFlatSummary(filterType, selMonth, selYear) {
   // Include all flats with no payments for the period (truly pending/not paid)
   if (filterType === 'month') {
     flats.forEach((f, fid) => {
+      if (!matchB(f.block || '')) return;
       if (!byFlat.has(fid)) {
         byFlat.set(fid, { flatId:fid, paid:0, due:f.due||0, owner:f.owner||'', resType:f.resType||'owner', block:f.block||'', exps:[] });
       }
@@ -3925,17 +3963,29 @@ function rAnalytics() {
   _buildAnalyticsFilters();
 
   const filterType = document.getElementById('anFilterType')?.value || 'month';
-  const mSel = document.getElementById('anFilterMonth');
-  const ySel = document.getElementById('anFilterYear');
+  const mSel  = document.getElementById('anFilterMonth');
+  const ySel  = document.getElementById('anFilterYear');
+  const bSel  = document.getElementById('anBlockFilter');
+  const bSel2 = document.getElementById('anBlockFilter2');
 
   if (mSel) mSel.style.display = filterType==='month' ? '' : 'none';
   if (ySel) ySel.style.display = filterType==='year'  ? '' : 'none';
 
   const selMonth = mSel?.value || AM;
   const selYear  = ySel?.value || new Date().getFullYear().toString();
-  _anFilterType = filterType; _anSelMonth = selMonth; _anSelYear = selYear;
+  const selBlock = bSel?.value || 'all';
+  _anFilterType = filterType; _anSelMonth = selMonth; _anSelYear = selYear; _anBlock = selBlock;
 
-  const all     = _buildFlatSummary(filterType, selMonth, selYear);
+  // Keep both block selects in sync
+  if (bSel2 && bSel2.value !== selBlock) bSel2.value = selBlock;
+
+  // Human-readable period label for cards
+  const periodLabel = filterType === 'month'
+    ? new Date(selMonth + '-01').toLocaleDateString('en-IN', { month: 'long', year: 'numeric' })
+    : `FY ${selYear}`;
+  const blockLabel  = selBlock !== 'all' ? ` · Block ${selBlock}` : '';
+
+  const all     = _buildFlatSummary(filterType, selMonth, selYear, selBlock);
   const paid    = all.filter(f => f._status==='paid');
   const partial = all.filter(f => f._status==='partial');
   const pending = all.filter(f => f._status==='pending');
@@ -3956,12 +4006,30 @@ function rAnalytics() {
   const totalCollected   = all.reduce((s,f) => s+(f.paid||0), 0);
   const totalDue         = all.reduce((s,f) => s+(f.due||0),  0);
   const totalOutstanding = Math.max(0, totalDue - totalCollected);
+  const pct = totalDue ? Math.round(totalCollected / totalDue * 100) : 0;
+
   const doc1 = document.getElementById('analyticsTotals');
   if (doc1) doc1.innerHTML = `
-    <div class="vscard green"><div class="vscard-icon fw"><i class="ti ti-circle-check"></i></div><div><div class="vscard-label">Collected</div><div class="vscard-val" style="color:var(--green)">${inr(totalCollected)}</div><div style="font-size:10px;color:var(--muted);margin-top:2px">${paid.length+partial.length} flats paid</div></div></div>
-    <div class="vscard red"><div class="vscard-icon" style="background:var(--red-bg);color:var(--red)"><i class="ti ti-clock"></i></div><div><div class="vscard-label">Outstanding</div><div class="vscard-val" style="color:var(--red)">${inr(totalOutstanding)}</div><div style="font-size:10px;color:var(--muted);margin-top:2px">${pending.length} flats pending</div></div></div>`;
+    <div class="vscard green" style="cursor:default">
+      <div class="vscard-icon fw"><i class="ti ti-circle-check"></i></div>
+      <div>
+        <div class="vscard-label">Collected</div>
+        <div class="vscard-val" style="color:var(--green)">${inr(totalCollected)}</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px">${paid.length+partial.length} flats · ${pct}%</div>
+        <div style="font-size:10px;font-weight:700;color:var(--green);margin-top:1px">${periodLabel}${blockLabel}</div>
+      </div>
+    </div>
+    <div class="vscard red" onclick="window._showPending()" style="cursor:pointer" title="Click to view pending flats">
+      <div class="vscard-icon" style="background:var(--red-bg);color:var(--red)"><i class="ti ti-clock"></i></div>
+      <div>
+        <div class="vscard-label">Outstanding</div>
+        <div class="vscard-val" style="color:var(--red)">${inr(totalOutstanding)}</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px">${pending.length} pending · ${partial.length} partial</div>
+        <div style="font-size:10px;font-weight:700;color:var(--red-txt);margin-top:1px">${periodLabel}${blockLabel}</div>
+      </div>
+    </div>`;
 
-  renderAnPayTable(filterType, selMonth, selYear);
+  renderAnPayTable(filterType, selMonth, selYear, selBlock);
 }
 window.rAnalytics = rAnalytics;
 
@@ -4041,20 +4109,33 @@ function anSetStatus(s) {
   _anStatus = s;
   const el = document.getElementById('anStatusFilter');
   if (el) el.value = s;
-  renderAnPayTable(_anFilterType, _anSelMonth, _anSelYear);
+  renderAnPayTable();
 }
 window.anSetStatus = anSetStatus;
 
-function renderAnPayTable(filterType, selMonth, selYear) {
+function anSetBlock(b) {
+  _anBlock = b;
+  // Sync both block selects
+  ['anBlockFilter','anBlockFilter2'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = b;
+  });
+  rAnalytics();
+}
+window.anSetBlock = anSetBlock;
+
+function renderAnPayTable(filterType, selMonth, selYear, selBlock) {
   if (filterType !== undefined) _anFilterType = filterType;
   if (selMonth   !== undefined) _anSelMonth   = selMonth || AM;
   if (selYear    !== undefined) _anSelYear    = selYear  || new Date().getFullYear().toString();
+  if (selBlock   !== undefined) _anBlock      = selBlock || 'all';
 
   const ft = _anFilterType || 'month';
   const sm = _anSelMonth   || AM;
   const sy = _anSelYear    || new Date().getFullYear().toString();
+  const sb = _anBlock      || 'all';
 
-  let rows = _buildFlatSummary(ft, sm, sy);
+  let rows = _buildFlatSummary(ft, sm, sy, sb);
   if (_anStatus !== 'all') rows = rows.filter(f => f._status === _anStatus);
 
   const tbody   = document.getElementById('anPayTable');
