@@ -1169,23 +1169,30 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   <div id="structureView" style="display:none;padding:10px 14px 14px">
     <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:14px">
       <div>
-        <div style="font-size:15px;font-weight:800;color:var(--text)">🏢 Society Structure</div>
-        <div style="font-size:11px;color:var(--muted);margin-top:2px">Block · Floor · Flat overview</div>
+        <div style="font-size:15px;font-weight:800;color:var(--text)">🏢 Master Data - Residents</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">Click any flat to view & edit all details</div>
       </div>
-      <div style="display:flex;gap:8px">
-        <select id="strBlockFilter" class="ctrl" style="height:32px;font-size:12px;padding:0 10px" onchange="rStructure()">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <select id="strBlockFilter" class="ctrl" style="height:32px;font-size:12px;padding:0 10px" onchange="window.rStructure()">
           <option value="all">All Blocks</option>
+        </select>
+        <select id="strTypeFilter" class="ctrl" style="height:32px;font-size:12px;padding:0 10px" onchange="window.rStructure()">
+          <option value="all">All Types</option>
+          <option value="owner">🏠 Owner</option>
+          <option value="tenant">🔑 Tenant</option>
+          <option value="vacant">🚪 Vacant</option>
         </select>
         <div style="position:relative">
           <i class="ti ti-search" style="position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:13px;pointer-events:none"></i>
-          <input type="text" id="strSearch" class="ctrl" placeholder="Search flat…" style="height:32px;font-size:12px;padding-left:32px" oninput="rStructure()">
+          <input type="text" id="strSearch" class="ctrl" placeholder="Search flat or name…" style="height:32px;font-size:12px;padding-left:32px" oninput="window.rStructure()">
         </div>
+        <button class="btn btn-indigo btn-sm" onclick="window._oAF()" style="padding:6px 12px;font-size:11px"><i class="ti ti-plus"></i> Add Flat</button>
       </div>
     </div>
     <!-- Summary stat cards -->
     <div id="strStats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:14px"></div>
-    <!-- Block accordion -->
-    <div id="strBlocks"></div>
+    <!-- Flats as chips -->
+    <div id="strChips" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:10px;padding:10px 0"></div>
   </div><!-- /#structureView -->
 
   <!-- RESIDENTS VIEW -->
@@ -3763,7 +3770,7 @@ async function boot(){
   }
 }
 
-/* ══ STRUCTURE TAB ══ */
+/* ══ STRUCTURE TAB — Master Data Management ══ */
 function rStructure() {
   // Populate block filter
   const bfSel = document.getElementById('strBlockFilter');
@@ -3775,19 +3782,27 @@ function rStructure() {
   }
 
   const selBlock = bfSel?.value || 'all';
+  const selType = document.getElementById('strTypeFilter')?.value || 'all';
   const q = (document.getElementById('strSearch')?.value||'').trim().toLowerCase();
 
   let rows = [...flats.values()].filter(f => {
     if (selBlock !== 'all' && f.block !== selBlock) return false;
+    
+    const isVacant = !(f.owner||'').trim();
+    const rType = isVacant ? 'vacant' : (f.resType||'owner');
+    if (selType !== 'all' && rType !== selType) return false;
+    
     if (q && !f.flatId?.toLowerCase().includes(q) && !(f.owner||'').toLowerCase().includes(q)) return false;
     return true;
   }).sort((a,b) => (a.flatId||'').localeCompare(b.flatId||''));
 
   // Stats
-  const total   = rows.length;
-  const owners  = rows.filter(f=>(f.resType||'owner')==='owner' && (f.owner||'').trim()).length;
-  const tenants = rows.filter(f=>f.resType==='tenant').length;
-  const vacant  = rows.filter(f=>!(f.owner||'').trim()).length;
+  const all = [...flats.values()];
+  const total   = all.length;
+  const owners  = all.filter(f=>(f.resType||'owner')==='owner' && (f.owner||'').trim()).length;
+  const tenants = all.filter(f=>f.resType==='tenant').length;
+  const vacant  = all.filter(f=>!(f.owner||'').trim()).length;
+  
   const statEl  = document.getElementById('strStats');
   if (statEl) statEl.innerHTML = `
     <div class="vscard"><div class="vscard-icon tw"><i class="ti ti-home"></i></div><div><div class="vscard-label">Total Flats</div><div class="vscard-val">${total}</div></div></div>
@@ -3795,82 +3810,42 @@ function rStructure() {
     <div class="vscard"><div class="vscard-icon" style="background:var(--amber-bg);color:var(--amber)"><i class="ti ti-key"></i></div><div><div class="vscard-label">Tenants</div><div class="vscard-val">${tenants}</div></div></div>
     <div class="vscard"><div class="vscard-icon" style="background:var(--surface3);color:var(--muted)"><i class="ti ti-door"></i></div><div><div class="vscard-label">Vacant</div><div class="vscard-val">${vacant}</div></div></div>`;
 
-  // Group by block
-  const byBlock = new Map();
-  rows.forEach(f => {
-    const b = f.block || '(No Block)';
-    if (!byBlock.has(b)) byBlock.set(b, []);
-    byBlock.get(b).push(f);
-  });
-
-  const blocksEl = document.getElementById('strBlocks');
-  if (!blocksEl) return;
+  const chipsEl = document.getElementById('strChips');
+  if (!chipsEl) return;
 
   if (!rows.length) {
-    blocksEl.innerHTML = `<div style="text-align:center;padding:4rem;color:var(--muted)">
+    chipsEl.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:4rem;color:var(--muted)">
       <i class="ti ti-building-off" style="font-size:40px;display:block;margin-bottom:12px;opacity:.4"></i>
-      No flats found. <button class="btn btn-indigo btn-sm" style="margin-left:8px" onclick="window._oAF()"><i class="ti ti-plus"></i> Add Flat</button>
+      No flats found.
     </div>`;
     return;
   }
 
-  blocksEl.innerHTML = [...byBlock.entries()].map(([block, bFlats]) => {
-    const paidCnt = bFlats.filter(f=>{
-      const am = _anSelMonth||AM;
-      const paid = (exps.get(f.flatId)||[]).filter(e=>e.month===am).reduce((s,e)=>s+(e.amt||0),0);
-      return paid > 0 && paid >= (f.due||0);
-    }).length;
-
-    const tableRows = bFlats.map(f => {
-      const isVacant = !(f.owner||'').trim();
-      const rType    = isVacant ? 'vacant' : (f.resType||'owner');
-      const typeCls  = isVacant ? 'muted' : rType==='tenant' ? 'amber' : 'indigo';
-      const typeLabel= isVacant ? 'Vacant' : rType==='tenant' ? '🔑 Tenant' : '🏠 Owner';
-      const v        = vehicles.get(f.flatId)||{};
-      const tw = parseInt(v.tw)||0, fw = parseInt(v.fw)||0;
-      const veh = (tw||fw) ? `🏍${tw} 🚗${fw}` : '<span style="color:var(--muted)">—</span>';
-      return `<tr onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
-        <td style="padding:10px 14px;border-bottom:1px solid var(--border);font-weight:800;color:var(--indigo);font-size:13px">${f.flatId}</td>
-        <td style="padding:10px 14px;border-bottom:1px solid var(--border)">
-          <div style="font-size:13px;font-weight:600;color:var(--text)">${f.owner||'<em style="color:var(--muted);font-weight:400">Vacant</em>'}</div>
-          ${f.ownerName&&rType==='tenant'?`<div style="font-size:10px;color:var(--text2)">Owner: ${f.ownerName}</div>`:''}
-        </td>
-        <td style="padding:10px 14px;border-bottom:1px solid var(--border)"><span class="tab-chip ${typeCls}">${typeLabel}</span></td>
-        <td style="padding:10px 14px;border-bottom:1px solid var(--border);font-size:12px;font-weight:700;color:var(--text);text-align:right">${f.due?inr(f.due):'<span style="color:var(--muted)">—</span>'}</td>
-        <td style="padding:10px 14px;border-bottom:1px solid var(--border);font-size:12px;color:var(--text2);text-align:center">${veh}</td>
-        <td style="padding:10px 14px;border-bottom:1px solid var(--border);text-align:center">
-          <button onclick="window._oFlEdit('${f.flatId}')" title="Edit"
-            style="background:none;border:1px solid var(--border2);border-radius:6px;width:28px;height:28px;cursor:pointer;color:var(--indigo);display:inline-flex;align-items:center;justify-content:center"
-            onmouseover="this.style.background='var(--indigo-bg)';this.style.borderColor='var(--indigo)'"
-            onmouseout="this.style.background='none';this.style.borderColor='var(--border2)'">
-            <i class="ti ti-pencil" style="font-size:12px"></i>
-          </button>
-        </td>
-      </tr>`;
-    }).join('');
-
-    return `<div style="margin-bottom:16px">
-      <div class="tab-table-wrap">
-        <div style="padding:10px 14px;border-bottom:1px solid var(--border2);display:flex;align-items:center;justify-content:space-between;background:var(--surface3)">
-          <div style="font-size:12px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:8px">
-            <i class="ti ti-building" style="color:var(--indigo)"></i> Block ${block}
-            <span style="font-size:10px;font-weight:600;color:var(--muted)">${bFlats.length} flats · ${paidCnt} paid</span>
-          </div>
-          <button class="btn btn-indigo btn-sm" onclick="window._oAF()" style="padding:3px 10px;font-size:11px"><i class="ti ti-plus"></i> Add</button>
-        </div>
-        <table style="width:100%;border-collapse:collapse">
-          <thead><tr style="background:var(--surface3)">
-            <th style="padding:8px 14px;font-size:10px;font-weight:800;color:var(--text);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border2)">Flat</th>
-            <th style="padding:8px 14px;font-size:10px;font-weight:800;color:var(--text);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border2)">Resident</th>
-            <th style="padding:8px 14px;font-size:10px;font-weight:800;color:var(--text);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border2)">Type</th>
-            <th style="padding:8px 14px;font-size:10px;font-weight:800;color:var(--text);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border2);text-align:right">Due</th>
-            <th style="padding:8px 14px;font-size:10px;font-weight:800;color:var(--text);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border2);text-align:center">Vehicles</th>
-            <th style="padding:8px 14px;width:36px;border-bottom:1px solid var(--border2)"></th>
-          </tr></thead>
-          <tbody>${tableRows}</tbody>
-        </table>
-      </div>
-    </div>`;
+  chipsEl.innerHTML = rows.map(f => {
+    const isVacant = !(f.owner||'').trim();
+    const rType = isVacant ? 'vacant' : (f.resType||'owner');
+    const chipColor = isVacant ? 'var(--surface2)' : rType==='tenant' ? 'var(--amber-bg)' : 'var(--indigo-bg)';
+    const chipTextColor = isVacant ? 'var(--muted)' : rType==='tenant' ? 'var(--amber)' : 'var(--indigo)';
+    const status = st(f, AM);
+    const statusIcon = status==='paid' ? '✅' : status==='partial' ? '⚠️' : status==='pending' ? '❌' : '—';
+    const paid = paidAM(f.flatId, AM);
+    const due = f.due || 0;
+    
+    return `<button 
+      onclick="window._oFlEdit('${f.flatId}')" 
+      style="
+        background:${chipColor};color:${chipTextColor};border:none;border-radius:12px;
+        padding:12px 10px;cursor:pointer;font-family:var(--font);transition:all .15s;
+        display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+        box-shadow:var(--shadow-sm);position:relative;overflow:hidden
+      "
+      onmouseover="this.style.transform='scale(1.05)';this.style.boxShadow='var(--shadow-lg)'"
+      onmouseout="this.style.transform='scale(1)';this.style.boxShadow='var(--shadow-sm)'"
+    >
+      <div style="font-weight:800;font-size:13px">${f.flatId}</div>
+      <div style="font-size:10px;opacity:.8">${f.owner ? f.owner.substring(0,12) : 'Vacant'}</div>
+      <div style="font-size:11px;margin-top:2px">${statusIcon} ${inr(paid)}/${inr(due)}</div>
+    </button>`;
   }).join('');
 }
 window.rStructure = rStructure;
