@@ -3942,7 +3942,7 @@ function rStructure() {
               <div style="font-size:10px;color:var(--muted)">${fts.length} flat${fts.length!==1?'s':''} · ${paidCnt} paid</div>
             </div>
           </div>
-          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:8px">
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(95px,1fr));gap:8px">
             ${fts.map(f => makeChip(f)).join('')}
           </div>
         </div>`;
@@ -3973,7 +3973,7 @@ function rStructure() {
               <div style="font-size:10px;color:var(--muted)">${fts.length} flat${fts.length!==1?'s':''} · ${paidCnt} paid</div>
             </div>
           </div>
-          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:8px">
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(95px,1fr));gap:8px">
             ${fts.map(f => makeChip(f)).join('')}
           </div>
         </div>`;
@@ -3981,7 +3981,7 @@ function rStructure() {
 
   } else {
     // All flats in one grid
-    chipsEl.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:8px">
+    chipsEl.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(95px,1fr));gap:8px">
       ${rows.map(f => makeChip(f)).join('')}
     </div>`;
   }
@@ -3994,25 +3994,46 @@ function rStructure() {
     
     const paid = paidAM(f.flatId, AM);
     const due = f.due || 0;
+    const pct = due ? Math.round(Math.min(paid/due*100,100)) : 0;
     const status = paid >= due ? 'paid' : paid > 0 ? 'partial' : 'pending';
-    const statusIcon = status==='paid' ? '✅' : status==='partial' ? '⚠️' : '❌';
+    const statusIcon = {paid:'ti-circle-check',partial:'ti-clock',pending:'ti-alert-circle'}[status];
+    const statusColor = {paid:'var(--green)',partial:'var(--amber)',pending:'var(--red)'}[status];
 
     return `<button 
       onclick="window._oFlEdit('${f.flatId}')" 
       style="
-        background:${chipColor};color:${chipTextColor};border:none;border-radius:10px;
-        padding:10px 8px;cursor:pointer;font-family:var(--font);transition:all .12s;
-        display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
-        box-shadow:var(--shadow-sm);position:relative;overflow:hidden;font-size:11px
+        background:${chipColor};color:${chipTextColor};border:none;border-radius:12px;
+        padding:12px 10px;cursor:pointer;font-family:var(--font);transition:all .12s;
+        display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:6px;
+        box-shadow:var(--shadow-sm);position:relative;overflow:hidden;font-size:11px;
+        text-align:center;height:100%;min-height:100px
       "
       title="${f.owner||'Vacant'}"
-      onmouseover="this.style.transform='scale(1.08)';this.style.boxShadow='var(--shadow-md)'"
+      onmouseover="this.style.transform='scale(1.05)';this.style.boxShadow='var(--shadow-md)'"
       onmouseout="this.style.transform='scale(1)';this.style.boxShadow='var(--shadow-sm)'"
     >
-      <div style="font-weight:800;font-size:12px">${f.flatId}</div>
-      <div style="font-size:9px;opacity:.7;text-align:center;line-height:1.2">${f.owner ? f.owner.substring(0,10) : 'Vacant'}</div>
-      <div style="font-size:10px;margin-top:1px">${statusIcon}</div>
-      <div style="font-size:8px;opacity:.6">${inr(paid)}/${inr(due)}</div>
+      <!-- Status Badge (Top-Right) -->
+      <div style="position:absolute;top:6px;right:6px;background:${statusColor};color:#fff;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;box-shadow:0 2px 6px rgba(0,0,0,0.2)">
+        <i class="ti ${statusIcon}" style="font-size:13px"></i>
+      </div>
+
+      <!-- Main Content -->
+      <div style="font-weight:800;font-size:13px;margin-top:4px">${f.flatId}</div>
+      <div style="font-size:9px;opacity:.8;line-height:1.3;flex:1;display:flex;align-items:center">${f.owner ? f.owner.substring(0,12) : 'Vacant'}</div>
+      
+      <!-- Type Badge -->
+      <div style="width:100%;font-size:9px;font-weight:700;padding:3px 4px;background:rgba(255,255,255,0.15);border-radius:4px;margin-bottom:4px">
+        ${isVacant ? 'Vacant' : rType==='tenant' ? '🔑 Tenant' : '🏠 Owner'}
+      </div>
+
+      <!-- Amount and Progress -->
+      <div style="width:100%;margin-top:auto">
+        <div style="font-size:10px;font-weight:700;color:${statusColor};margin-bottom:4px">${inr(paid)}</div>
+        <div style="width:100%;height:4px;background:rgba(255,255,255,0.2);border-radius:2px;overflow:hidden">
+          <div style="height:100%;background:${statusColor};width:${pct}%;border-radius:2px;transition:width .3s"></div>
+        </div>
+        <div style="font-size:8px;opacity:.7;margin-top:2px">of ${inr(due)}</div>
+      </div>
     </button>`;
   }
 }
