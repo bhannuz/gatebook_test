@@ -1167,12 +1167,29 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 
   <!-- STRUCTURE VIEW -->
   <div id="structureView" style="display:none;padding:10px 14px 14px">
-    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:14px">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:14px">
       <div>
-        <div style="font-size:15px;font-weight:800;color:var(--text)">🏢 Master Data - Residents</div>
-        <div style="font-size:11px;color:var(--muted);margin-top:2px">Click any flat to view & edit all details</div>
+        <div style="font-size:15px;font-weight:800;color:var(--text)">🏢 Residents</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">Master data for all flats</div>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <!-- View toggle -->
+        <div style="display:flex;gap:4px;background:var(--surface2);padding:4px;border-radius:8px">
+          <button data-view="floor" onclick="window._setStrView('floor')" 
+            style="padding:6px 12px;border:none;background:var(--indigo);color:#fff;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font)">
+            <i class="ti ti-layers" style="font-size:12px;margin-right:4px"></i>Floor-wise
+          </button>
+          <button data-view="block" onclick="window._setStrView('block')" 
+            style="padding:6px 12px;border:none;background:transparent;color:var(--text2);border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font)">
+            <i class="ti ti-building" style="font-size:12px;margin-right:4px"></i>Block-wise
+          </button>
+          <button data-view="all" onclick="window._setStrView('all')" 
+            style="padding:6px 12px;border:none;background:transparent;color:var(--text2);border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font)">
+            <i class="ti ti-list" style="font-size:12px;margin-right:4px"></i>All
+          </button>
+        </div>
+        
+        <!-- Filters -->
         <select id="strBlockFilter" class="ctrl" style="height:32px;font-size:12px;padding:0 10px" onchange="window.rStructure()">
           <option value="all">All Blocks</option>
         </select>
@@ -1184,15 +1201,17 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
         </select>
         <div style="position:relative">
           <i class="ti ti-search" style="position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:13px;pointer-events:none"></i>
-          <input type="text" id="strSearch" class="ctrl" placeholder="Search flat or name…" style="height:32px;font-size:12px;padding-left:32px" oninput="window.rStructure()">
+          <input type="text" id="strSearch" class="ctrl" placeholder="Search…" style="height:32px;font-size:12px;padding-left:32px;width:140px" oninput="window.rStructure()">
         </div>
-        <button class="btn btn-indigo btn-sm" onclick="window._oAF()" style="padding:6px 12px;font-size:11px"><i class="ti ti-plus"></i> Add Flat</button>
+        <button class="btn btn-indigo btn-sm" onclick="window._oAF()" style="padding:6px 12px;font-size:11px"><i class="ti ti-plus"></i> Add</button>
       </div>
     </div>
+    
     <!-- Summary stat cards -->
-    <div id="strStats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:14px"></div>
-    <!-- Flats as chips -->
-    <div id="strChips" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:10px;padding:10px 0"></div>
+    <div id="strStats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:14px"></div>
+    
+    <!-- Flats as chips (grouped) -->
+    <div id="strChips" style="display:grid;gap:14px;padding:10px 0"></div>
   </div><!-- /#structureView -->
 
   <!-- RESIDENTS VIEW -->
@@ -1588,7 +1607,7 @@ const flats  = new Map();
 const exps   = new Map();
 const issues = [];
 
-let AB='', FS='all', SQ='', RTF='all', FLF='all', MF='all', AM=new Date().toISOString().slice(0,7), AV='analytics', IF='all';
+let AB='', FS='all', SQ='', RTF='all', FLF='all', MF='all', AM=new Date().toISOString().slice(0,7), AV='analytics', IF='all', STRVIEW='floor';
 // Analytics tab state — declared here to avoid TDZ errors
 let _anStatus='all', _anFilterType='month', _anSelMonth=AM, _anSelYear=new Date().getFullYear().toString(), _anBlock='all';
 const _pieSegs={};
@@ -3809,10 +3828,10 @@ function rStructure() {
   
   const statEl  = document.getElementById('strStats');
   if (statEl) statEl.innerHTML = `
-    <div class="vscard"><div class="vscard-icon tw"><i class="ti ti-home"></i></div><div><div class="vscard-label">Total Flats</div><div class="vscard-val">${total}</div></div></div>
-    <div class="vscard"><div class="vscard-icon fw"><i class="ti ti-user-check"></i></div><div><div class="vscard-label">Owners</div><div class="vscard-val">${owners}</div></div></div>
-    <div class="vscard"><div class="vscard-icon" style="background:var(--amber-bg);color:var(--amber)"><i class="ti ti-key"></i></div><div><div class="vscard-label">Tenants</div><div class="vscard-val">${tenants}</div></div></div>
-    <div class="vscard"><div class="vscard-icon" style="background:var(--surface3);color:var(--muted)"><i class="ti ti-door"></i></div><div><div class="vscard-label">Vacant</div><div class="vscard-val">${vacant}</div></div></div>`;
+    <div class="vscard" style="min-height:65px"><div class="vscard-icon tw"><i class="ti ti-home"></i></div><div><div class="vscard-label" style="font-size:10px">Total</div><div class="vscard-val" style="font-size:16px">${total}</div></div></div>
+    <div class="vscard" style="min-height:65px"><div class="vscard-icon fw"><i class="ti ti-user-check"></i></div><div><div class="vscard-label" style="font-size:10px">Owners</div><div class="vscard-val" style="font-size:16px">${owners}</div></div></div>
+    <div class="vscard" style="min-height:65px"><div class="vscard-icon" style="background:var(--amber-bg);color:var(--amber)"><i class="ti ti-key"></i></div><div><div class="vscard-label" style="font-size:10px">Tenants</div><div class="vscard-val" style="font-size:16px">${tenants}</div></div></div>
+    <div class="vscard" style="min-height:65px"><div class="vscard-icon" style="background:var(--surface3);color:var(--muted)"><i class="ti ti-door"></i></div><div><div class="vscard-label" style="font-size:10px">Vacant</div><div class="vscard-val" style="font-size:16px">${vacant}</div></div></div>`;
 
   const chipsEl = document.getElementById('strChips');
   if (!chipsEl) return;
@@ -3825,7 +3844,85 @@ function rStructure() {
     return;
   }
 
-  chipsEl.innerHTML = rows.map(f => {
+  // Render based on view
+  if (STRVIEW === 'floor') {
+    // Group by block and floor
+    const byBlockFloor = new Map();
+    rows.forEach(f => {
+      const block = f.block || 'Ungrouped';
+      const floor = f.floor || '—';
+      const key = block + '|' + floor;
+      if (!byBlockFloor.has(key)) byBlockFloor.set(key, { block, floor, flats: [] });
+      byBlockFloor.get(key).flats.push(f);
+    });
+
+    chipsEl.innerHTML = [...byBlockFloor.entries()]
+      .sort((a,b) => {
+        const bCmp = (a[1].block||'').localeCompare(b[1].block||'');
+        if (bCmp !== 0) return bCmp;
+        const aFloor = parseInt(a[1].floor)||0, bFloor = parseInt(b[1].floor)||0;
+        return aFloor - bFloor;
+      })
+      .map(([_, group]) => {
+        const { block, floor, flats: fts } = group;
+        const paidCnt = fts.filter(f => {
+          const paid = paidAM(f.flatId, AM);
+          return paid >= (f.due||0);
+        }).length;
+        
+        return `<div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:8px 12px;background:var(--surface2);border-radius:8px">
+            <i class="ti ti-layers-diff" style="color:var(--indigo);font-size:14px"></i>
+            <div style="flex:1">
+              <div style="font-weight:700;color:var(--text);font-size:12px">${block} • Floor ${floor}</div>
+              <div style="font-size:10px;color:var(--muted)">${fts.length} flat${fts.length!==1?'s':''} · ${paidCnt} paid</div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:8px">
+            ${fts.map(f => makeChip(f)).join('')}
+          </div>
+        </div>`;
+      }).join('');
+
+  } else if (STRVIEW === 'block') {
+    // Group by block only
+    const byBlock = new Map();
+    rows.forEach(f => {
+      const block = f.block || 'Ungrouped';
+      if (!byBlock.has(block)) byBlock.set(block, []);
+      byBlock.get(block).push(f);
+    });
+
+    chipsEl.innerHTML = [...byBlock.entries()]
+      .sort((a,b) => (a[0]||'').localeCompare(b[0]||''))
+      .map(([block, fts]) => {
+        const paidCnt = fts.filter(f => {
+          const paid = paidAM(f.flatId, AM);
+          return paid >= (f.due||0);
+        }).length;
+        
+        return `<div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:8px 12px;background:var(--surface2);border-radius:8px">
+            <i class="ti ti-building" style="color:var(--indigo);font-size:14px"></i>
+            <div style="flex:1">
+              <div style="font-weight:700;color:var(--text);font-size:12px">Block ${block}</div>
+              <div style="font-size:10px;color:var(--muted)">${fts.length} flat${fts.length!==1?'s':''} · ${paidCnt} paid</div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:8px">
+            ${fts.map(f => makeChip(f)).join('')}
+          </div>
+        </div>`;
+      }).join('');
+
+  } else {
+    // All flats in one grid
+    chipsEl.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:8px">
+      ${rows.map(f => makeChip(f)).join('')}
+    </div>`;
+  }
+
+  function makeChip(f) {
     const isVacant = !(f.owner||'').trim();
     const rType = isVacant ? 'vacant' : (f.resType||'owner');
     const chipColor = isVacant ? 'var(--surface2)' : rType==='tenant' ? 'var(--amber-bg)' : 'var(--indigo-bg)';
@@ -3835,25 +3932,37 @@ function rStructure() {
     const due = f.due || 0;
     const status = paid >= due ? 'paid' : paid > 0 ? 'partial' : 'pending';
     const statusIcon = status==='paid' ? '✅' : status==='partial' ? '⚠️' : '❌';
-    
+
     return `<button 
       onclick="window._oFlEdit('${f.flatId}')" 
       style="
-        background:${chipColor};color:${chipTextColor};border:none;border-radius:12px;
-        padding:12px 10px;cursor:pointer;font-family:var(--font);transition:all .15s;
-        display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
-        box-shadow:var(--shadow-sm);position:relative;overflow:hidden
+        background:${chipColor};color:${chipTextColor};border:none;border-radius:10px;
+        padding:10px 8px;cursor:pointer;font-family:var(--font);transition:all .12s;
+        display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+        box-shadow:var(--shadow-sm);position:relative;overflow:hidden;font-size:11px
       "
-      onmouseover="this.style.transform='scale(1.05)';this.style.boxShadow='var(--shadow-lg)'"
+      title="${f.owner||'Vacant'}"
+      onmouseover="this.style.transform='scale(1.08)';this.style.boxShadow='var(--shadow-md)'"
       onmouseout="this.style.transform='scale(1)';this.style.boxShadow='var(--shadow-sm)'"
     >
-      <div style="font-weight:800;font-size:13px">${f.flatId}</div>
-      <div style="font-size:10px;opacity:.8">${f.owner ? f.owner.substring(0,12) : 'Vacant'}</div>
-      <div style="font-size:11px;margin-top:2px">${statusIcon} ${inr(paid)}/${inr(due)}</div>
+      <div style="font-weight:800;font-size:12px">${f.flatId}</div>
+      <div style="font-size:9px;opacity:.7;text-align:center;line-height:1.2">${f.owner ? f.owner.substring(0,10) : 'Vacant'}</div>
+      <div style="font-size:10px;margin-top:1px">${statusIcon}</div>
+      <div style="font-size:8px;opacity:.6">${inr(paid)}/${inr(due)}</div>
     </button>`;
-  }).join('');
+  }
 }
+
 window.rStructure = rStructure;
+window._setStrView = v => {
+  STRVIEW = v;
+  document.querySelectorAll('[data-view]').forEach(btn => {
+    btn.style.background = btn.dataset.view === v ? 'var(--indigo)' : 'transparent';
+    btn.style.color = btn.dataset.view === v ? '#fff' : 'var(--text2)';
+  });
+  rStructure();
+};
+
 
 /* ══ ANALYTICS TAB ══ */
 
