@@ -3942,7 +3942,7 @@ function rStructure() {
               <div style="font-size:10px;color:var(--muted)">${fts.length} flat${fts.length!==1?'s':''} · ${paidCnt} paid</div>
             </div>
           </div>
-          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px">
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:8px">
             ${fts.map(f => makeChip(f)).join('')}
           </div>
         </div>`;
@@ -3973,7 +3973,7 @@ function rStructure() {
               <div style="font-size:10px;color:var(--muted)">${fts.length} flat${fts.length!==1?'s':''} · ${paidCnt} paid</div>
             </div>
           </div>
-          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px">
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:8px">
             ${fts.map(f => makeChip(f)).join('')}
           </div>
         </div>`;
@@ -3981,7 +3981,7 @@ function rStructure() {
 
   } else {
     // All flats in one grid
-    chipsEl.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px">
+    chipsEl.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:8px">
       ${rows.map(f => makeChip(f)).join('')}
     </div>`;
   }
@@ -3992,24 +3992,20 @@ function rStructure() {
     
     const paid = paidAM(f.flatId, AM);
     const due = f.due || 0;
-    const pct = due ? Math.round(Math.min(paid/due*100,100)) : 0;
     const status = paid >= due ? 'paid' : paid > 0 ? 'partial' : 'pending';
     
     // Colors based on status
     const borderColor = {paid:'var(--green)',partial:'var(--amber)',pending:'var(--red)'}[status];
     const statusIcon = {paid:'ti-circle-check',partial:'ti-clock',pending:'ti-alert-circle'}[status];
     const statusIconColor = {paid:'var(--green)',partial:'var(--amber)',pending:'var(--red)'}[status];
-    const statusText = {paid:'PAID IN FULL',partial:'PARTIAL',pending:'NOT PAID'}[status];
-    const progressColor = {paid:'var(--green)',partial:'var(--amber)',pending:'var(--red)'}[status];
 
     return `<button 
       onclick="window._oFlEdit('${f.flatId}')" 
       style="
         background:#fff;border:none;border-left:4px solid ${borderColor};border-radius:8px;
-        padding:14px;cursor:pointer;font-family:var(--font);transition:all .12s;
-        display:flex;flex-direction:column;gap:8px;
-        box-shadow:var(--shadow-sm);position:relative;text-align:left;
-        height:100%;min-height:140px
+        padding:10px;cursor:pointer;font-family:var(--font);transition:all .12s;
+        display:flex;flex-direction:column;gap:6px;
+        box-shadow:var(--shadow-sm);position:relative;text-align:left
       "
       title="${f.owner||'Vacant'}"
       onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='var(--shadow-md)'"
@@ -4017,31 +4013,15 @@ function rStructure() {
     >
       <!-- Top row: Flat ID + Status Icon -->
       <div style="display:flex;justify-content:space-between;align-items:flex-start">
-        <div style="font-weight:800;font-size:13px;color:var(--text)">${f.flatId}</div>
-        <i class="ti ${statusIcon}" style="color:${statusIconColor};font-size:16px"></i>
+        <div style="font-weight:800;font-size:12px;color:var(--text)">${f.flatId}</div>
+        <i class="ti ${statusIcon}" style="color:${statusIconColor};font-size:14px"></i>
       </div>
 
       <!-- Resident name -->
-      <div style="font-size:11px;color:var(--text2);line-height:1.3">${f.owner ? f.owner.substring(0,14) : 'Vacant'}</div>
+      <div style="font-size:10px;color:var(--text2);line-height:1.3">${f.owner ? f.owner.substring(0,12) : 'Vacant'}</div>
 
       <!-- Type badge -->
       <div style="font-size:9px;color:var(--text2);font-weight:600">${isVacant ? 'Vacant' : rType==='tenant' ? 'Tenant' : 'Owner'}</div>
-
-      <!-- Amount paid -->
-      <div style="font-size:14px;font-weight:800;color:var(--text);margin:4px 0">${inr(paid)}</div>
-
-      <!-- Monthly due text -->
-      <div style="font-size:10px;color:var(--text2)">of ${inr(due)} monthly due</div>
-
-      <!-- Progress bar -->
-      <div style="width:100%;height:3px;background:var(--surface2);border-radius:2px;overflow:hidden;margin:4px 0">
-        <div style="height:100%;background:${progressColor};width:${pct}%;transition:width .3s"></div>
-      </div>
-
-      <!-- Status text -->
-      <div style="font-size:9px;font-weight:700;color:${statusIconColor};display:flex;align-items:center;gap:3px">
-        <i class="ti ${statusIcon}" style="font-size:11px"></i> ${statusText}
-      </div>
     </button>`;
   }
 }
