@@ -1974,31 +1974,34 @@ function oFlEdit(fid) {
         </div>
       </div>
     </div>
-  `
-  + ((() => {
-      const ex = fex(fid);
-      if (!ex.length) return '';
-      
-      const historyHtml = ex
-        .sort((a,b) => new Date(b.rawDate||b.date||0) - new Date(a.rawDate||a.date||0))
-        .slice(0, 20)
-        .map(e => {
-          const dt = e.rawDate||e.date||'—';
-          const amt = e.amt||0;
-          return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px;border-bottom:1px solid var(--border);font-size:11px">
-            <div>
-              <div style="font-weight:600;color:var(--text)">${dt}</div>
-              <div style="color:var(--text2);font-size:10px">${e.cat||'Payment'}</div>
-            </div>
-            <div style="font-weight:700;color:var(--green)">${inr(amt)}</div>
-          </div>`;
-        }).join('');
-      
-      document.getElementById('paymentHistoryList').innerHTML = historyHtml || '<div style="padding:10px;text-align:center;color:var(--muted)">No payments recorded</div>';
-      return '';
-    })()
-  );
+  `;
 
+  // Populate payment history after dBody is set
+  setTimeout(() => {
+    const ex = fex(fid);
+    const historyList = document.getElementById('paymentHistoryList');
+    if (historyList) {
+      if (!ex.length) {
+        historyList.innerHTML = '<div style="padding:10px;text-align:center;color:var(--muted)">No payments recorded</div>';
+      } else {
+        const historyHtml = ex
+          .sort((a,b) => new Date(b.rawDate||b.date||0) - new Date(a.rawDate||a.date||0))
+          .slice(0, 20)
+          .map(e => {
+            const dt = e.rawDate||e.date||'—';
+            const amt = e.amt||0;
+            return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px;border-bottom:1px solid var(--border);font-size:11px">
+              <div>
+                <div style="font-weight:600;color:var(--text)">${dt}</div>
+                <div style="color:var(--text2);font-size:10px">${e.cat||'Payment'}</div>
+              </div>
+              <div style="font-weight:700;color:var(--green)">${inr(amt)}</div>
+            </div>`;
+          }).join('');
+        historyList.innerHTML = historyHtml;
+      }
+    }
+  }, 0);
 
   document.getElementById('flatDrawer').classList.add('open');
   document.getElementById('drawerBg').classList.add('open');
