@@ -1935,46 +1935,67 @@ function oFlEdit(fid) {
       </div>
     </div>
 
+    <!-- HISTORY TOGGLE -->
+    <div style="display:flex;gap:6px;background:var(--surface2);padding:6px;border-radius:8px;margin-bottom:14px">
+      <button id="payHistToggle" data-history="payment" onclick="window._toggleHistory('payment')" 
+        style="flex:1;padding:8px 12px;border:none;background:var(--indigo);color:#fff;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font);transition:all .15s">
+        <i class="ti ti-receipt" style="margin-right:4px;font-size:12px"></i>Payment History
+      </button>
+      <button id="stayHistToggle" data-history="staying" onclick="window._toggleHistory('staying')" 
+        style="flex:1;padding:8px 12px;border:none;background:transparent;color:var(--text2);border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font);transition:all .15s">
+        <i class="ti ti-calendar" style="margin-right:4px;font-size:12px"></i>Staying History
+      </button>
+    </div>
+
     <!-- PAYMENT HISTORY -->
-    <div style="background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--r-lg);padding:14px;margin-bottom:14px">
+    <div id="paymentHistSection" style="background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--r-lg);padding:14px;margin-bottom:14px;display:block">
       <div style="font-size:12px;font-weight:800;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:6px">
-        <i class="ti ti-history" style="color:var(--amber);font-size:13px"></i> Payment History
+        <i class="ti ti-receipt" style="color:var(--amber);font-size:13px"></i> Payment History
       </div>
-      <div id="paymentHistoryList" style="max-height:250px;overflow-y:auto;border-radius:8px"></div>
+      <div id="paymentHistoryList" style="max-height:300px;overflow-y:auto;border-radius:8px"></div>
     </div>
 
     <!-- STAYING HISTORY -->
-    <div style="background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--r-lg);padding:14px;margin-bottom:14px">
+    <div id="stayingHistSection" style="background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--r-lg);padding:14px;margin-bottom:14px;display:none">
       <div style="font-size:12px;font-weight:800;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:6px">
         <i class="ti ti-calendar" style="color:var(--green);font-size:13px"></i> Staying History
       </div>
       <div style="display:grid;gap:10px">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-          <div style="background:#fff;border:1.5px solid var(--border);border-radius:8px;padding:10px">
-            <div style="font-size:10px;font-weight:700;color:var(--text2);margin-bottom:4px">📍 Move-In</div>
-            <div style="font-size:13px;font-weight:700;color:var(--text)">${f.moveIn ? new Date(f.moveIn).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) : '—'}</div>
+        <!-- Move In Card -->
+        <div style="background:#fff;border:1.5px solid var(--border);border-radius:8px;padding:12px">
+          <div style="font-size:10px;font-weight:700;color:var(--text2);margin-bottom:6px;display:flex;align-items:center;gap:4px">
+            <i class="ti ti-login-2" style="color:var(--indigo);font-size:12px"></i> Moved In
           </div>
-          <div style="background:#fff;border:1.5px solid var(--border);border-radius:8px;padding:10px">
-            <div style="font-size:10px;font-weight:700;color:var(--text2);margin-bottom:4px">📍 Move-Out</div>
-            <div style="font-size:13px;font-weight:700;color:var(--text)">${f.moveOut ? new Date(f.moveOut).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) : 'Active'}</div>
-          </div>
+          <div style="font-size:14px;font-weight:800;color:var(--indigo)">${f.moveIn ? new Date(f.moveIn).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) : '—'}</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:4px">${f.moveIn ? new Date(f.moveIn).toLocaleDateString('en-IN',{weekday:'long'}) : 'Not set'}</div>
         </div>
-        <div style="background:linear-gradient(135deg,var(--indigo-bg),var(--purple-bg,var(--surface3)));border-radius:8px;padding:10px;border:1.5px solid var(--indigo,var(--border))">
-          <div style="font-size:10px;font-weight:700;color:var(--indigo,var(--text2));margin-bottom:4px">📅 Duration</div>
-          <div style="font-size:13px;font-weight:700;color:var(--indigo,var(--text))">
+
+        <!-- Move Out Card -->
+        <div style="background:#fff;border:1.5px solid var(--border);border-radius:8px;padding:12px">
+          <div style="font-size:10px;font-weight:700;color:var(--text2);margin-bottom:6px;display:flex;align-items:center;gap:4px">
+            <i class="ti ti-logout-2" style="color:var(--amber);font-size:12px"></i> Moved Out
+          </div>
+          <div style="font-size:14px;font-weight:800;color:${f.moveOut ? 'var(--amber)' : 'var(--green)'}">${f.moveOut ? new Date(f.moveOut).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) : 'Currently Staying'}</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:4px">${f.moveOut ? new Date(f.moveOut).toLocaleDateString('en-IN',{weekday:'long'}) : 'Active resident'}</div>
+        </div>
+
+        <!-- Current Stay Duration Card -->
+        <div style="background:linear-gradient(135deg,var(--indigo-bg),var(--purple-bg,var(--surface3)));border-radius:8px;padding:12px;border:1.5px solid var(--indigo,var(--border))">
+          <div style="font-size:10px;font-weight:700;color:var(--indigo,var(--text2));margin-bottom:6px">📅 Stay Duration</div>
+          <div style="font-size:14px;font-weight:800;color:var(--indigo,var(--text))">
             ${f.moveIn ? (() => {
               const moveIn = new Date(f.moveIn);
               const moveOut = f.moveOut ? new Date(f.moveOut) : new Date();
               const months = Math.floor((moveOut - moveIn) / (1000 * 60 * 60 * 24 * 30.44));
               const years = Math.floor(months / 12);
               const remainingMonths = months % 12;
-              return years > 0 ? years + 'y ' + remainingMonths + 'm' : months + ' months';
+              return years > 0 ? years + ' year' + (years > 1 ? 's' : '') + ' ' + remainingMonths + ' month' + (remainingMonths > 1 ? 's' : '') : months + ' month' + (months > 1 ? 's' : '');
             })() : '—'}
           </div>
+          <div style="font-size:10px;color:var(--indigo,var(--muted));margin-top:4px">${f.moveOut ? 'Tenure completed' : 'Currently active'}</div>
         </div>
       </div>
-    </div>
-  `;
+    </div>`;
 
   // Populate payment history after dBody is set
   setTimeout(() => {
@@ -2530,6 +2551,28 @@ window._oFl  =oFl;  window._oFlEdit=oFlEdit;  window._cM=cD;
 window._autoSaveFlat=autoSaveFlat;
 window._saveFlat=saveFlat;
 window._toggleOwnerFields=toggleOwnerFields;
+window._toggleHistory = v => {
+  const payBtn = document.getElementById('payHistToggle');
+  const stayBtn = document.getElementById('stayHistToggle');
+  const paySec = document.getElementById('paymentHistSection');
+  const staySec = document.getElementById('stayingHistSection');
+  
+  if (v === 'payment') {
+    payBtn.style.background = 'var(--indigo)';
+    payBtn.style.color = '#fff';
+    stayBtn.style.background = 'transparent';
+    stayBtn.style.color = 'var(--text2)';
+    paySec.style.display = 'block';
+    staySec.style.display = 'none';
+  } else {
+    payBtn.style.background = 'transparent';
+    payBtn.style.color = 'var(--text2)';
+    stayBtn.style.background = 'var(--indigo)';
+    stayBtn.style.color = '#fff';
+    paySec.style.display = 'none';
+    staySec.style.display = 'block';
+  }
+};
 window.autoSaveVeh=autoSaveVeh;
 window._openExpEdit=openExpEdit; window._closeExpEdit=closeExpEdit; window._saveExpEdit=saveExpEdit; window._delExp=delExp;
 window._oA   =oA;   window._oAFor=oAFor; window._cA=cA; window._sE=sE;
