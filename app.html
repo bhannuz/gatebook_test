@@ -1617,6 +1617,10 @@ const fdt = ts => {
 const bks = () => [...new Set([...flats.values()].map(f=>f.block))].sort();
 const bfl = b => [...flats.values()].filter(f=>f.block===b);
 const fex = id => exps.get(id)||[];
+const paidAM = (fid, month) => {
+  const m = month || AM;
+  return (exps.get(fid)||[]).filter(e=>e.month===m).reduce((s,e)=>s+(e.amt||0),0);
+};
 
 /* ── Shared APP context for tab modules ── */
 function refreshAPP() { /* no-op — all functions use closure vars directly */ }
@@ -3826,10 +3830,11 @@ function rStructure() {
     const rType = isVacant ? 'vacant' : (f.resType||'owner');
     const chipColor = isVacant ? 'var(--surface2)' : rType==='tenant' ? 'var(--amber-bg)' : 'var(--indigo-bg)';
     const chipTextColor = isVacant ? 'var(--muted)' : rType==='tenant' ? 'var(--amber)' : 'var(--indigo)';
-    const status = st(f, AM);
-    const statusIcon = status==='paid' ? '✅' : status==='partial' ? '⚠️' : status==='pending' ? '❌' : '—';
+    
     const paid = paidAM(f.flatId, AM);
     const due = f.due || 0;
+    const status = paid >= due ? 'paid' : paid > 0 ? 'partial' : 'pending';
+    const statusIcon = status==='paid' ? '✅' : status==='partial' ? '⚠️' : '❌';
     
     return `<button 
       onclick="window._oFlEdit('${f.flatId}')" 
