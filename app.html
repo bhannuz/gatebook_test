@@ -1887,9 +1887,14 @@ function oFlEdit(fid) {
         </div>
         <div>
           <label style="font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Move-Out Date</label>
-          <input id="edMoveOut" type="date" value="${f.moveOut||''}"
-            style="width:100%;box-sizing:border-box;height:34px;padding:0 9px;background:#fff;border:1.5px solid var(--border2);color:var(--text);font-family:var(--font);font-size:12px;font-weight:600;border-radius:var(--r-md);outline:none"
-            onfocus="this.style.borderColor='var(--indigo)'" onblur="this.style.borderColor='var(--border2)'"/>
+          <div style="display:flex;gap:6px;align-items:flex-end">
+            <input id="edMoveOut" type="date" value="${f.moveOut||''}"
+              style="flex:1;box-sizing:border-box;height:34px;padding:0 9px;background:#fff;border:1.5px solid var(--border2);color:var(--text);font-family:var(--font);font-size:12px;font-weight:600;border-radius:var(--r-md);outline:none"
+              onfocus="this.style.borderColor='var(--indigo)'" onblur="this.style.borderColor='var(--border2)'"/>
+            <button id="stayingBtn" type="button" onclick="window._toggleStaying()" style="padding:8px 12px;border:1.5px solid ${!f.moveOut?'var(--green)':'var(--border2)'};background:${!f.moveOut?'var(--green-bg)':'transparent'};color:${!f.moveOut?'var(--green)':'var(--text2)'};border-radius:var(--r-md);font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font);white-space:nowrap;transition:all .15s">
+              <i class="ti ti-circle-check" style="margin-right:4px;font-size:12px"></i>Staying
+            </button>
+          </div>
         </div>
         <div>
           <label style="font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">🏍 2-Wheelers</label>
@@ -2571,6 +2576,24 @@ window._toggleHistory = v => {
     stayBtn.style.color = '#fff';
     paySec.style.display = 'none';
     staySec.style.display = 'block';
+  }
+};
+window._toggleStaying = () => {
+  const moveOutInput = document.getElementById('edMoveOut');
+  const stayingBtn = document.getElementById('stayingBtn');
+  
+  if (moveOutInput.value) {
+    // Currently has move-out date, clear it (mark as staying)
+    moveOutInput.value = '';
+    stayingBtn.style.borderColor = 'var(--green)';
+    stayingBtn.style.background = 'var(--green-bg)';
+    stayingBtn.style.color = 'var(--green)';
+  } else {
+    // Currently empty, prompt to add move-out date
+    moveOutInput.focus();
+    stayingBtn.style.borderColor = 'var(--border2)';
+    stayingBtn.style.background = 'transparent';
+    stayingBtn.style.color = 'var(--text2)';
   }
 };
 window.autoSaveVeh=autoSaveVeh;
