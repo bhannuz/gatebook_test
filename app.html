@@ -1934,7 +1934,71 @@ function oFlEdit(fid) {
         </button>
       </div>
     </div>
-  `;
+
+    <!-- PAYMENT HISTORY -->
+    <div style="background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--r-lg);padding:14px;margin-bottom:14px">
+      <div style="font-size:12px;font-weight:800;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:6px">
+        <i class="ti ti-history" style="color:var(--amber);font-size:13px"></i> Payment History
+      </div>
+      <div id="paymentHistoryList" style="max-height:250px;overflow-y:auto;border-radius:8px"></div>
+    </div>
+
+    <!-- STAYING HISTORY -->
+    <div style="background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--r-lg);padding:14px;margin-bottom:14px">
+      <div style="font-size:12px;font-weight:800;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:6px">
+        <i class="ti ti-calendar" style="color:var(--green);font-size:13px"></i> Staying History
+      </div>
+      <div style="display:grid;gap:10px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div style="background:#fff;border:1.5px solid var(--border);border-radius:8px;padding:10px">
+            <div style="font-size:10px;font-weight:700;color:var(--text2);margin-bottom:4px">📍 Move-In</div>
+            <div style="font-size:13px;font-weight:700;color:var(--text)">${f.moveIn ? new Date(f.moveIn).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) : '—'}</div>
+          </div>
+          <div style="background:#fff;border:1.5px solid var(--border);border-radius:8px;padding:10px">
+            <div style="font-size:10px;font-weight:700;color:var(--text2);margin-bottom:4px">📍 Move-Out</div>
+            <div style="font-size:13px;font-weight:700;color:var(--text)">${f.moveOut ? new Date(f.moveOut).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) : 'Active'}</div>
+          </div>
+        </div>
+        <div style="background:linear-gradient(135deg,var(--indigo-bg),var(--purple-bg,var(--surface3)));border-radius:8px;padding:10px;border:1.5px solid var(--indigo,var(--border))">
+          <div style="font-size:10px;font-weight:700;color:var(--indigo,var(--text2));margin-bottom:4px">📅 Duration</div>
+          <div style="font-size:13px;font-weight:700;color:var(--indigo,var(--text))">
+            ${f.moveIn ? (() => {
+              const moveIn = new Date(f.moveIn);
+              const moveOut = f.moveOut ? new Date(f.moveOut) : new Date();
+              const months = Math.floor((moveOut - moveIn) / (1000 * 60 * 60 * 24 * 30.44));
+              const years = Math.floor(months / 12);
+              const remainingMonths = months % 12;
+              return years > 0 ? years + 'y ' + remainingMonths + 'm' : months + ' months';
+            })() : '—'}
+          </div>
+        </div>
+      </div>
+    </div>
+  `
+  + ((() => {
+      const ex = fex(fid);
+      if (!ex.length) return '';
+      
+      const historyHtml = ex
+        .sort((a,b) => new Date(b.rawDate||b.date||0) - new Date(a.rawDate||a.date||0))
+        .slice(0, 20)
+        .map(e => {
+          const dt = e.rawDate||e.date||'—';
+          const amt = e.amt||0;
+          return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px;border-bottom:1px solid var(--border);font-size:11px">
+            <div>
+              <div style="font-weight:600;color:var(--text)">${dt}</div>
+              <div style="color:var(--text2);font-size:10px">${e.cat||'Payment'}</div>
+            </div>
+            <div style="font-weight:700;color:var(--green)">${inr(amt)}</div>
+          </div>`;
+        }).join('');
+      
+      document.getElementById('paymentHistoryList').innerHTML = historyHtml || '<div style="padding:10px;text-align:center;color:var(--muted)">No payments recorded</div>';
+      return '';
+    })()
+  );
+
 
   document.getElementById('flatDrawer').classList.add('open');
   document.getElementById('drawerBg').classList.add('open');
