@@ -1885,28 +1885,31 @@ function oFlEdit(fid) {
             style="width:100%;box-sizing:border-box;height:34px;padding:0 9px;background:#fff;border:1.5px solid var(--border2);color:var(--text);font-family:var(--font);font-size:12px;font-weight:600;border-radius:var(--r-md);outline:none"
             onfocus="this.style.borderColor='var(--indigo)'" onblur="this.style.borderColor='var(--border2)'"/>
         </div>
-        <div>
-          <label style="font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Move-Out Date</label>
-          <div style="display:flex;gap:6px;align-items:flex-end">
+        <div style="display:flex;align-items:flex-end;gap:8px">
+          <div style="flex:1">
+            <label style="font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Move-Out Date</label>
             <input id="edMoveOut" type="date" value="${f.moveOut||''}"
-              style="flex:1;box-sizing:border-box;height:34px;padding:0 9px;background:#fff;border:1.5px solid var(--border2);color:var(--text);font-family:var(--font);font-size:12px;font-weight:600;border-radius:var(--r-md);outline:none"
+              style="width:100%;box-sizing:border-box;height:34px;padding:0 9px;background:#fff;border:1.5px solid var(--border2);color:var(--text);font-family:var(--font);font-size:12px;font-weight:600;border-radius:var(--r-md);outline:none;${f.moveOut?'':'display:none'}"
               onfocus="this.style.borderColor='var(--indigo)'" onblur="this.style.borderColor='var(--border2)'"/>
-            <button id="stayingBtn" type="button" onclick="window._toggleStaying()" style="padding:8px 12px;border:1.5px solid ${!f.moveOut?'var(--green)':'var(--border2)'};background:${!f.moveOut?'var(--green-bg)':'transparent'};color:${!f.moveOut?'var(--green)':'var(--text2)'};border-radius:var(--r-md);font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font);white-space:nowrap;transition:all .15s">
-              <i class="ti ti-circle-check" style="margin-right:4px;font-size:12px"></i>Staying
-            </button>
           </div>
+          <label id="stayingLabel" style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--surface2);border-radius:8px;cursor:pointer;font-size:11px;font-weight:700;color:var(--text);user-select:none;border:1.5px solid var(--border2);white-space:nowrap">
+            <input type="checkbox" id="edStaying" ${!f.moveOut?'checked':''} onchange="window._toggleMoveOut()" style="width:16px;height:16px;cursor:pointer;accent-color:var(--green)"/>
+            <span id="stayingText">Currently Staying</span>
+          </label>
         </div>
-        <div>
-          <label style="font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">🏍 2-Wheelers</label>
-          <input id="edTw" type="number" value="${tw}" min="0" max="10"
-            style="width:100%;box-sizing:border-box;height:34px;padding:0 9px;background:#fff;border:1.5px solid var(--border2);color:var(--text);font-family:var(--font);font-size:13px;font-weight:600;border-radius:var(--r-md);outline:none"
-            onfocus="this.style.borderColor='var(--indigo)'" onblur="this.style.borderColor='var(--border2)'"/>
-        </div>
-        <div>
-          <label style="font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">🚗 4-Wheelers</label>
-          <input id="edFw" type="number" value="${fw}" min="0" max="10"
-            style="width:100%;box-sizing:border-box;height:34px;padding:0 9px;background:#fff;border:1.5px solid var(--border2);color:var(--text);font-family:var(--font);font-size:13px;font-weight:600;border-radius:var(--r-md);outline:none"
-            onfocus="this.style.borderColor='var(--indigo)'" onblur="this.style.borderColor='var(--border2)'"/>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div>
+            <label style="font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">🏍 2-Wheelers</label>
+            <input id="edTw" type="number" value="${tw}" min="0" max="10"
+              style="width:100%;box-sizing:border-box;height:34px;padding:0 9px;background:#fff;border:1.5px solid var(--border2);color:var(--text);font-family:var(--font);font-size:13px;font-weight:600;border-radius:var(--r-md);outline:none"
+              onfocus="this.style.borderColor='var(--indigo)'" onblur="this.style.borderColor='var(--border2)'"/>
+          </div>
+          <div>
+            <label style="font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">🚗 4-Wheelers</label>
+            <input id="edFw" type="number" value="${fw}" min="0" max="10"
+              style="width:100%;box-sizing:border-box;height:34px;padding:0 9px;background:#fff;border:1.5px solid var(--border2);color:var(--text);font-family:var(--font);font-size:13px;font-weight:600;border-radius:var(--r-md);outline:none"
+              onfocus="this.style.borderColor='var(--indigo)'" onblur="this.style.borderColor='var(--border2)'"/>
+          </div>
         </div>
       </div>
       <div id="ownerSection" style="display:${isTenant?'grid':'none'};grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;padding-top:10px;border-top:1px solid var(--border)">
@@ -2578,22 +2581,23 @@ window._toggleHistory = v => {
     staySec.style.display = 'block';
   }
 };
-window._toggleStaying = () => {
+window._toggleMoveOut = () => {
+  const stayingCheck = document.getElementById('edStaying');
   const moveOutInput = document.getElementById('edMoveOut');
-  const stayingBtn = document.getElementById('stayingBtn');
   
-  if (moveOutInput.value) {
-    // Currently has move-out date, clear it (mark as staying)
+  if (stayingCheck.checked) {
+    // Toggle ON = Currently Staying, hide move-out date and clear it
+    moveOutInput.style.display = 'none';
     moveOutInput.value = '';
-    stayingBtn.style.borderColor = 'var(--green)';
-    stayingBtn.style.background = 'var(--green-bg)';
-    stayingBtn.style.color = 'var(--green)';
+    document.getElementById('stayingLabel').style.borderColor = 'var(--green)';
+    document.getElementById('stayingLabel').style.background = 'var(--green-bg)';
+    document.getElementById('stayingText').style.color = 'var(--green)';
   } else {
-    // Currently empty, prompt to add move-out date
-    moveOutInput.focus();
-    stayingBtn.style.borderColor = 'var(--border2)';
-    stayingBtn.style.background = 'transparent';
-    stayingBtn.style.color = 'var(--text2)';
+    // Toggle OFF = Show move-out date field
+    moveOutInput.style.display = 'block';
+    document.getElementById('stayingLabel').style.borderColor = 'var(--border2)';
+    document.getElementById('stayingLabel').style.background = 'var(--surface2)';
+    document.getElementById('stayingText').style.color = 'var(--text)';
   }
 };
 window.autoSaveVeh=autoSaveVeh;
