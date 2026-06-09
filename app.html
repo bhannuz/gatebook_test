@@ -1857,57 +1857,57 @@ function oFlEdit(fid) {
       <div style="font-size:12px;font-weight:800;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:6px">
         <i class="ti ti-pencil" style="color:var(--indigo);font-size:13px"></i> Resident Info
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
         <div>
-          <label style="font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Resident Name</label>
-          <input id="edOwner" type="text" value="${(f.owner||'').replace(/"/g,'&quot;')}" placeholder="Full name"
-            style="width:100%;box-sizing:border-box;height:34px;padding:0 9px;background:#fff;border:1.5px solid var(--border2);color:var(--text);font-family:var(--font);font-size:13px;font-weight:600;border-radius:var(--r-md);outline:none"
-            onfocus="this.style.borderColor='var(--indigo)'" onblur="this.style.borderColor='var(--border2)'"/>
+          <label style="font-size:9px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Resident Name</label>
+          <input id="edOwner" type="text" value="${(f.owner||'').replace(/"/g,'&quot;')}" placeholder="Full name" style="width:100%;box-sizing:border-box;height:32px;padding:0 9px;background:#fff;border:1.5px solid var(--border2);color:var(--text);font-family:var(--font);font-size:12px;font-weight:600;border-radius:var(--r-md);outline:none" onfocus="this.style.borderColor='var(--indigo)'" onblur="this.style.borderColor='var(--border2)'"/>
         </div>
         <div>
-          <label style="font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Type</label>
-          <select id="edType"
-            style="width:100%;box-sizing:border-box;height:34px;padding:0 9px;background:#fff;border:1.5px solid var(--border2);color:var(--text);font-family:var(--font);font-size:13px;font-weight:600;border-radius:var(--r-md);outline:none"
-            onchange="window._toggleOwnerFields(this.value)">
-            <option value="owner" ${!isTenant?'selected':''}>🏠 Owner</option>
-            <option value="tenant" ${isTenant?'selected':''}>🔑 Tenant</option>
+          <label style="font-size:9px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Type</label>
+          <select id="edType" style="width:100%;box-sizing:border-box;height:32px;padding:0 9px;background:#fff;border:1.5px solid var(--border2);color:var(--text);font-family:var(--font);font-size:12px;font-weight:600;border-radius:var(--r-md);outline:none" onchange="window._toggleOwnerFields(this.value)">
+            <option value="owner" ${!isTenant?'selected':''}>Owner</option>
+            <option value="tenant" ${isTenant?'selected':''}>Tenant</option>
           </select>
         </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
         <div>
-          <label style="font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Monthly Due (₹)</label>
-          <input id="edDue" type="number" value="${f.due||''}" placeholder="5000" min="0"
-            style="width:100%;box-sizing:border-box;height:34px;padding:0 9px;background:#fff;border:1.5px solid var(--border2);color:var(--text);font-family:var(--font);font-size:13px;font-weight:600;border-radius:var(--r-md);outline:none"
-            onfocus="this.style.borderColor='var(--indigo)'" onblur="this.style.borderColor='var(--border2)'"/>
-        </div>
-        <div>
-          <label style="font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Move-In Date</label>
-          <input id="edMoveIn" type="date" value="${f.moveIn||''}"
-            style="width:100%;box-sizing:border-box;height:34px;padding:0 9px;background:#fff;border:1.5px solid var(--border2);color:var(--text);font-family:var(--font);font-size:12px;font-weight:600;border-radius:var(--r-md);outline:none"
-            onfocus="this.style.borderColor='var(--indigo)'" onblur="this.style.borderColor='var(--border2)'"/>
-        </div>
-        <div style="display:flex;align-items:flex-end;gap:8px">
-          <div style="flex:1">
-            <label style="font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Move-Out Date</label>
-            <input id="edMoveOut" type="date" value="${f.moveOut||''}"
-              style="width:100%;box-sizing:border-box;height:34px;padding:0 9px;background:#fff;border:1.5px solid var(--border2);color:var(--text);font-family:var(--font);font-size:12px;font-weight:600;border-radius:var(--r-md);outline:none;${f.moveOut?'':'display:none'}"
-              onfocus="this.style.borderColor='var(--indigo)'" onblur="this.style.borderColor='var(--border2)'"/>
-          </div>
-          <label id="stayingLabel" style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--surface2);border-radius:8px;cursor:pointer;font-size:11px;font-weight:700;color:var(--text);user-select:none;border:1.5px solid var(--border2);white-space:nowrap">
-            <input type="checkbox" id="edStaying" ${!f.moveOut?'checked':''} onchange="window._toggleMoveOut()" style="width:16px;height:16px;cursor:pointer;accent-color:var(--green)"/>
-            <span id="stayingText">Currently Staying</span>
-          </label>
+          <label style="font-size:9px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Monthly Due</label>
+          <input id="edDue" type="number" value="${f.due||''}" placeholder="5000" min="0" style="width:100%;box-sizing:border-box;height:32px;padding:0 9px;background:#fff;border:1.5px solid var(--border2);color:var(--text);font-family:var(--font);font-size:12px;font-weight:600;border-radius:var(--r-md);outline:none" onfocus="this.style.borderColor='var(--indigo)'" onblur="this.style.borderColor='var(--border2)'"/>
         </div>
         <div>
-          <label style="font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">🏍 Vehicles (2W / 4W)</label>
-          <div style="display:flex;gap:8px">
-            <input id="edTw" type="number" value="${tw}" min="0" max="10" placeholder="2W"
-              style="flex:1;box-sizing:border-box;height:34px;padding:0 9px;background:#fff;border:1.5px solid var(--border2);color:var(--text);font-family:var(--font);font-size:13px;font-weight:600;border-radius:var(--r-md);outline:none"
-              onfocus="this.style.borderColor='var(--indigo)'" onblur="this.style.borderColor='var(--border2)'"/>
-            <input id="edFw" type="number" value="${fw}" min="0" max="10" placeholder="4W"
-              style="flex:1;box-sizing:border-box;height:34px;padding:0 9px;background:#fff;border:1.5px solid var(--border2);color:var(--text);font-family:var(--font);font-size:13px;font-weight:600;border-radius:var(--r-md);outline:none"
-              onfocus="this.style.borderColor='var(--indigo)'" onblur="this.style.borderColor='var(--border2)'"/>
-          </div>
+          <label style="font-size:9px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">2-Wheelers</label>
+          <input id="edTw" type="number" value="${tw}" min="0" max="10" placeholder="0" style="width:100%;box-sizing:border-box;height:32px;padding:0 9px;background:#fff;border:1.5px solid var(--border2);color:var(--text);font-family:var(--font);font-size:12px;font-weight:600;border-radius:var(--r-md);outline:none" onfocus="this.style.borderColor='var(--indigo)'" onblur="this.style.borderColor='var(--border2)'"/>
         </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+        <div>
+          <label style="font-size:9px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">4-Wheelers</label>
+          <input id="edFw" type="number" value="${fw}" min="0" max="10" placeholder="0" style="width:100%;box-sizing:border-box;height:32px;padding:0 9px;background:#fff;border:1.5px solid var(--border2);color:var(--text);font-family:var(--font);font-size:12px;font-weight:600;border-radius:var(--r-md);outline:none" onfocus="this.style.borderColor='var(--indigo)'" onblur="this.style.borderColor='var(--border2)'"/>
+        </div>
+      </div>
+
+      <!-- RESIDENT STATUS TABS -->
+      <div style="display:flex;gap:6px;background:var(--surface2);padding:6px;border-radius:8px;margin-bottom:12px">
+        <button id="activeTab" type="button" onclick="window._setResidentStatus('active')" style="flex:1;padding:8px 10px;border:none;background:var(--indigo);color:#fff;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font);transition:all .15s">
+          🟢 Active
+        </button>
+        <button id="movedTab" type="button" onclick="window._setResidentStatus('moved')" style="flex:1;padding:8px 10px;border:none;background:transparent;color:var(--text2);border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font);transition:all .15s">
+          🔴 Moved Out
+        </button>
+      </div>
+
+      <!-- MOVE-IN DATE (Always Visible) -->
+      <div style="margin-bottom:10px">
+        <label style="font-size:9px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Move-In Date</label>
+        <input id="edMoveIn" type="date" value="${f.moveIn||''}" style="width:100%;box-sizing:border-box;height:32px;padding:0 9px;background:#fff;border:1.5px solid var(--border2);color:var(--text);font-family:var(--font);font-size:12px;font-weight:600;border-radius:var(--r-md);outline:none" onfocus="this.style.borderColor='var(--indigo)'" onblur="this.style.borderColor='var(--border2)'"/>
+      </div>
+
+      <!-- MOVE-OUT DATE (Conditional) -->
+      <div id="moveOutSection" style="margin-bottom:10px;${f.moveOut?'display:block':'display:none'}">
+        <label style="font-size:9px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Move-Out Date</label>
+        <input id="edMoveOut" type="date" value="${f.moveOut||''}" style="width:100%;box-sizing:border-box;height:32px;padding:0 9px;background:#fff;border:1.5px solid var(--border2);color:var(--text);font-family:var(--font);font-size:12px;font-weight:600;border-radius:var(--r-md);outline:none" onfocus="this.style.borderColor='var(--indigo)'" onblur="this.style.borderColor='var(--border2)'"/>
+      </div>
       </div>
       <div id="ownerSection" style="display:${isTenant?'grid':'none'};grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;padding-top:10px;border-top:1px solid var(--border)">
         <div>
@@ -2004,6 +2004,14 @@ function oFlEdit(fid) {
 
   // Populate payment history after dBody is set
   setTimeout(() => {
+    // Initialize resident status tab
+    const moveOutInput = document.getElementById('edMoveOut');
+    if (moveOutInput && moveOutInput.value) {
+      window._setResidentStatus('moved');
+    } else {
+      window._setResidentStatus('active');
+    }
+    
     const ex = fex(fid);
     const historyList = document.getElementById('paymentHistoryList');
     if (historyList) {
@@ -2578,23 +2586,27 @@ window._toggleHistory = v => {
     staySec.style.display = 'block';
   }
 };
-window._toggleMoveOut = () => {
-  const stayingCheck = document.getElementById('edStaying');
+window._setResidentStatus = (status) => {
+  const activeTab = document.getElementById('activeTab');
+  const movedTab = document.getElementById('movedTab');
+  const moveOutSection = document.getElementById('moveOutSection');
   const moveOutInput = document.getElementById('edMoveOut');
   
-  if (stayingCheck.checked) {
-    // Toggle ON = Currently Staying, hide move-out date and clear it
-    moveOutInput.style.display = 'none';
+  if (status === 'active') {
+    // Active Resident - hide move-out date
+    activeTab.style.background = 'var(--indigo)';
+    activeTab.style.color = '#fff';
+    movedTab.style.background = 'transparent';
+    movedTab.style.color = 'var(--text2)';
+    moveOutSection.style.display = 'none';
     moveOutInput.value = '';
-    document.getElementById('stayingLabel').style.borderColor = 'var(--green)';
-    document.getElementById('stayingLabel').style.background = 'var(--green-bg)';
-    document.getElementById('stayingText').style.color = 'var(--green)';
   } else {
-    // Toggle OFF = Show move-out date field
-    moveOutInput.style.display = 'block';
-    document.getElementById('stayingLabel').style.borderColor = 'var(--border2)';
-    document.getElementById('stayingLabel').style.background = 'var(--surface2)';
-    document.getElementById('stayingText').style.color = 'var(--text)';
+    // Moved Out - show move-out date
+    activeTab.style.background = 'transparent';
+    activeTab.style.color = 'var(--text2)';
+    movedTab.style.background = 'var(--indigo)';
+    movedTab.style.color = '#fff';
+    moveOutSection.style.display = 'block';
   }
 };
 window.autoSaveVeh=autoSaveVeh;
