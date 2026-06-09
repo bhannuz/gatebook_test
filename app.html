@@ -2081,7 +2081,7 @@ function oFlEdit(fid) {
           .map((e,idx) => {
             const dt = e.rawDate||e.date||'—';
             const amt = e.amt||0;
-            const docId = e.id || idx;
+            const docId = e.expId || e.id;
             return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px;border-bottom:1px solid var(--border);font-size:11px">
               <div style="flex:1">
                 <div style="font-weight:600;color:var(--text)">${dt}</div>
@@ -2795,7 +2795,7 @@ window._deletePayment = async (fid, docId) => {
     const docRef = doc(db, 'apartments', AB, 'expenses', docId);
     await deleteDoc(docRef);
     const ex = exps.get(fid)||[];
-    const idx = ex.findIndex(e => e.id === docId || e === ex[parseInt(docId)]);
+    const idx = ex.findIndex(e => e.expId === docId || e.id === docId);
     if (idx !== -1) ex.splice(idx, 1);
     toast('Payment deleted ✓');
     cD(); rAll();
