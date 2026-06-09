@@ -1870,20 +1870,14 @@ function oFlEdit(fid) {
           </select>
         </div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
         <div>
           <label style="font-size:9px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Monthly Due</label>
           <input id="edDue" type="number" value="${f.due||''}" placeholder="5000" min="0" style="width:100%;box-sizing:border-box;height:32px;padding:0 9px;background:#fff;border:1.5px solid var(--border2);color:var(--text);font-family:var(--font);font-size:12px;font-weight:600;border-radius:var(--r-md);outline:none" onfocus="this.style.borderColor='var(--indigo)'" onblur="this.style.borderColor='var(--border2)'"/>
         </div>
         <div>
-          <label style="font-size:9px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">2-Wheelers</label>
-          <input id="edTw" type="number" value="${tw}" min="0" max="10" placeholder="0" style="width:100%;box-sizing:border-box;height:32px;padding:0 9px;background:#fff;border:1.5px solid var(--border2);color:var(--text);font-family:var(--font);font-size:12px;font-weight:600;border-radius:var(--r-md);outline:none" onfocus="this.style.borderColor='var(--indigo)'" onblur="this.style.borderColor='var(--border2)'"/>
-        </div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
-        <div>
-          <label style="font-size:9px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">4-Wheelers</label>
-          <input id="edFw" type="number" value="${fw}" min="0" max="10" placeholder="0" style="width:100%;box-sizing:border-box;height:32px;padding:0 9px;background:#fff;border:1.5px solid var(--border2);color:var(--text);font-family:var(--font);font-size:12px;font-weight:600;border-radius:var(--r-md);outline:none" onfocus="this.style.borderColor='var(--indigo)'" onblur="this.style.borderColor='var(--border2)'"/>
+          <label style="font-size:9px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Vehicles (2W/4W)</label>
+          <input id="edVehicles" type="text" value="${tw}/${fw}" placeholder="2/1" style="width:100%;box-sizing:border-box;height:32px;padding:0 9px;background:#fff;border:1.5px solid var(--border2);color:var(--text);font-family:var(--font);font-size:12px;font-weight:600;border-radius:var(--r-md);outline:none" onfocus="this.style.borderColor='var(--indigo)'" onblur="this.style.borderColor='var(--border2)'" title="Format: 2-wheelers/4-wheelers (e.g., 2/1)"/>
         </div>
       </div>
 
@@ -1954,16 +1948,35 @@ function oFlEdit(fid) {
 
     <!-- PAYMENT HISTORY -->
     <div id="paymentHistSection" style="background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--r-lg);padding:14px;margin-bottom:14px;display:block">
-      <div style="font-size:12px;font-weight:800;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:6px">
-        <i class="ti ti-receipt" style="color:var(--amber);font-size:13px"></i> Payment History
+      <div style="font-size:12px;font-weight:800;color:var(--text);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;gap:6px">
+        <div style="display:flex;align-items:center;gap:6px">
+          <i class="ti ti-receipt" style="color:var(--amber);font-size:13px"></i> Payment History
+        </div>
+        <button type="button" onclick="window._togglePaymentEdit()" style="padding:4px 8px;background:transparent;border:1.5px solid var(--border);color:var(--text2);font-size:10px;font-weight:700;border-radius:4px;cursor:pointer;font-family:var(--font);">
+          <i class="ti ti-edit" style="font-size:11px;margin-right:2px"></i>Edit
+        </button>
       </div>
       <div id="paymentHistoryList" style="max-height:300px;overflow-y:auto;border-radius:8px"></div>
+      <div id="paymentEditSection" style="display:none;margin-top:10px;padding-top:10px;border-top:1.5px solid var(--border)">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+          <input id="newPaymentDate" type="date" placeholder="Date" style="padding:8px;border:1.5px solid var(--border);border-radius:6px;font-family:var(--font);font-size:11px"/>
+          <input id="newPaymentAmt" type="number" placeholder="Amount" style="padding:8px;border:1.5px solid var(--border);border-radius:6px;font-family:var(--font);font-size:11px"/>
+        </div>
+        <button type="button" onclick="window._addPayment('${fid}')" style="width:100%;padding:8px;background:var(--indigo);color:#fff;border:none;border-radius:6px;font-weight:700;font-size:11px;cursor:pointer;font-family:var(--font);">
+          + Add Payment
+        </button>
+      </div>
     </div>
 
     <!-- STAYING HISTORY -->
     <div id="stayingHistSection" style="background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--r-lg);padding:14px;margin-bottom:14px;display:none">
-      <div style="font-size:12px;font-weight:800;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:6px">
-        <i class="ti ti-calendar" style="color:var(--green);font-size:13px"></i> Staying History
+      <div style="font-size:12px;font-weight:800;color:var(--text);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;gap:6px">
+        <div style="display:flex;align-items:center;gap:6px">
+          <i class="ti ti-calendar" style="color:var(--green);font-size:13px"></i> Staying History
+        </div>
+        <button type="button" onclick="window._toggleStayingEdit()" style="padding:4px 8px;background:transparent;border:1.5px solid var(--border);color:var(--text2);font-size:10px;font-weight:700;border-radius:4px;cursor:pointer;font-family:var(--font);">
+          <i class="ti ti-edit" style="font-size:11px;margin-right:2px"></i>Edit
+        </button>
       </div>
       <div style="display:grid;gap:10px">
         <!-- Move In Card -->
@@ -1999,6 +2012,21 @@ function oFlEdit(fid) {
           </div>
           <div style="font-size:10px;color:var(--indigo,var(--muted));margin-top:4px">${f.moveOut ? 'Tenure completed' : 'Currently active'}</div>
         </div>
+      </div>
+      <div id="stayingEditSection" style="display:none;margin-top:10px;padding-top:10px;border-top:1.5px solid var(--border)">
+        <div style="display:grid;gap:8px;margin-bottom:8px">
+          <div>
+            <label style="font-size:10px;font-weight:700;color:var(--text2);margin-bottom:4px;display:block">Update Move-In Date</label>
+            <input id="editMoveIn" type="date" value="${f.moveIn||''}" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:6px;font-family:var(--font);font-size:11px;box-sizing:border-box"/>
+          </div>
+          <div>
+            <label style="font-size:10px;font-weight:700;color:var(--text2);margin-bottom:4px;display:block">Update Move-Out Date</label>
+            <input id="editMoveOut" type="date" value="${f.moveOut||''}" placeholder="Leave empty if still staying" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:6px;font-family:var(--font);font-size:11px;box-sizing:border-box"/>
+          </div>
+        </div>
+        <button type="button" onclick="window._updateStayingDates('${fid}')" style="width:100%;padding:8px;background:var(--indigo);color:#fff;border:none;border-radius:6px;font-weight:700;font-size:11px;cursor:pointer;font-family:var(--font);">
+          Save Dates
+        </button>
       </div>
     </div>`;
 
@@ -2189,8 +2217,13 @@ async function saveFlat(fid) {
   const moveOut    = document.getElementById('edMoveOut')?.value||'';
   const ownerName  = (document.getElementById('edOwnerName')?.value||'').trim();
   const ownerPhone = (document.getElementById('edOwnerPhone')?.value||'').trim();
-  const tw         = parseInt(document.getElementById('edTw')?.value)||0;
-  const fw         = parseInt(document.getElementById('edFw')?.value)||0;
+  
+  // Parse vehicles format "2/1" into tw and fw
+  const vehiclesInput = (document.getElementById('edVehicles')?.value||'0/0').trim();
+  const [twStr, fwStr] = vehiclesInput.split('/');
+  const tw = parseInt(twStr)||0;
+  const fw = parseInt(fwStr)||0;
+  
   sync('saving');
   try {
     await updateDoc(flatRef(fid), { owner, resType, due, moveIn, moveOut, ownerName, ownerPhone });
@@ -2608,6 +2641,41 @@ window._setResidentStatus = (status) => {
     movedTab.style.color = '#fff';
     moveOutSection.style.display = 'block';
   }
+};
+window._togglePaymentEdit = () => {
+  const editSection = document.getElementById('paymentEditSection');
+  editSection.style.display = editSection.style.display === 'none' ? 'block' : 'none';
+};
+window._toggleStayingEdit = () => {
+  const editSection = document.getElementById('stayingEditSection');
+  editSection.style.display = editSection.style.display === 'none' ? 'block' : 'none';
+};
+window._addPayment = async (fid) => {
+  const dateInput = document.getElementById('newPaymentDate');
+  const amtInput = document.getElementById('newPaymentAmt');
+  const paymentDate = dateInput?.value || new Date().toISOString().slice(0,10);
+  const amount = parseInt(amtInput?.value)||0;
+  
+  if (amount <= 0) { alert('Enter a valid amount'); return; }
+  
+  try {
+    const exp = { flatId: fid, month: paymentDate.slice(0,7), amt: amount, date: new Date().toISOString(), rawDate: paymentDate };
+    await addDoc(collection(db, 'apartments', AB, 'expenses'), exp);
+    dateInput.value = '';
+    amtInput.value = '';
+    toast('Payment added ✓');
+    cD(); rAll();
+  } catch(e) { console.error(e); toast('Failed to add payment', 'error'); }
+};
+window._updateStayingDates = async (fid) => {
+  const newMoveIn = document.getElementById('editMoveIn')?.value || '';
+  const newMoveOut = document.getElementById('editMoveOut')?.value || '';
+  
+  try {
+    await updateDoc(flatRef(fid), { moveIn: newMoveIn, moveOut: newMoveOut });
+    toast('Dates updated ✓');
+    cD(); rAll();
+  } catch(e) { console.error(e); toast('Failed to update dates', 'error'); }
 };
 window.autoSaveVeh=autoSaveVeh;
 window._openExpEdit=openExpEdit; window._closeExpEdit=closeExpEdit; window._saveExpEdit=saveExpEdit; window._delExp=delExp;
