@@ -1996,13 +1996,31 @@ function oFlEdit(fid) {
             </div>
           </div>
         </div>
-      </div>            <div style="color:var(--text)">${p.moveIn} → ${p.moveOut || 'Present'}</div>
-            </div>
-            <button onclick="window._deleteStayPeriod('${fid}',${idx})" style="padding:2px 6px;background:transparent;border:none;color:var(--red);cursor:pointer;font-size:12px;" title="Delete"><i class="ti ti-trash"></i></button>
+      </div>
+      <div id="stayingEditSection" style="display:none;margin-top:10px;padding-top:10px;border-top:1.5px solid var(--border)">
+        <div style="display:grid;gap:8px;margin-bottom:8px">
+          <div>
+            <label style="font-size:10px;font-weight:700;color:var(--text2);margin-bottom:4px;display:block">Update Move-In Date</label>
+            <input id="editMoveIn" type="date" value="${f.moveIn||''}" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:6px;font-family:var(--font);font-size:11px;box-sizing:border-box"/>
+          </div>
+          <div>
+            <label style="font-size:10px;font-weight:700;color:var(--text2);margin-bottom:4px;display:block">Update Move-Out Date</label>
+            <input id="editMoveOut" type="date" value="${f.moveOut||''}" placeholder="Leave empty if still staying" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:6px;font-family:var(--font);font-size:11px;box-sizing:border-box"/>
           </div>
         </div>
-      ).`join('');
-    }
+        <div style="display:flex;gap:8px">
+          <button type="button" onclick="window._updateStayingDates('${fid}')" style="flex:1;padding:8px;background:var(--indigo);color:#fff;border:none;border-radius:6px;font-weight:700;font-size:11px;cursor:pointer;font-family:var(--font);">
+            Save Dates
+          </button>
+          <button type="button" onclick="window._addStayPeriod('${fid}')" style="flex:1;padding:8px;background:var(--green);color:#fff;border:none;border-radius:6px;font-weight:700;font-size:11px;cursor:pointer;font-family:var(--font);">
+            + Add Period
+          </button>
+        </div>
+        <div id="stayPeriodsContainer" style="margin-top:10px;display:grid;gap:8px">
+          <!-- Additional stay periods will be rendered here -->
+        </div>
+      </div>
+    </div>`;
     
     const ex = fex(fid);
     const historyList = document.getElementById('paymentHistoryList');
@@ -2035,7 +2053,6 @@ function oFlEdit(fid) {
     
     // Render additional stay periods
     const periodsContainer = document.getElementById('stayPeriodsContainer');
-    const f = flats.get(fid);
     if (periodsContainer && f && f.stayPeriods && f.stayPeriods.length > 0) {
       periodsContainer.innerHTML = f.stayPeriods.map((p, idx) => {
         const periodOwner = p.owner || f.owner || 'Resident';
