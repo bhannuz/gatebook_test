@@ -1173,6 +1173,10 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
         <div style="font-size:11px;color:var(--muted);margin-top:2px">Master data for all flats</div>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <!-- New Block Button -->
+        <button onclick="window._openBlockForm()" style="padding:8px 14px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);display:flex;align-items:center;gap:6px">
+          <i class="ti ti-plus" style="font-size:13px"></i>New Block
+        </button>
         <!-- View toggle -->
         <div style="display:flex;gap:4px;background:var(--surface2);padding:4px;border-radius:8px">
           <button data-view="floor" onclick="window._setStrView('floor')" 
@@ -2024,9 +2028,17 @@ function oFlEdit(fid) {
             <input id="editMoveOut" type="date" value="${f.moveOut||''}" placeholder="Leave empty if still staying" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:6px;font-family:var(--font);font-size:11px;box-sizing:border-box"/>
           </div>
         </div>
-        <button type="button" onclick="window._updateStayingDates('${fid}')" style="width:100%;padding:8px;background:var(--indigo);color:#fff;border:none;border-radius:6px;font-weight:700;font-size:11px;cursor:pointer;font-family:var(--font);">
-          Save Dates
-        </button>
+        <div style="display:flex;gap:8px">
+          <button type="button" onclick="window._updateStayingDates('${fid}')" style="flex:1;padding:8px;background:var(--indigo);color:#fff;border:none;border-radius:6px;font-weight:700;font-size:11px;cursor:pointer;font-family:var(--font);">
+            Save Dates
+          </button>
+          <button type="button" onclick="window._addStayPeriod('${fid}')" style="flex:1;padding:8px;background:var(--green);color:#fff;border:none;border-radius:6px;font-weight:700;font-size:11px;cursor:pointer;font-family:var(--font);">
+            + Add Period
+          </button>
+        </div>
+        <div id="stayPeriodsContainer" style="margin-top:10px;display:grid;gap:8px">
+          <!-- Additional stay periods will be rendered here -->
+        </div>
       </div>
     </div>`;
 
@@ -2038,6 +2050,23 @@ function oFlEdit(fid) {
       window._setResidentStatus('moved');
     } else {
       window._setResidentStatus('active');
+    }
+    
+    // Render additional stay periods
+    const f = flats.get(fid);
+    const periodsContainer = document.getElementById('stayPeriodsContainer');
+    if (periodsContainer && f.stayPeriods && f.stayPeriods.length > 0) {
+      periodsContainer.innerHTML = f.stayPeriods.map((p, idx) => `
+        <div style="background:#fff;border:1.5px solid var(--border);border-radius:8px;padding:10px;font-size:11px">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+            <div>
+              <div style="color:var(--text2);font-weight:700">Period ${idx + 1}</div>
+              <div style="color:var(--text)">${p.moveIn} → ${p.moveOut || 'Present'}</div>
+            </div>
+            <button onclick="window._deleteStayPeriod('${fid}',${idx})" style="padding:2px 6px;background:transparent;border:none;color:var(--red);cursor:pointer;font-size:12px;" title="Delete"><i class="ti ti-trash"></i></button>
+          </div>
+        </div>
+      `).join('');
     }
     
     const ex = fex(fid);
@@ -2716,6 +2745,50 @@ window._updateStayingDates = async (fid) => {
     cD(); rAll();
   } catch(e) { console.error(e); toast('Failed to update dates', 'error'); }
 };
+window._addStayPeriod = async (fid) => {
+  const moveIn = prompt('Enter Move-In date (YYYY-MM-DD):');
+  if (!moveIn) return;
+  
+  const moveOut = prompt('Enter Move-Out date (YYYY-MM-DD) or leave empty:');
+  
+  try {
+    // Save as a comment/note in expenses or create a separate collection
+    // For now, we'll add it to a text log or display it inline
+    const period = {
+      moveIn,
+      moveOut: moveOut || '',
+      addedAt: new Date().toISOString()
+    };
+    
+    // Store in a custom field or array
+    const f = flats.get(fid);
+    if (!f.stayPeriods) f.stayPeriods = [];
+    f.stayPeriods.push(period);
+    
+    await updateDoc(flatRef(fid), { stayPeriods: f.stayPeriods });
+    toast('Stay period added ✓');
+    cD(); oFlEdit(fid); // Refresh drawer
+  } catch(e) { 
+    console.error(e); 
+    toast('Failed to add period', 'error'); 
+  }
+};
+window._deleteStayPeriod = async (fid, periodIndex) => {
+  if (!confirm('Delete this stay period?')) return;
+  
+  try {
+    const f = flats.get(fid);
+    if (f.stayPeriods) {
+      f.stayPeriods.splice(periodIndex, 1);
+      await updateDoc(flatRef(fid), { stayPeriods: f.stayPeriods });
+      toast('Period deleted ✓');
+      cD(); oFlEdit(fid); // Refresh
+    }
+  } catch(e) { 
+    console.error(e); 
+    toast('Failed to delete period', 'error'); 
+  }
+};
 window._deletePayment = async (fid, docId) => {
   if (!confirm('Delete this payment record?')) return;
   try {
@@ -2753,6 +2826,86 @@ window._toggleBlockInput = () => {
     document.getElementById('edNewBlock').focus();
   } else {
     newBlockInput.style.display = 'none';
+  }
+};
+window._openBlockForm = () => {
+  document.getElementById('blockModal').style.display = 'block';
+  document.getElementById('blockName').focus();
+  document.getElementById('flatsContainer').innerHTML = '';
+  window._addFlatRow();
+};
+window._closeBlockForm = () => {
+  document.getElementById('blockModal').style.display = 'none';
+};
+window._addFlatRow = () => {
+  const container = document.getElementById('flatsContainer');
+  const rowId = 'flat_' + Date.now();
+  const rowHtml = `
+    <div id="${rowId}" style="background:var(--surface2);padding:12px;border-radius:8px;border:1.5px solid var(--border)">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+        <input class="flatNum" type="text" placeholder="Flat Number (e.g., A-101)" style="padding:8px;border:1.5px solid var(--border);border-radius:6px;font-family:var(--font);font-size:12px;box-sizing:border-box"/>
+        <input class="flatFloor" type="number" placeholder="Floor" min="1" style="padding:8px;border:1.5px solid var(--border);border-radius:6px;font-family:var(--font);font-size:12px;box-sizing:border-box"/>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+        <input class="resName" type="text" placeholder="Resident Name" style="padding:8px;border:1.5px solid var(--border);border-radius:6px;font-family:var(--font);font-size:12px;box-sizing:border-box"/>
+        <input class="monthlyDue" type="number" placeholder="Monthly Due" min="0" style="padding:8px;border:1.5px solid var(--border);border-radius:6px;font-family:var(--font);font-size:12px;box-sizing:border-box"/>
+      </div>
+      <button onclick="document.getElementById('${rowId}').remove()" style="width:100%;padding:6px;background:transparent;border:1.5px solid var(--red);color:var(--red);border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font)">Remove Flat</button>
+    </div>
+  `;
+  container.insertAdjacentHTML('beforeend', rowHtml);
+};
+window._saveNewBlock = async () => {
+  const blockName = document.getElementById('blockName').value.trim();
+  if (!blockName) { alert('Enter block name'); return; }
+  
+  const flatRows = document.querySelectorAll('#flatsContainer > div');
+  if (flatRows.length === 0) { alert('Add at least one flat'); return; }
+  
+  const flats = [];
+  flatRows.forEach(row => {
+    const flatNum = row.querySelector('.flatNum').value.trim();
+    const floor = parseInt(row.querySelector('.flatFloor').value) || 0;
+    const resName = row.querySelector('.resName').value.trim();
+    const due = parseInt(row.querySelector('.monthlyDue').value) || 0;
+    
+    if (flatNum) {
+      flats.push({ flatNum, floor, resName, due });
+    }
+  });
+  
+  if (flats.length === 0) { alert('Add flat numbers'); return; }
+  
+  sync('saving');
+  try {
+    // Create flats in Firestore
+    for (const f of flats) {
+      const fid = (blockName + '-' + f.flatNum).replace(/[^a-z0-9-]/gi, '_').toLowerCase();
+      const flatDoc = {
+        flatId: f.flatNum,
+        block: blockName,
+        floor: f.floor,
+        owner: f.resName,
+        resType: 'owner',
+        due: f.due,
+        moveIn: new Date().toISOString().slice(0,10),
+        moveOut: '',
+        createdAt: serverTimestamp()
+      };
+      await setDoc(flatRef(fid), flatDoc);
+      await setDoc(vehRef(fid), { flatId: fid, tw: 0, fw: 0, updatedAt: serverTimestamp() }, { merge: true });
+      flats.set(fid, flatDoc);
+      vehicles.set(fid, { tw: 0, fw: 0 });
+    }
+    
+    sync('live');
+    toast('Block & flats registered ✓');
+    window._closeBlockForm();
+    rAll();
+  } catch(e) {
+    console.error(e);
+    sync('error');
+    toast('Failed to register block', 'error');
   }
 };
 window._registerNewFlat = async () => {
@@ -4825,6 +4978,39 @@ function renderAnPayTable(filterType, selMonth, selYear, selBlock) {
     <span class="bnav-badge" id="bnavIssueCnt" style="display:none"></span>
   </button>
 </nav>
+
+<!-- BLOCK REGISTRATION MODAL -->
+<div id="blockModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:2000;padding:20px;overflow-y:auto">
+  <div style="background:#fff;border-radius:12px;max-width:600px;margin:40px auto;padding:24px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <h2 style="margin:0;font-size:18px;font-weight:800">📦 Register New Block</h2>
+      <button onclick="window._closeBlockForm()" style="background:none;border:none;font-size:24px;cursor:pointer;color:var(--text2)">&times;</button>
+    </div>
+    
+    <!-- Block Details -->
+    <div style="margin-bottom:20px">
+      <label style="font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;display:block;margin-bottom:6px">Block Name (e.g., Block A)</label>
+      <input id="blockName" type="text" placeholder="e.g., Block A, Wing 1, etc." style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:8px;font-family:var(--font);font-size:13px;box-sizing:border-box"/>
+    </div>
+
+    <!-- Flats Section -->
+    <div style="margin-bottom:20px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <label style="font-size:12px;font-weight:700;color:var(--text);text-transform:uppercase">Flats in this Block</label>
+        <button onclick="window._addFlatRow()" style="padding:4px 8px;background:var(--indigo);color:#fff;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font)">+ Add Flat</button>
+      </div>
+      <div id="flatsContainer" style="display:grid;gap:12px">
+        <!-- Flat rows will be added here -->
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:24px;padding-top:20px;border-top:1px solid var(--border)">
+      <button onclick="window._closeBlockForm()" style="padding:10px 16px;background:transparent;border:1.5px solid var(--border);color:var(--text);border-radius:8px;font-weight:700;font-size:12px;cursor:pointer;font-family:var(--font)">Cancel</button>
+      <button onclick="window._saveNewBlock()" style="padding:10px 16px;background:var(--green);color:#fff;border:none;border-radius:8px;font-weight:700;font-size:12px;cursor:pointer;font-family:var(--font)">Register Block & Flats</button>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>
