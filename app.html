@@ -1982,86 +1982,21 @@ function oFlEdit(fid) {
           <i class="ti ti-edit" style="font-size:11px;margin-right:2px"></i>Edit
         </button>
       </div>
-      <div style="display:grid;gap:10px">
-        <!-- Move In Card -->
-        <div style="background:#fff;border:1.5px solid var(--border);border-radius:8px;padding:12px">
-          <div style="font-size:10px;font-weight:700;color:var(--text2);margin-bottom:6px;display:flex;align-items:center;gap:4px">
-            <i class="ti ti-login-2" style="color:var(--indigo);font-size:12px"></i> Moved In
-          </div>
-          <div style="font-size:14px;font-weight:800;color:var(--indigo)">${f.moveIn ? new Date(f.moveIn).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) : '—'}</div>
-          <div style="font-size:10px;color:var(--muted);margin-top:4px">${f.moveIn ? new Date(f.moveIn).toLocaleDateString('en-IN',{weekday:'long'}) : 'Not set'}</div>
-        </div>
-
-        <!-- Move Out Card -->
-        <div style="background:#fff;border:1.5px solid var(--border);border-radius:8px;padding:12px">
-          <div style="font-size:10px;font-weight:700;color:var(--text2);margin-bottom:6px;display:flex;align-items:center;gap:4px">
-            <i class="ti ti-logout-2" style="color:var(--amber);font-size:12px"></i> Moved Out
-          </div>
-          <div style="font-size:14px;font-weight:800;color:${f.moveOut ? 'var(--amber)' : 'var(--green)'}">${f.moveOut ? new Date(f.moveOut).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) : 'Currently Staying'}</div>
-          <div style="font-size:10px;color:var(--muted);margin-top:4px">${f.moveOut ? new Date(f.moveOut).toLocaleDateString('en-IN',{weekday:'long'}) : 'Active resident'}</div>
-        </div>
-
-        <!-- Current Stay Duration Card -->
-        <div style="background:linear-gradient(135deg,var(--indigo-bg),var(--purple-bg,var(--surface3)));border-radius:8px;padding:12px;border:1.5px solid var(--indigo,var(--border))">
-          <div style="font-size:10px;font-weight:700;color:var(--indigo,var(--text2));margin-bottom:6px">📅 Stay Duration</div>
-          <div style="font-size:14px;font-weight:800;color:var(--indigo,var(--text))">
-            ${f.moveIn ? (() => {
-              const moveIn = new Date(f.moveIn);
-              const moveOut = f.moveOut ? new Date(f.moveOut) : new Date();
-              const months = Math.floor((moveOut - moveIn) / (1000 * 60 * 60 * 24 * 30.44));
-              const years = Math.floor(months / 12);
-              const remainingMonths = months % 12;
-              return years > 0 ? years + ' year' + (years > 1 ? 's' : '') + ' ' + remainingMonths + ' month' + (remainingMonths > 1 ? 's' : '') : months + ' month' + (months > 1 ? 's' : '');
-            })() : '—'}
-          </div>
-          <div style="font-size:10px;color:var(--indigo,var(--muted));margin-top:4px">${f.moveOut ? 'Tenure completed' : 'Currently active'}</div>
-        </div>
-      </div>
-      <div id="stayingEditSection" style="display:none;margin-top:10px;padding-top:10px;border-top:1.5px solid var(--border)">
-        <div style="display:grid;gap:8px;margin-bottom:8px">
-          <div>
-            <label style="font-size:10px;font-weight:700;color:var(--text2);margin-bottom:4px;display:block">Update Move-In Date</label>
-            <input id="editMoveIn" type="date" value="${f.moveIn||''}" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:6px;font-family:var(--font);font-size:11px;box-sizing:border-box"/>
-          </div>
-          <div>
-            <label style="font-size:10px;font-weight:700;color:var(--text2);margin-bottom:4px;display:block">Update Move-Out Date</label>
-            <input id="editMoveOut" type="date" value="${f.moveOut||''}" placeholder="Leave empty if still staying" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:6px;font-family:var(--font);font-size:11px;box-sizing:border-box"/>
+      <div style="display:grid;gap:8px">
+        <!-- Main Stay Period -->
+        <div style="background:#fff;border:1.5px solid var(--border);border-radius:8px;padding:12px;font-size:12px">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start">
+            <div style="flex:1">
+              <div style="font-weight:700;color:var(--text)">${f.owner || 'Resident'}</div>
+              <div style="color:var(--text2);margin-top:4px">
+                ${f.moveIn ? new Date(f.moveIn).toLocaleDateString('en-IN',{day:'2-digit',month:'2-digit',year:'numeric'}) : '—'} 
+                → 
+                ${f.moveOut ? new Date(f.moveOut).toLocaleDateString('en-IN',{day:'2-digit',month:'2-digit',year:'numeric'}) : 'Present'}
+              </div>
+            </div>
           </div>
         </div>
-        <div style="display:flex;gap:8px">
-          <button type="button" onclick="window._updateStayingDates('${fid}')" style="flex:1;padding:8px;background:var(--indigo);color:#fff;border:none;border-radius:6px;font-weight:700;font-size:11px;cursor:pointer;font-family:var(--font);">
-            Save Dates
-          </button>
-          <button type="button" onclick="window._addStayPeriod('${fid}')" style="flex:1;padding:8px;background:var(--green);color:#fff;border:none;border-radius:6px;font-weight:700;font-size:11px;cursor:pointer;font-family:var(--font);">
-            + Add Period
-          </button>
-        </div>
-        <div id="stayPeriodsContainer" style="margin-top:10px;display:grid;gap:8px">
-          <!-- Additional stay periods will be rendered here -->
-        </div>
-      </div>
-    </div>`;
-
-  // Populate payment history after dBody is set
-  setTimeout(() => {
-    // Initialize resident status tab
-    const moveOutInput = document.getElementById('edMoveOut');
-    if (moveOutInput && moveOutInput.value) {
-      window._setResidentStatus('moved');
-    } else {
-      window._setResidentStatus('active');
-    }
-    
-    // Render additional stay periods
-    const f = flats.get(fid);
-    const periodsContainer = document.getElementById('stayPeriodsContainer');
-    if (periodsContainer && f.stayPeriods && f.stayPeriods.length > 0) {
-      periodsContainer.innerHTML = f.stayPeriods.map((p, idx) => `
-        <div style="background:#fff;border:1.5px solid var(--border);border-radius:8px;padding:10px;font-size:11px">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
-            <div>
-              <div style="color:var(--text2);font-weight:700">Period ${idx + 1}</div>
-              <div style="color:var(--text)">${p.moveIn} → ${p.moveOut || 'Present'}</div>
+      </div>            <div style="color:var(--text)">${p.moveIn} → ${p.moveOut || 'Present'}</div>
             </div>
             <button onclick="window._deleteStayPeriod('${fid}',${idx})" style="padding:2px 6px;background:transparent;border:none;color:var(--red);cursor:pointer;font-size:12px;" title="Delete"><i class="ti ti-trash"></i></button>
           </div>
@@ -2096,6 +2031,26 @@ function oFlEdit(fid) {
           }).join('');
         historyList.innerHTML = historyHtml;
       }
+    }
+    
+    // Render additional stay periods
+    const periodsContainer = document.getElementById('stayPeriodsContainer');
+    const f = flats.get(fid);
+    if (periodsContainer && f && f.stayPeriods && f.stayPeriods.length > 0) {
+      periodsContainer.innerHTML = f.stayPeriods.map((p, idx) => {
+        const periodOwner = p.owner || f.owner || 'Resident';
+        return `<div style="background:#fff;border:1.5px solid var(--border);border-radius:8px;padding:12px;font-size:12px;display:flex;justify-content:space-between;align-items:center">
+          <div style="flex:1">
+            <div style="font-weight:700;color:var(--text)">${periodOwner}</div>
+            <div style="color:var(--text2);margin-top:4px">
+              ${p.moveIn ? new Date(p.moveIn).toLocaleDateString('en-IN',{day:'2-digit',month:'2-digit',year:'numeric'}) : '—'} 
+              → 
+              ${p.moveOut ? new Date(p.moveOut).toLocaleDateString('en-IN',{day:'2-digit',month:'2-digit',year:'numeric'}) : 'Present'}
+            </div>
+          </div>
+          <button onclick="window._deleteStayPeriod('${fid}',${idx})" style="padding:2px 6px;background:transparent;border:none;color:var(--red);cursor:pointer;font-size:12px;margin-left:8px" title="Delete"><i class="ti ti-trash"></i></button>
+        </div>`;
+      }).join('');
     }
   }, 0);
 
@@ -2711,16 +2666,18 @@ window._addPayment = async (fid) => {
   const docId = dateInput?.dataset.docId;
   
   if (amount <= 0) { alert('Enter a valid amount'); return; }
+  if (!paymentDate) { alert('Enter payment date'); return; }
   
   try {
     if (docId) {
-      // Update existing payment
+      // Update existing payment - use setDoc with merge to avoid errors
       const docRef = doc(db, 'apartments', AB, 'expenses', docId);
-      await updateDoc(docRef, { 
+      await setDoc(docRef, { 
         rawDate: paymentDate, 
         month: paymentDate.slice(0,7), 
-        amt: amount 
-      });
+        amt: amount,
+        updatedAt: serverTimestamp()
+      }, { merge: true });
       toast('Payment updated ✓');
     } else {
       // Add new payment
@@ -2733,7 +2690,7 @@ window._addPayment = async (fid) => {
     dateInput.dataset.docId = '';
     document.getElementById('paymentEditSection').style.display = 'none';
     cD(); rAll();
-  } catch(e) { console.error(e); toast('Failed to save payment', 'error'); }
+  } catch(e) { console.error('Payment save error:', e); toast('Failed to save payment: ' + e.message, 'error'); }
 };
 window._updateStayingDates = async (fid) => {
   const newMoveIn = document.getElementById('editMoveIn')?.value || '';
