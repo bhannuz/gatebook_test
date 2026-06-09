@@ -1173,6 +1173,10 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
         <div style="font-size:11px;color:var(--muted);margin-top:2px">Master data for all flats</div>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <!-- Register New Flat Button -->
+        <button onclick="window._registerNewFlat()" style="padding:8px 14px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);display:flex;align-items:center;gap:6px">
+          <i class="ti ti-plus" style="font-size:13px"></i>Register Flat
+        </button>
         <!-- View toggle -->
         <div style="display:flex;gap:4px;background:var(--surface2);padding:4px;border-radius:8px">
           <button data-view="floor" onclick="window._setStrView('floor')" 
@@ -1870,6 +1874,20 @@ function oFlEdit(fid) {
           </select>
         </div>
       </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+        <div>
+          <label style="font-size:9px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Block</label>
+          <select id="edBlock" style="width:100%;box-sizing:border-box;height:32px;padding:0 9px;background:#fff;border:1.5px solid var(--border2);color:var(--text);font-family:var(--font);font-size:12px;font-weight:600;border-radius:var(--r-md);outline:none" onchange="window._toggleBlockInput()">
+            <option value="">Select Block</option>
+            ${bks().map(b => `<option value="${b}" ${f.block===b?'selected':''}>${b}</option>`).join('')}
+            <option value="__new__">+ Add New Block</option>
+          </select>
+        </div>
+        <div id="newBlockInput" style="display:none">
+          <label style="font-size:9px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">New Block Name</label>
+          <input id="edNewBlock" type="text" placeholder="e.g., Block B" style="width:100%;box-sizing:border-box;height:32px;padding:0 9px;background:#fff;border:1.5px solid var(--border2);color:var(--text);font-family:var(--font);font-size:12px;font-weight:600;border-radius:var(--r-md);outline:none" onfocus="this.style.borderColor='var(--indigo)'" onblur="this.style.borderColor='var(--border2)'"/>
+        </div>
+      </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
         <div>
           <label style="font-size:9px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Monthly Due</label>
@@ -2049,16 +2067,21 @@ function oFlEdit(fid) {
         const historyHtml = ex
           .sort((a,b) => new Date(b.rawDate||b.date||0) - new Date(a.rawDate||a.date||0))
           .slice(0, 20)
-          .map(e => {
+          .map((e,idx) => {
             const dt = e.rawDate||e.date||'—';
             const amt = e.amt||0;
+            const docId = e.id || idx;
             return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px;border-bottom:1px solid var(--border);font-size:11px">
-              <div>
+              <div style="flex:1">
                 <div style="font-weight:600;color:var(--text)">${dt}</div>
                 <div style="color:var(--text2);font-size:10px">${e.cat||'Payment'}</div>
               </div>
-              <div style="font-weight:700;color:var(--green)">${inr(amt)}</div>
+              <div style="display:flex;align-items:center;gap:8px">
+                <div style="font-weight:700;color:var(--green)">${inr(amt)}</div>
+                <button onclick="window._deletePayment('${fid}','${docId}')" style="padding:2px 6px;background:transparent;border:none;color:var(--red);cursor:pointer;font-size:12px;"><i class="ti ti-trash"></i></button>
+              </div>
             </div>`;
+          }).join('');
           }).join('');
         historyList.innerHTML = historyHtml;
       }
@@ -2218,6 +2241,15 @@ async function saveFlat(fid) {
   const ownerName  = (document.getElementById('edOwnerName')?.value||'').trim();
   const ownerPhone = (document.getElementById('edOwnerPhone')?.value||'').trim();
   
+  // Handle block - check if new block is being created
+  let block = document.getElementById('edBlock')?.value || '';
+  if (block === '__new__') {
+    block = (document.getElementById('edNewBlock')?.value||'').trim();
+    if (!block) { toast('Enter new block name', 'error'); if (btn) { btn.disabled = false; btn.innerHTML = '<i class="ti ti-device-floppy" style="font-size:15px"></i> Save Changes'; } return; }
+  }
+  
+  const floor = parseInt(document.getElementById('edFloor')?.value)||0;
+  
   // Parse vehicles format "2/1" into tw and fw
   const vehiclesInput = (document.getElementById('edVehicles')?.value||'0/0').trim();
   const [twStr, fwStr] = vehiclesInput.split('/');
@@ -2226,7 +2258,7 @@ async function saveFlat(fid) {
   
   sync('saving');
   try {
-    await updateDoc(flatRef(fid), { owner, resType, due, moveIn, moveOut, ownerName, ownerPhone });
+    await updateDoc(flatRef(fid), { owner, resType, due, moveIn, moveOut, ownerName, ownerPhone, block, floor });
     await setDoc(vehRef(fid), { flatId:fid, tw, fw, updatedAt:serverTimestamp() }, { merge:true });
     vehicles.set(fid, { ...(vehicles.get(fid)||{}), tw, fw });
     sync('live');
@@ -2676,6 +2708,68 @@ window._updateStayingDates = async (fid) => {
     toast('Dates updated ✓');
     cD(); rAll();
   } catch(e) { console.error(e); toast('Failed to update dates', 'error'); }
+};
+window._deletePayment = async (fid, docId) => {
+  if (!confirm('Delete this payment record?')) return;
+  try {
+    const docRef = doc(db, 'apartments', AB, 'expenses', docId);
+    await deleteDoc(docRef);
+    const ex = exps.get(fid)||[];
+    const idx = ex.findIndex(e => e.id === docId || e === ex[parseInt(docId)]);
+    if (idx !== -1) ex.splice(idx, 1);
+    toast('Payment deleted ✓');
+    cD(); rAll();
+  } catch(e) { console.error(e); toast('Failed to delete payment', 'error'); }
+};
+window._toggleBlockInput = () => {
+  const blockSelect = document.getElementById('edBlock');
+  const newBlockInput = document.getElementById('newBlockInput');
+  if (blockSelect.value === '__new__') {
+    newBlockInput.style.display = 'block';
+    document.getElementById('edNewBlock').focus();
+  } else {
+    newBlockInput.style.display = 'none';
+  }
+};
+window._registerNewFlat = async () => {
+  try {
+    const blockList = bks();
+    if (blockList.length === 0) { toast('Add a block first', 'error'); return; }
+    
+    // Prompt for flat ID/number
+    const flatNum = prompt('Enter flat number (e.g., A-101):');
+    if (!flatNum) return;
+    
+    // Create new flat document
+    const newFlat = {
+      flatId: flatNum,
+      block: '',
+      floor: 0,
+      owner: '',
+      resType: 'owner',
+      due: 0,
+      moveIn: '',
+      moveOut: '',
+      ownerName: '',
+      ownerPhone: '',
+      createdAt: serverTimestamp()
+    };
+    
+    const fid = flatNum.replace(/[^a-z0-9-]/gi, '_').toLowerCase();
+    await setDoc(flatRef(fid), newFlat);
+    
+    // Add empty vehicle document
+    await setDoc(vehRef(fid), { flatId: fid, tw: 0, fw: 0, updatedAt: serverTimestamp() }, { merge: true });
+    
+    flats.set(fid, newFlat);
+    vehicles.set(fid, { tw: 0, fw: 0 });
+    
+    toast('Flat created ✓');
+    oFlEdit(fid); // Open edit form
+  } catch(e) { 
+    console.error(e); 
+    toast('Failed to register flat', 'error'); 
+  }
 };
 window.autoSaveVeh=autoSaveVeh;
 window._openExpEdit=openExpEdit; window._closeExpEdit=closeExpEdit; window._saveExpEdit=saveExpEdit; window._delExp=delExp;
