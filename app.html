@@ -1983,37 +1983,77 @@ function oFlEdit(fid) {
         </button>
       </div>
       <div style="display:grid;gap:8px">
-        <!-- Main Stay Period -->
-        <div style="background:#fff;border:1.5px solid var(--border);border-radius:8px;padding:12px;font-size:12px">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start">
-            <div style="flex:1">
-              <div style="font-weight:700;color:var(--text)">${f.owner || 'Resident'}</div>
-              <div style="color:var(--text2);margin-top:4px">
-                ${f.moveIn ? new Date(f.moveIn).toLocaleDateString('en-IN',{day:'2-digit',month:'2-digit',year:'numeric'}) : '—'} 
-                → 
-                ${f.moveOut ? new Date(f.moveOut).toLocaleDateString('en-IN',{day:'2-digit',month:'2-digit',year:'numeric'}) : 'Present'}
+        <!-- All Stay Periods - Chronological -->
+        ${(() => {
+          // Combine current resident with all stay periods
+          const allPeriods = [];
+          
+          // Add current resident if exists
+          if (f.moveIn) {
+            allPeriods.push({
+              owner: f.owner || 'Resident',
+              moveIn: f.moveIn,
+              moveOut: f.moveOut || '',
+              isCurrent: !f.moveOut
+            });
+          }
+          
+          // Add historical periods
+          if (f.stayPeriods && f.stayPeriods.length > 0) {
+            f.stayPeriods.forEach(p => {
+              allPeriods.push({
+                owner: p.owner || 'Resident',
+                moveIn: p.moveIn,
+                moveOut: p.moveOut || '',
+                isCurrent: false
+              });
+            });
+          }
+          
+          // Sort by moveIn date (newest first)
+          allPeriods.sort((a, b) => new Date(b.moveIn || 0) - new Date(a.moveIn || 0));
+          
+          if (allPeriods.length === 0) {
+            return '<div style="padding:12px;text-align:center;color:var(--muted);font-size:11px">No stay records yet</div>';
+          }
+          
+          return allPeriods.map((p, idx) => `
+            <div style="background:#fff;border:1.5px solid var(--border);border-radius:8px;padding:12px;font-size:12px">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start">
+                <div style="flex:1">
+                  <div style="font-weight:700;color:var(--text)">${p.owner}</div>
+                  <div style="color:var(--text2);margin-top:4px;font-size:11px">
+                    ${p.moveIn ? new Date(p.moveIn).toLocaleDateString('en-IN',{day:'2-digit',month:'2-digit',year:'numeric'}) : '—'} 
+                    → 
+                    ${p.moveOut ? new Date(p.moveOut).toLocaleDateString('en-IN',{day:'2-digit',month:'2-digit',year:'numeric'}) : 'Present'}
+                  </div>
+                  ${p.isCurrent ? '<div style="margin-top:6px;padding:4px 8px;background:var(--green);color:#fff;border-radius:4px;font-size:10px;font-weight:700;width:fit-content">Current</div>' : ''}
+                </div>
               </div>
             </div>
-          </div>
-        </div>
+          `).join('');
+        })()}
       </div>
       <div id="stayingEditSection" style="display:none;margin-top:10px;padding-top:10px;border-top:1.5px solid var(--border)">
+        <div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:10px;padding:8px;background:var(--surface2);border-radius:6px">
+          ℹ️ Edit current resident's dates or add historical stay periods
+        </div>
         <div style="display:grid;gap:8px;margin-bottom:8px">
           <div>
-            <label style="font-size:10px;font-weight:700;color:var(--text2);margin-bottom:4px;display:block">Update Move-In Date</label>
+            <label style="font-size:10px;font-weight:700;color:var(--text2);margin-bottom:4px;display:block">CURRENT RESIDENT - Move-In Date</label>
             <input id="editMoveIn" type="date" value="${f.moveIn||''}" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:6px;font-family:var(--font);font-size:11px;box-sizing:border-box"/>
           </div>
           <div>
-            <label style="font-size:10px;font-weight:700;color:var(--text2);margin-bottom:4px;display:block">Update Move-Out Date</label>
+            <label style="font-size:10px;font-weight:700;color:var(--text2);margin-bottom:4px;display:block">CURRENT RESIDENT - Move-Out Date</label>
             <input id="editMoveOut" type="date" value="${f.moveOut||''}" placeholder="Leave empty if still staying" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:6px;font-family:var(--font);font-size:11px;box-sizing:border-box"/>
           </div>
         </div>
         <div style="display:flex;gap:8px">
           <button type="button" onclick="window._updateStayingDates('${fid}')" style="flex:1;padding:8px;background:var(--indigo);color:#fff;border:none;border-radius:6px;font-weight:700;font-size:11px;cursor:pointer;font-family:var(--font);">
-            Save Dates
+            Save Current Resident
           </button>
           <button type="button" onclick="window._addStayPeriod('${fid}')" style="flex:1;padding:8px;background:var(--green);color:#fff;border:none;border-radius:6px;font-weight:700;font-size:11px;cursor:pointer;font-family:var(--font);">
-            + Add Period
+            + Add Historical Period
           </button>
         </div>
         <div id="stayPeriodsContainer" style="margin-top:10px;display:grid;gap:8px">
@@ -2716,27 +2756,49 @@ window._updateStayingDates = async (fid) => {
   const newMoveOut = document.getElementById('editMoveOut')?.value || '';
   
   try {
-    await updateDoc(flatRef(fid), { moveIn: newMoveIn, moveOut: newMoveOut });
+    const f = flats.get(fid);
+    if (!f) return;
+    
+    // If moving to a new resident, save current resident to history first
+    if (newMoveIn && f.moveIn && newMoveIn !== f.moveIn) {
+      // Current resident is being replaced - save their period
+      if (!f.stayPeriods) f.stayPeriods = [];
+      f.stayPeriods.push({
+        owner: f.owner,
+        moveIn: f.moveIn,
+        moveOut: f.moveOut || new Date().toISOString().slice(0,10)
+      });
+    }
+    
+    // Update the primary resident dates
+    await updateDoc(flatRef(fid), { 
+      moveIn: newMoveIn, 
+      moveOut: newMoveOut,
+      stayPeriods: f.stayPeriods || []
+    });
+    
     toast('Dates updated ✓');
-    cD(); rAll();
+    cD(); oFlEdit(fid);
   } catch(e) { console.error(e); toast('Failed to update dates', 'error'); }
 };
 window._addStayPeriod = async (fid) => {
+  const resName = prompt('Enter resident name:');
+  if (!resName) return;
+  
   const moveIn = prompt('Enter Move-In date (YYYY-MM-DD):');
   if (!moveIn) return;
   
-  const moveOut = prompt('Enter Move-Out date (YYYY-MM-DD) or leave empty:');
+  const moveOut = prompt('Enter Move-Out date (YYYY-MM-DD) or leave empty if currently staying:');
   
   try {
-    // Save as a comment/note in expenses or create a separate collection
-    // For now, we'll add it to a text log or display it inline
+    // Save as a new stay period
     const period = {
+      owner: resName,
       moveIn,
       moveOut: moveOut || '',
       addedAt: new Date().toISOString()
     };
     
-    // Store in a custom field or array
     const f = flats.get(fid);
     if (!f.stayPeriods) f.stayPeriods = [];
     f.stayPeriods.push(period);
