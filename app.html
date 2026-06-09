@@ -1173,10 +1173,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
         <div style="font-size:11px;color:var(--muted);margin-top:2px">Master data for all flats</div>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-        <!-- Register New Flat Button -->
-        <button onclick="window._registerNewFlat()" style="padding:8px 14px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);display:flex;align-items:center;gap:6px">
-          <i class="ti ti-plus" style="font-size:13px"></i>Register Flat
-        </button>
         <!-- View toggle -->
         <div style="display:flex;gap:4px;background:var(--surface2);padding:4px;border-radius:8px">
           <button data-view="floor" onclick="window._setStrView('floor')" 
@@ -1874,20 +1870,6 @@ function oFlEdit(fid) {
           </select>
         </div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-        <div>
-          <label style="font-size:9px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Block</label>
-          <select id="edBlock" style="width:100%;box-sizing:border-box;height:32px;padding:0 9px;background:#fff;border:1.5px solid var(--border2);color:var(--text);font-family:var(--font);font-size:12px;font-weight:600;border-radius:var(--r-md);outline:none" onchange="window._toggleBlockInput()">
-            <option value="">Select Block</option>
-            ${bks().map(b => `<option value="${b}" ${f.block===b?'selected':''}>${b}</option>`).join('')}
-            <option value="__new__">+ Add New Block</option>
-          </select>
-        </div>
-        <div id="newBlockInput" style="display:none">
-          <label style="font-size:9px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">New Block Name</label>
-          <input id="edNewBlock" type="text" placeholder="e.g., Block B" style="width:100%;box-sizing:border-box;height:32px;padding:0 9px;background:#fff;border:1.5px solid var(--border2);color:var(--text);font-family:var(--font);font-size:12px;font-weight:600;border-radius:var(--r-md);outline:none" onfocus="this.style.borderColor='var(--indigo)'" onblur="this.style.borderColor='var(--border2)'"/>
-        </div>
-      </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
         <div>
           <label style="font-size:9px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Monthly Due</label>
@@ -1980,7 +1962,7 @@ function oFlEdit(fid) {
           <input id="newPaymentDate" type="date" placeholder="Date" style="padding:8px;border:1.5px solid var(--border);border-radius:6px;font-family:var(--font);font-size:11px"/>
           <input id="newPaymentAmt" type="number" placeholder="Amount" style="padding:8px;border:1.5px solid var(--border);border-radius:6px;font-family:var(--font);font-size:11px"/>
         </div>
-        <button type="button" onclick="window._addPayment('${fid}')" style="width:100%;padding:8px;background:var(--indigo);color:#fff;border:none;border-radius:6px;font-weight:700;font-size:11px;cursor:pointer;font-family:var(--font);">
+        <button id="paymentBtn" type="button" onclick="window._addPayment('${fid}')" style="width:100%;padding:8px;background:var(--indigo);color:#fff;border:none;border-radius:6px;font-weight:700;font-size:11px;cursor:pointer;font-family:var(--font);">
           + Add Payment
         </button>
       </div>
@@ -2078,7 +2060,8 @@ function oFlEdit(fid) {
               </div>
               <div style="display:flex;align-items:center;gap:8px">
                 <div style="font-weight:700;color:var(--green)">${inr(amt)}</div>
-                <button onclick="window._deletePayment('${fid}','${docId}')" style="padding:2px 6px;background:transparent;border:none;color:var(--red);cursor:pointer;font-size:12px;"><i class="ti ti-trash"></i></button>
+                <button onclick="window._editPayment('${fid}','${docId}',${idx})" style="padding:2px 6px;background:transparent;border:none;color:var(--indigo);cursor:pointer;font-size:12px;" title="Edit"><i class="ti ti-edit"></i></button>
+                <button onclick="window._deletePayment('${fid}','${docId}')" style="padding:2px 6px;background:transparent;border:none;color:var(--red);cursor:pointer;font-size:12px;" title="Delete"><i class="ti ti-trash"></i></button>
               </div>
             </div>`;
           }).join('');
@@ -2675,7 +2658,17 @@ window._setResidentStatus = (status) => {
 };
 window._togglePaymentEdit = () => {
   const editSection = document.getElementById('paymentEditSection');
-  editSection.style.display = editSection.style.display === 'none' ? 'block' : 'none';
+  if (editSection.style.display === 'none') {
+    // Opening for new payment
+    document.getElementById('newPaymentDate').value = new Date().toISOString().slice(0,10);
+    document.getElementById('newPaymentAmt').value = '';
+    document.getElementById('newPaymentDate').dataset.docId = '';
+    document.getElementById('paymentBtn').innerHTML = '+ Add Payment';
+    editSection.style.display = 'block';
+    document.getElementById('newPaymentDate').focus();
+  } else {
+    editSection.style.display = 'none';
+  }
 };
 window._toggleStayingEdit = () => {
   const editSection = document.getElementById('stayingEditSection');
@@ -2686,17 +2679,32 @@ window._addPayment = async (fid) => {
   const amtInput = document.getElementById('newPaymentAmt');
   const paymentDate = dateInput?.value || new Date().toISOString().slice(0,10);
   const amount = parseInt(amtInput?.value)||0;
+  const docId = dateInput?.dataset.docId;
   
   if (amount <= 0) { alert('Enter a valid amount'); return; }
   
   try {
-    const exp = { flatId: fid, month: paymentDate.slice(0,7), amt: amount, date: new Date().toISOString(), rawDate: paymentDate };
-    await addDoc(collection(db, 'apartments', AB, 'expenses'), exp);
+    if (docId) {
+      // Update existing payment
+      const docRef = doc(db, 'apartments', AB, 'expenses', docId);
+      await updateDoc(docRef, { 
+        rawDate: paymentDate, 
+        month: paymentDate.slice(0,7), 
+        amt: amount 
+      });
+      toast('Payment updated ✓');
+    } else {
+      // Add new payment
+      const exp = { flatId: fid, month: paymentDate.slice(0,7), amt: amount, date: new Date().toISOString(), rawDate: paymentDate };
+      await addDoc(collection(db, 'apartments', AB, 'expenses'), exp);
+      toast('Payment added ✓');
+    }
     dateInput.value = '';
     amtInput.value = '';
-    toast('Payment added ✓');
+    dateInput.dataset.docId = '';
+    document.getElementById('paymentEditSection').style.display = 'none';
     cD(); rAll();
-  } catch(e) { console.error(e); toast('Failed to add payment', 'error'); }
+  } catch(e) { console.error(e); toast('Failed to save payment', 'error'); }
 };
 window._updateStayingDates = async (fid) => {
   const newMoveIn = document.getElementById('editMoveIn')?.value || '';
@@ -2719,6 +2727,23 @@ window._deletePayment = async (fid, docId) => {
     toast('Payment deleted ✓');
     cD(); rAll();
   } catch(e) { console.error(e); toast('Failed to delete payment', 'error'); }
+};
+window._editPayment = (fid, docId, idx) => {
+  // Show edit section and populate with current payment data
+  const editSection = document.getElementById('paymentEditSection');
+  const ex = exps.get(fid)||[];
+  const payment = ex[idx];
+  
+  if (payment) {
+    document.getElementById('newPaymentDate').value = payment.rawDate || payment.date || new Date().toISOString().slice(0,10);
+    document.getElementById('newPaymentAmt').value = payment.amt || 0;
+    document.getElementById('newPaymentDate').dataset.docId = docId;
+    document.getElementById('newPaymentDate').dataset.fid = fid;
+    document.getElementById('paymentBtn').innerHTML = '💾 Save Payment';
+    editSection.style.display = 'block';
+    editSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    document.getElementById('newPaymentDate').focus();
+  }
 };
 window._toggleBlockInput = () => {
   const blockSelect = document.getElementById('edBlock');
