@@ -4497,13 +4497,22 @@ function rStructure() {
     const due = f.due || 0;
     const status = paid >= due ? 'paid' : paid > 0 ? 'partial' : 'pending';
     
+    // Find the fid (Firestore document ID) for this flat
+    let fid = '';
+    for (const [key, flat] of flats.entries()) {
+      if (flat.flatId === f.flatId && flat.block === f.block) {
+        fid = key;
+        break;
+      }
+    }
+    
     // Colors based on status
     const borderColor = {paid:'var(--green)',partial:'var(--amber)',pending:'var(--red)'}[status];
     const statusIcon = {paid:'ti-circle-check',partial:'ti-clock',pending:'ti-alert-circle'}[status];
     const statusIconColor = {paid:'var(--green)',partial:'var(--amber)',pending:'var(--red)'}[status];
 
     return `<button 
-      onclick="window._oFlEdit('${f.flatId}')" 
+      onclick="window.oFlEdit('${fid}')" 
       style="
         background:#fff;border:none;border-left:4px solid ${borderColor};border-radius:8px;
         padding:10px;cursor:pointer;font-family:var(--font);transition:all .12s;
