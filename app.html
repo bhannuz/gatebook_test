@@ -2599,8 +2599,10 @@ window.fFLF = function() {
   const el = document.getElementById('flf');
   if (el) { FLF = el.value; rBlock(); }
 };
-document.getElementById('flf').addEventListener('change',e=>{FLF=e.target.value;rBlock();});
-document.getElementById('qi').addEventListener('input', e=>{SQ=e.target.value.toLowerCase().trim();rBlock();});
+const flfEl = document.getElementById('flf');
+if (flfEl) flfEl.addEventListener('change',e=>{FLF=e.target.value;rBlock();});
+const qiEl = document.getElementById('qi');
+if (qiEl) qiEl.addEventListener('input', e=>{SQ=e.target.value.toLowerCase().trim();rBlock();});
 // #mf month dropdown removed from UI — AM stays as current month
 ['flatM','addM','flatAddM','rIM','idM','vehM','presM','presExpM','catM'].forEach(id=>{
   const el=document.getElementById(id);if(!el)return;
