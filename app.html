@@ -2895,15 +2895,20 @@ window._renderStructureList = () => {
           <button onclick="if(confirm('Delete block ${blockName} and all its flats?')) window._deleteBlock('${blockName}')" style="padding:4px 8px;background:transparent;border:1.5px solid var(--red);color:var(--red);border-radius:6px;font-size:10px;font-weight:700;cursor:pointer;font-family:var(--font)">🗑️ Delete Block</button>
         </div>
         <div style="display:grid;gap:8px;margin-top:10px;border-top:1px solid var(--border);padding-top:10px">
-          ${blockFlats.length === 0 ? '<div style="color:var(--muted);font-size:11px">No flats</div>' : blockFlats.map(f => `
+          ${blockFlats.length === 0 ? '<div style="color:var(--muted);font-size:11px">No flats</div>' : blockFlats.map(f => {
+            const fid = (f.block + '-' + f.flatId).replace(/[^a-z0-9-]/gi, '_').toLowerCase();
+            return `
             <div style="background:#fff;padding:8px;border-radius:6px;border:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;font-size:11px">
-              <div>
-                <div style="font-weight:700;color:var(--text)">${f.flatId}</div>
+              <div style="flex:1;cursor:pointer" onclick="window._closeStructureManager(); window.oFlEdit('${fid}')">
+                <div style="font-weight:700;color:var(--indigo)">${f.flatId}</div>
                 <div style="color:var(--text2);font-size:10px">${f.owner || 'No resident'} • Floor ${f.floor || '—'}</div>
               </div>
-              <button onclick="window._deleteFlat('${f.flatId}', '${blockName}')" style="padding:2px 6px;background:transparent;border:none;color:var(--red);cursor:pointer;font-size:12px">🗑️</button>
+              <div style="display:flex;gap:6px">
+                <button onclick="window._closeStructureManager(); window.oFlEdit('${fid}')" style="padding:2px 6px;background:transparent;border:none;color:var(--indigo);cursor:pointer;font-size:12px" title="Edit">✏️</button>
+                <button onclick="if(confirm('Delete flat ${f.flatId}?')) { window._deleteFlat('${f.flatId}', '${blockName}'); }" style="padding:2px 6px;background:transparent;border:none;color:var(--red);cursor:pointer;font-size:12px" title="Delete">🗑️</button>
+              </div>
             </div>
-          `).join('')}
+          `}).join('')}
         </div>
       </div>
     `;
@@ -2931,32 +2936,45 @@ window._addNewFlatRow = () => {
 };
 window._deleteBlock = async (blockName) => {
   try {
-    const blockFlats = [...flats.values()].filter(f => f.block === blockName);
-    for (const f of blockFlats) {
-      const fid = f.flatId.replace(/[^a-z0-9-]/gi, '_').toLowerCase();
+    const blockFlats = [...flats.entries()].filter(([_, f]) => f.block === blockName);
+    for (const [fid, f] of blockFlats) {
       await deleteDoc(flatRef(fid));
       flats.delete(fid);
+      vehicles.delete(fid);
     }
     toast('Block & flats deleted ✓');
     window._renderStructureList();
     rAll();
   } catch(e) {
     console.error(e);
-    toast('Failed to delete block', 'error');
+    toast('Failed to delete block: ' + e.message, 'error');
   }
 };
 window._deleteFlat = async (flatId, blockName) => {
-  if (!confirm(`Delete flat ${flatId}?`)) return;
   try {
-    const fid = flatId.replace(/[^a-z0-9-]/gi, '_').toLowerCase();
-    await deleteDoc(flatRef(fid));
-    flats.delete(fid);
+    // Find the flat by flatId and blockName
+    let foundFid = null;
+    for (const [fid, f] of flats.entries()) {
+      if (f.flatId === flatId && f.block === blockName) {
+        foundFid = fid;
+        break;
+      }
+    }
+    
+    if (!foundFid) {
+      toast('Flat not found', 'error');
+      return;
+    }
+    
+    await deleteDoc(flatRef(foundFid));
+    flats.delete(foundFid);
+    vehicles.delete(foundFid);
     toast('Flat deleted ✓');
     window._renderStructureList();
     rAll();
   } catch(e) {
     console.error(e);
-    toast('Failed to delete flat', 'error');
+    toast('Failed to delete flat: ' + e.message, 'error');
   }
 };
 window._saveNewStructure = async () => {
