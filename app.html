@@ -1106,12 +1106,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   <!-- PRESIDENT VIEW -->
   <div id="presView" style="display:none;padding:12px;">
     
-    <!-- Filters at top right -->
-    <div style="display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
-      <select id="histMonthFilter" class="ctrl" style="font-size:11px;height:30px;padding:0 8px;min-width:110px;" onchange="rPresident()"></select>
-      <select id="histCatFilter" class="ctrl" style="font-size:11px;height:30px;padding:0 8px;min-width:110px;" onchange="rPresident()"></select>
-    </div>
-
     <!-- Summary row: President + Cards -->
     <div style="display:grid;grid-template-columns:auto 1fr 1fr;gap:10px;align-items:stretch;margin-bottom:12px;">
       <!-- President Card -->
@@ -1772,8 +1766,16 @@ function rStats() {
   const totTw=[...vehicles.values()].reduce((s,v)=>s+(parseInt(v.tw)||0),0);
   const totFw=[...vehicles.values()].reduce((s,v)=>s+(parseInt(v.fw)||0),0);
   document.getElementById('phAct').innerHTML=`
-    <button class="btn btn-indigo" onclick="window._oA()"><i class="ti ti-plus"></i> Add Payment</button>
-    <button class="btn btn-indigo" onclick="window._oPresExp()"><i class="ti ti-receipt"></i> Add Expense</button>
+    <div style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:12px;flex-wrap:wrap;">
+      <div style="display:flex;gap:12px;align-items:center;">
+        <button class="btn btn-indigo" onclick="window._oA()"><i class="ti ti-plus"></i> Add Payment</button>
+        <button class="btn btn-indigo" onclick="window._oPresExp()"><i class="ti ti-receipt"></i> Add Expense</button>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <select id="histMonthFilter" class="ctrl" style="font-size:11px;height:30px;padding:0 8px;min-width:110px;" onchange="rPresident()"></select>
+        <select id="histCatFilter" class="ctrl" style="font-size:11px;height:30px;padding:0 8px;min-width:110px;" onchange="rPresident()"></select>
+      </div>
+    </div>
   `;
   document.getElementById('statsRow').innerHTML=`
     <div class="scard indigo">
