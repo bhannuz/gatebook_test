@@ -855,6 +855,115 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   line-height:1.4;min-width:14px;text-align:center;
 }
 </style>
+
+<style>
+/* ════ RESPONSIVE LAYOUTS ════ */
+@media (max-width: 1024px) {
+  .exp-layout-grid, .an-layout-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .chart-col {
+    order: 2;
+  }
+}
+
+@media (max-width: 768px) {
+  /* ALL TABS - Center content */
+  #presView, #analyticsView, #structureView, #iView {
+    padding: 12px 8px !important;
+  }
+  
+  /* Tab content centered */
+  #presView > div, #analyticsView > div, #structureView > div {
+    width: 100%;
+    margin: 0 auto;
+  }
+  
+  /* Summary cards - single column */
+  #fundRow, #analyticsTotals {
+    grid-template-columns: 1fr !important;
+  }
+  
+  /* Filters centered */
+  #presView > div > div:first-child,
+  #analyticsView > div:first-child {
+    justify-content: center !important;
+    flex-wrap: wrap;
+  }
+  
+  /* Tables responsive */
+  .tab-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+  }
+  
+  table {
+    width: 100%;
+    min-width: 400px;
+  }
+  
+  /* Chart centered */
+  .exp-pie-panel, .chart-col {
+    width: 100%;
+    margin: 0 auto;
+  }
+  
+  .chart-wrap {
+    width: 100% !important;
+    height: 200px !important;
+  }
+  
+  /* Buttons responsive */
+  button {
+    font-size: 10px !important;
+    padding: 6px 10px !important;
+  }
+  
+  /* Text readable */
+  table th, table td {
+    padding: 8px !important;
+    font-size: 11px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Mobile - extreme compacting */
+  #presView, #analyticsView, #structureView, #iView {
+    padding: 8px 6px !important;
+  }
+  
+  /* Single column everything */
+  #fundRow, #analyticsTotals {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+  
+  /* Very compact buttons */
+  button {
+    padding: 4px 8px !important;
+    font-size: 9px !important;
+  }
+  
+  /* Compact text */
+  table th, table td {
+    padding: 6px 4px !important;
+    font-size: 10px !important;
+  }
+  
+  /* Small chart */
+  .chart-wrap {
+    height: 160px !important;
+  }
+  
+  /* Compact filters */
+  select, input {
+    font-size: 10px !important;
+    height: 28px !important;
+    padding: 0 6px !important;
+  }
+}
+</style>
+
 </head>
 <body>
 
@@ -1066,9 +1175,9 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   <!-- ANALYTICS VIEW -->
   <div id="analyticsView" style="display:none;padding:10px 14px 14px">
 
-    <!-- Filters only — right-aligned, tight to tab bar -->
-    <div style="display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:8px;margin-bottom:10px">
-      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+    <!-- Filters — responsive alignment -->
+    <div style="display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:center;">
         <select id="anBlockFilter" class="ctrl" style="font-size:11px;height:30px;padding:0 8px;display:none" onchange="rAnalytics()">
           <option value="all">All Blocks</option>
         </select>
@@ -1126,13 +1235,13 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 
       <!-- RIGHT: chart -->
       <div class="chart-col" style="display:flex;flex-direction:column;gap:10px">
-        <div class="exp-pie-panel">
-          <div style="font-size:11px;font-weight:800;color:var(--text);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px"><i class="ti ti-credit-card" style="color:var(--indigo)"></i> Payment Status</div>
-          <div class="chart-wrap" style="width:100%;height:190px;position:relative">
-            <canvas id="payPie" style="position:absolute;inset:0;width:100%;height:100%;cursor:pointer"></canvas>
+        <div class="exp-pie-panel" style="background:var(--surface2);border-radius:8px;padding:12px;">
+          <div style="font-size:11px;font-weight:800;color:var(--text);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;"><i class="ti ti-credit-card" style="color:var(--indigo)"></i> Payment Status</div>
+          <div class="chart-wrap" style="width:100%;height:200px;position:relative;margin-bottom:16px;">
+            <canvas id="payPie" style="position:absolute;inset:0;width:100%;height:100%;cursor:pointer;"></canvas>
           </div>
-          <div id="payTooltip" style="display:none;position:fixed;background:rgba(0,0,0,0.82);color:#fff;font-size:11px;font-weight:700;padding:5px 10px;border-radius:8px;pointer-events:none;z-index:9999;white-space:nowrap"></div>
-          <div id="payLegend" style="margin-top:16px;display:flex;flex-direction:column;gap:6px"></div>
+          <div id="payTooltip" style="display:none;position:fixed;background:rgba(0,0,0,0.82);color:#fff;font-size:11px;font-weight:700;padding:5px 10px;border-radius:8px;pointer-events:none;z-index:9999;white-space:nowrap;"></div>
+          <div id="payLegend" style="display:flex;flex-direction:column;gap:8px;font-size:11px;"></div>
         </div>
       </div>
 
