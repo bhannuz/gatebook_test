@@ -1173,9 +1173,9 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
         <div style="font-size:11px;color:var(--muted);margin-top:2px">Master data for all flats</div>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-        <!-- New Block Button -->
-        <button onclick="window._openBlockForm()" style="padding:8px 14px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);display:flex;align-items:center;gap:6px">
-          <i class="ti ti-plus" style="font-size:13px"></i>New Block
+        <!-- Manage Structure Button -->
+        <button onclick="window._openStructureManager()" style="padding:8px 14px;background:var(--indigo);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);display:flex;align-items:center;gap:6px">
+          <i class="ti ti-layout-sidebar" style="font-size:13px"></i>Manage Structure
         </button>
         <!-- View toggle -->
         <div style="display:flex;gap:4px;background:var(--surface2);padding:4px;border-radius:8px">
@@ -2866,58 +2866,123 @@ window._toggleBlockInput = () => {
     newBlockInput.style.display = 'none';
   }
 };
-window._openBlockForm = () => {
-  document.getElementById('blockModal').style.display = 'block';
-  document.getElementById('blockName').focus();
-  document.getElementById('flatsContainer').innerHTML = '';
-  window._addFlatRow();
+window._openStructureManager = () => {
+  document.getElementById('structureModal').style.display = 'block';
+  document.getElementById('newBlockName').value = '';
+  document.getElementById('newFlatsContainer').innerHTML = '';
+  window._addNewFlatRow();
+  window._renderStructureList();
 };
-window._closeBlockForm = () => {
-  document.getElementById('blockModal').style.display = 'none';
+window._closeStructureManager = () => {
+  document.getElementById('structureModal').style.display = 'none';
 };
-window._addFlatRow = () => {
-  const container = document.getElementById('flatsContainer');
-  const rowId = 'flat_' + Date.now();
+window._renderStructureList = () => {
+  const list = document.getElementById('structureList');
+  const blockList = bks();
+  
+  if (blockList.length === 0) {
+    list.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted)">No blocks yet. Add a new block to get started.</div>';
+    return;
+  }
+  
+  let html = '';
+  blockList.forEach(blockName => {
+    const blockFlats = [...flats.values()].filter(f => f.block === blockName);
+    html += `
+      <div style="background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;padding:12px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <div style="font-weight:700;color:var(--text);font-size:13px">${blockName}</div>
+          <button onclick="if(confirm('Delete block ${blockName} and all its flats?')) window._deleteBlock('${blockName}')" style="padding:4px 8px;background:transparent;border:1.5px solid var(--red);color:var(--red);border-radius:6px;font-size:10px;font-weight:700;cursor:pointer;font-family:var(--font)">🗑️ Delete Block</button>
+        </div>
+        <div style="display:grid;gap:8px;margin-top:10px;border-top:1px solid var(--border);padding-top:10px">
+          ${blockFlats.length === 0 ? '<div style="color:var(--muted);font-size:11px">No flats</div>' : blockFlats.map(f => `
+            <div style="background:#fff;padding:8px;border-radius:6px;border:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;font-size:11px">
+              <div>
+                <div style="font-weight:700;color:var(--text)">${f.flatId}</div>
+                <div style="color:var(--text2);font-size:10px">${f.owner || 'No resident'} • Floor ${f.floor || '—'}</div>
+              </div>
+              <button onclick="window._deleteFlat('${f.flatId}', '${blockName}')" style="padding:2px 6px;background:transparent;border:none;color:var(--red);cursor:pointer;font-size:12px">🗑️</button>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  });
+  
+  list.innerHTML = html;
+};
+window._addNewFlatRow = () => {
+  const container = document.getElementById('newFlatsContainer');
+  const rowId = 'newflat_' + Date.now();
   const rowHtml = `
-    <div id="${rowId}" style="background:var(--surface2);padding:12px;border-radius:8px;border:1.5px solid var(--border)">
+    <div id="${rowId}" style="background:#fff;padding:12px;border-radius:8px;border:1.5px solid var(--border)">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-        <input class="flatNum" type="text" placeholder="Flat Number (e.g., A-101)" style="padding:8px;border:1.5px solid var(--border);border-radius:6px;font-family:var(--font);font-size:12px;box-sizing:border-box"/>
-        <input class="flatFloor" type="number" placeholder="Floor" min="1" style="padding:8px;border:1.5px solid var(--border);border-radius:6px;font-family:var(--font);font-size:12px;box-sizing:border-box"/>
+        <input class="newFlatNum" type="text" placeholder="Flat Number (e.g., A-101)" style="padding:8px;border:1.5px solid var(--border);border-radius:6px;font-family:var(--font);font-size:12px;box-sizing:border-box"/>
+        <input class="newFlatFloor" type="number" placeholder="Floor" min="1" style="padding:8px;border:1.5px solid var(--border);border-radius:6px;font-family:var(--font);font-size:12px;box-sizing:border-box"/>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-        <input class="resName" type="text" placeholder="Resident Name" style="padding:8px;border:1.5px solid var(--border);border-radius:6px;font-family:var(--font);font-size:12px;box-sizing:border-box"/>
-        <input class="monthlyDue" type="number" placeholder="Monthly Due" min="0" style="padding:8px;border:1.5px solid var(--border);border-radius:6px;font-family:var(--font);font-size:12px;box-sizing:border-box"/>
+        <input class="newResName" type="text" placeholder="Resident Name" style="padding:8px;border:1.5px solid var(--border);border-radius:6px;font-family:var(--font);font-size:12px;box-sizing:border-box"/>
+        <input class="newMonthlyDue" type="number" placeholder="Monthly Due" min="0" style="padding:8px;border:1.5px solid var(--border);border-radius:6px;font-family:var(--font);font-size:12px;box-sizing:border-box"/>
       </div>
-      <button onclick="document.getElementById('${rowId}').remove()" style="width:100%;padding:6px;background:transparent;border:1.5px solid var(--red);color:var(--red);border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font)">Remove Flat</button>
+      <button type="button" onclick="document.getElementById('${rowId}').remove()" style="width:100%;padding:6px;background:transparent;border:1.5px solid var(--red);color:var(--red);border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font)">Remove Flat</button>
     </div>
   `;
   container.insertAdjacentHTML('beforeend', rowHtml);
 };
-window._saveNewBlock = async () => {
-  const blockName = document.getElementById('blockName').value.trim();
+window._deleteBlock = async (blockName) => {
+  try {
+    const blockFlats = [...flats.values()].filter(f => f.block === blockName);
+    for (const f of blockFlats) {
+      const fid = f.flatId.replace(/[^a-z0-9-]/gi, '_').toLowerCase();
+      await deleteDoc(flatRef(fid));
+      flats.delete(fid);
+    }
+    toast('Block & flats deleted ✓');
+    window._renderStructureList();
+    rAll();
+  } catch(e) {
+    console.error(e);
+    toast('Failed to delete block', 'error');
+  }
+};
+window._deleteFlat = async (flatId, blockName) => {
+  if (!confirm(`Delete flat ${flatId}?`)) return;
+  try {
+    const fid = flatId.replace(/[^a-z0-9-]/gi, '_').toLowerCase();
+    await deleteDoc(flatRef(fid));
+    flats.delete(fid);
+    toast('Flat deleted ✓');
+    window._renderStructureList();
+    rAll();
+  } catch(e) {
+    console.error(e);
+    toast('Failed to delete flat', 'error');
+  }
+};
+window._saveNewStructure = async () => {
+  const blockName = document.getElementById('newBlockName').value.trim();
   if (!blockName) { alert('Enter block name'); return; }
   
-  const flatRows = document.querySelectorAll('#flatsContainer > div');
+  const flatRows = document.querySelectorAll('#newFlatsContainer > div');
   if (flatRows.length === 0) { alert('Add at least one flat'); return; }
   
-  const flats = [];
+  const newFlats = [];
   flatRows.forEach(row => {
-    const flatNum = row.querySelector('.flatNum').value.trim();
-    const floor = parseInt(row.querySelector('.flatFloor').value) || 0;
-    const resName = row.querySelector('.resName').value.trim();
-    const due = parseInt(row.querySelector('.monthlyDue').value) || 0;
+    const flatNum = row.querySelector('.newFlatNum').value.trim();
+    const floor = parseInt(row.querySelector('.newFlatFloor').value) || 0;
+    const resName = row.querySelector('.newResName').value.trim();
+    const due = parseInt(row.querySelector('.newMonthlyDue').value) || 0;
     
     if (flatNum) {
-      flats.push({ flatNum, floor, resName, due });
+      newFlats.push({ flatNum, floor, resName, due });
     }
   });
   
-  if (flats.length === 0) { alert('Add flat numbers'); return; }
+  if (newFlats.length === 0) { alert('Add flat numbers'); return; }
   
   sync('saving');
   try {
-    // Create flats in Firestore
-    for (const f of flats) {
+    for (const f of newFlats) {
       const fid = (blockName + '-' + f.flatNum).replace(/[^a-z0-9-]/gi, '_').toLowerCase();
       const flatDoc = {
         flatId: f.flatNum,
@@ -2937,53 +3002,14 @@ window._saveNewBlock = async () => {
     }
     
     sync('live');
-    toast('Block & flats registered ✓');
-    window._closeBlockForm();
+    toast('Block & flats created ✓');
+    window._closeStructureManager();
+    window._renderStructureList();
     rAll();
   } catch(e) {
     console.error(e);
     sync('error');
-    toast('Failed to register block', 'error');
-  }
-};
-window._registerNewFlat = async () => {
-  try {
-    const blockList = bks();
-    if (blockList.length === 0) { toast('Add a block first', 'error'); return; }
-    
-    // Prompt for flat ID/number
-    const flatNum = prompt('Enter flat number (e.g., A-101):');
-    if (!flatNum) return;
-    
-    // Create new flat document
-    const newFlat = {
-      flatId: flatNum,
-      block: '',
-      floor: 0,
-      owner: '',
-      resType: 'owner',
-      due: 0,
-      moveIn: '',
-      moveOut: '',
-      ownerName: '',
-      ownerPhone: '',
-      createdAt: serverTimestamp()
-    };
-    
-    const fid = flatNum.replace(/[^a-z0-9-]/gi, '_').toLowerCase();
-    await setDoc(flatRef(fid), newFlat);
-    
-    // Add empty vehicle document
-    await setDoc(vehRef(fid), { flatId: fid, tw: 0, fw: 0, updatedAt: serverTimestamp() }, { merge: true });
-    
-    flats.set(fid, newFlat);
-    vehicles.set(fid, { tw: 0, fw: 0 });
-    
-    toast('Flat created ✓');
-    oFlEdit(fid); // Open edit form
-  } catch(e) { 
-    console.error(e); 
-    toast('Failed to register flat', 'error'); 
+    toast('Failed to create structure', 'error');
   }
 };
 window.autoSaveVeh=autoSaveVeh;
@@ -5017,35 +5043,52 @@ function renderAnPayTable(filterType, selMonth, selYear, selBlock) {
   </button>
 </nav>
 
-<!-- BLOCK REGISTRATION MODAL -->
-<div id="blockModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:2000;padding:20px;overflow-y:auto">
-  <div style="background:#fff;border-radius:12px;max-width:600px;margin:40px auto;padding:24px">
+<!-- STRUCTURE MANAGER MODAL -->
+<div id="structureModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:2000;padding:20px;overflow-y:auto">
+  <div style="background:#fff;border-radius:12px;max-width:700px;margin:40px auto;padding:24px">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
-      <h2 style="margin:0;font-size:18px;font-weight:800">📦 Register New Block</h2>
-      <button onclick="window._closeBlockForm()" style="background:none;border:none;font-size:24px;cursor:pointer;color:var(--text2)">&times;</button>
+      <h2 style="margin:0;font-size:18px;font-weight:800">🏢 Manage Structure</h2>
+      <button onclick="window._closeStructureManager()" style="background:none;border:none;font-size:24px;cursor:pointer;color:var(--text2)">&times;</button>
     </div>
     
-    <!-- Block Details -->
-    <div style="margin-bottom:20px">
-      <label style="font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;display:block;margin-bottom:6px">Block Name (e.g., Block A)</label>
-      <input id="blockName" type="text" placeholder="e.g., Block A, Wing 1, etc." style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:8px;font-family:var(--font);font-size:13px;box-sizing:border-box"/>
+    <!-- Tabs -->
+    <div style="display:flex;gap:8px;margin-bottom:20px;border-bottom:1.5px solid var(--border);padding-bottom:12px">
+      <button onclick="document.getElementById('viewBlocksTab').style.display='block';document.getElementById('addBlockTab').style.display='none';this.style.fontWeight='800';this.style.color='var(--indigo)';document.querySelector('[data-tab=add]').style.fontWeight='400';document.querySelector('[data-tab=add]').style.color='var(--text2)'" style="background:none;border:none;padding:8px;font-family:var(--font);font-size:12px;font-weight:800;color:var(--indigo);cursor:pointer">
+        📋 View All Blocks
+      </button>
+      <button onclick="document.getElementById('viewBlocksTab').style.display='none';document.getElementById('addBlockTab').style.display='block';this.style.fontWeight='800';this.style.color='var(--indigo)';document.querySelector('[data-tab=view]').style.fontWeight='400';document.querySelector('[data-tab=view]').style.color='var(--text2)'" data-tab="add" style="background:none;border:none;padding:8px;font-family:var(--font);font-size:12px;font-weight:400;color:var(--text2);cursor:pointer">
+        ➕ Add New Block
+      </button>
     </div>
 
-    <!-- Flats Section -->
-    <div style="margin-bottom:20px">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-        <label style="font-size:12px;font-weight:700;color:var(--text);text-transform:uppercase">Flats in this Block</label>
-        <button onclick="window._addFlatRow()" style="padding:4px 8px;background:var(--indigo);color:#fff;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font)">+ Add Flat</button>
-      </div>
-      <div id="flatsContainer" style="display:grid;gap:12px">
-        <!-- Flat rows will be added here -->
+    <!-- View Blocks Tab -->
+    <div id="viewBlocksTab" style="display:block">
+      <div id="structureList" style="display:grid;gap:12px">
+        <!-- Blocks and flats will be rendered here -->
       </div>
     </div>
 
-    <!-- Action Buttons -->
-    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:24px;padding-top:20px;border-top:1px solid var(--border)">
-      <button onclick="window._closeBlockForm()" style="padding:10px 16px;background:transparent;border:1.5px solid var(--border);color:var(--text);border-radius:8px;font-weight:700;font-size:12px;cursor:pointer;font-family:var(--font)">Cancel</button>
-      <button onclick="window._saveNewBlock()" style="padding:10px 16px;background:var(--green);color:#fff;border:none;border-radius:8px;font-weight:700;font-size:12px;cursor:pointer;font-family:var(--font)">Register Block & Flats</button>
+    <!-- Add Block Tab -->
+    <div id="addBlockTab" style="display:none">
+      <div style="margin-bottom:20px">
+        <label style="font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;display:block;margin-bottom:6px">Block Name</label>
+        <input id="newBlockName" type="text" placeholder="e.g., Block A, Wing 1" style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:8px;font-family:var(--font);font-size:13px;box-sizing:border-box"/>
+      </div>
+
+      <div style="margin-bottom:20px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <label style="font-size:12px;font-weight:700;color:var(--text);text-transform:uppercase">Flats</label>
+          <button onclick="window._addNewFlatRow()" style="padding:4px 8px;background:var(--indigo);color:#fff;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font)">+ Add Flat</button>
+        </div>
+        <div id="newFlatsContainer" style="display:grid;gap:12px">
+          <!-- Flat rows will be added here -->
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;justify-content:flex-end">
+        <button onclick="window._closeStructureManager()" style="padding:10px 16px;background:transparent;border:1.5px solid var(--border);color:var(--text);border-radius:8px;font-weight:700;font-size:12px;cursor:pointer;font-family:var(--font)">Cancel</button>
+        <button onclick="window._saveNewStructure()" style="padding:10px 16px;background:var(--green);color:#fff;border:none;border-radius:8px;font-weight:700;font-size:12px;cursor:pointer;font-family:var(--font)">Create Block & Flats</button>
+      </div>
     </div>
   </div>
 </div>
