@@ -1258,21 +1258,21 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
         <!-- View toggle -->
         <div style="display:flex;gap:4px;background:var(--surface2);padding:4px;border-radius:8px">
           <button data-view="floor" onclick="window._setStrView('floor')" 
-            style="padding:6px 12px;border:none;background:var(--indigo);color:#fff;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font)">
-            <i class="ti ti-layers" style="font-size:12px;margin-right:4px"></i>Floor-wise
+            style="padding:6px 10px;border:none;background:var(--indigo);color:#fff;border-radius:6px;font-size:10px;font-weight:700;cursor:pointer;font-family:var(--font)">
+            🏘️ By Floor
           </button>
           <button data-view="block" onclick="window._setStrView('block')" 
-            style="padding:6px 12px;border:none;background:transparent;color:var(--text2);border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font)">
-            <i class="ti ti-building" style="font-size:12px;margin-right:4px"></i>Block-wise
+            style="padding:6px 10px;border:none;background:transparent;color:var(--text2);border-radius:6px;font-size:10px;font-weight:700;cursor:pointer;font-family:var(--font)">
+            🏢 By Block
           </button>
           <button data-view="all" onclick="window._setStrView('all')" 
-            style="padding:6px 12px;border:none;background:transparent;color:var(--text2);border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font)">
-            <i class="ti ti-list" style="font-size:12px;margin-right:4px"></i>All
+            style="padding:6px 10px;border:none;background:transparent;color:var(--text2);border-radius:6px;font-size:10px;font-weight:700;cursor:pointer;font-family:var(--font)">
+            📋 All Flats
           </button>
         </div>
         
         <!-- Filters -->
-        <select id="strBlockFilter" class="ctrl" style="height:32px;font-size:12px;padding:0 10px" onchange="window.rStructure()">
+        <select id="strBlockFilter" class="ctrl" style="height:28px;font-size:10px;padding:0 6px;min-width:80px;" onchange="window.rStructure()">
           <option value="all">All Blocks</option>
         </select>
         <select id="strTypeFilter" class="ctrl" style="height:32px;font-size:12px;padding:0 10px" onchange="window.rStructure()">
@@ -1757,8 +1757,10 @@ function rStats() {
         <button class="btn btn-indigo" onclick="window._oPresExp()"><i class="ti ti-receipt"></i> Add Expense</button>
       </div>
       <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
-        <select id="histMonthFilter" class="ctrl" style="font-size:10px;height:28px;padding:0 6px;min-width:90px;" onchange="rPresident()"></select>
-        <select id="histCatFilter" class="ctrl" style="font-size:10px;height:28px;padding:0 6px;min-width:90px;" onchange="rPresident()"></select>
+        <span style="font-size:10px;color:var(--muted);font-weight:600;">📅</span>
+        <select id="histMonthFilter" class="ctrl" style="font-size:10px;height:28px;padding:0 6px;min-width:85px;" onchange="rPresident()" title="Filter by month"></select>
+        <span style="font-size:10px;color:var(--muted);font-weight:600;">🏷️</span>
+        <select id="histCatFilter" class="ctrl" style="font-size:10px;height:28px;padding:0 6px;min-width:85px;" onchange="rPresident()" title="Filter by category"></select>
       </div>
     </div>
   `;
