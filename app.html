@@ -2650,7 +2650,7 @@ window._setFS  = v => { FS  = v; rBlock(); };
 window._setRTF = v => { RTF = v; rBlock(); };
 window._setFLF = v => { FLF = v; rBlock(); };
 window._setAM  = v => { AM  = v; rBTabs(); rBlock(); rStats(); };
-window._oFl  =oFl;  window._oFlEdit=oFlEdit;  window._cM=cD;
+window._oFl  =oFl;  window._oFlEdit=oFlEdit;  window.oFlEdit = oFlEdit; window._cM=cD;
 window._autoSaveFlat=autoSaveFlat;
 window._saveFlat=saveFlat;
 window._toggleOwnerFields=toggleOwnerFields;
@@ -5071,7 +5071,7 @@ function renderAnPayTable(filterType, selMonth, selYear, selBlock) {
     
     <!-- Tabs -->
     <div style="display:flex;gap:8px;margin-bottom:20px;border-bottom:1.5px solid var(--border);padding-bottom:12px">
-      <button onclick="document.getElementById('viewBlocksTab').style.display='block';document.getElementById('addBlockTab').style.display='none';this.style.fontWeight='800';this.style.color='var(--indigo)';document.querySelector('[data-tab=add]').style.fontWeight='400';document.querySelector('[data-tab=add]').style.color='var(--text2)'" style="background:none;border:none;padding:8px;font-family:var(--font);font-size:12px;font-weight:800;color:var(--indigo);cursor:pointer">
+      <button onclick="document.getElementById('viewBlocksTab').style.display='block';document.getElementById('addBlockTab').style.display='none';this.style.fontWeight='800';this.style.color='var(--indigo)';document.querySelector('[data-tab=add]').style.fontWeight='400';document.querySelector('[data-tab=add]').style.color='var(--text2)'" data-tab="view" style="background:none;border:none;padding:8px;font-family:var(--font);font-size:12px;font-weight:800;color:var(--indigo);cursor:pointer">
         📋 View All Blocks
       </button>
       <button onclick="document.getElementById('viewBlocksTab').style.display='none';document.getElementById('addBlockTab').style.display='block';this.style.fontWeight='800';this.style.color='var(--indigo)';document.querySelector('[data-tab=view]').style.fontWeight='400';document.querySelector('[data-tab=view]').style.color='var(--text2)'" data-tab="add" style="background:none;border:none;padding:8px;font-family:var(--font);font-size:12px;font-weight:400;color:var(--text2);cursor:pointer">
