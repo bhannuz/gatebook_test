@@ -997,30 +997,30 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   <!-- DIRECTORY VIEW — Owners, Tenants & Payment History -->
 
   <!-- PRESIDENT VIEW -->
-  <div id="presView" style="display:none;padding:14px">
+  <div id="presView" style="display:none;padding:14px;">
     <div id="presBanner"></div>
 
-    <!-- Single 2-col grid: left 58% = summary cards + table, right 42% = chart + filters -->
-    <div style="display:grid;grid-template-columns:58fr 42fr;gap:14px;align-items:start" class="exp-layout-grid">
+    <!-- Main grid: responsive layout -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start;" class="exp-layout-grid">
 
       <!-- LEFT: summary cards + expense records stacked -->
-      <div style="display:flex;flex-direction:column;gap:14px">
+      <div style="display:flex;flex-direction:column;gap:14px;">
 
-        <!-- Summary cards — full width of left col, 2 equal cols -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px" id="fundRow"></div>
+        <!-- Summary cards -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;" id="fundRow"></div>
 
         <!-- Expense Records -->
         <div class="exp-records-panel tab-table-wrap">
-          <div style="padding:10px 14px;border-bottom:1px solid var(--border2);font-size:11px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.4px">
+          <div style="padding:10px 14px;border-bottom:1px solid var(--border2);font-size:11px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.4px;">
             <i class="ti ti-receipt" style="color:var(--indigo)"></i> Expense Records
           </div>
-          <div style="display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:10px;padding:9px 14px;background:var(--surface3);border-bottom:1px solid var(--border2)">
-            <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Title</div>
-            <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Category</div>
-            <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Date</div>
-            <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;text-align:right">Amount</div>
+          <div style="display:grid;grid-template-columns:2fr 1.5fr 1.5fr 1fr;gap:10px;padding:9px 14px;background:var(--surface3);border-bottom:1px solid var(--border2);font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;">
+            <div>Title</div>
+            <div>Category</div>
+            <div>Date</div>
+            <div style="text-align:right;padding-right:8px;">Amount</div>
           </div>
-          <div style="max-height:420px;overflow-y:auto">
+          <div style="max-height:420px;overflow-y:auto;">
             <div id="presExpList"></div>
           </div>
         </div>
@@ -1028,32 +1028,44 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
       </div><!-- /left col -->
 
       <!-- RIGHT: filters above chart -->
-      <div class="chart-col" style="display:flex;flex-direction:column;gap:10px">
+      <div class="chart-col" style="display:flex;flex-direction:column;gap:10px;">
 
         <!-- Filters above chart -->
-        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
-          <select id="histMonthFilter" class="ctrl" style="font-size:11px;height:30px;padding:0 8px;flex:1;min-width:100px" onchange="rPresident()"></select>
-          <select id="histCatFilter"   class="ctrl" style="font-size:11px;height:30px;padding:0 8px;flex:1;min-width:100px" onchange="rPresident()"></select>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+          <select id="histMonthFilter" class="ctrl" style="font-size:11px;height:30px;padding:0 8px;flex:1;min-width:100px;" onchange="rPresident()"></select>
+          <select id="histCatFilter" class="ctrl" style="font-size:11px;height:30px;padding:0 8px;flex:1;min-width:100px;" onchange="rPresident()"></select>
         </div>
 
         <!-- Chart panel -->
-        <div class="exp-pie-panel">
-          <div style="font-size:11px;font-weight:800;color:var(--text);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">
+        <div class="exp-pie-panel" style="background:var(--surface2);border-radius:8px;padding:12px;min-height:300px;">
+          <div style="font-size:11px;font-weight:800;color:var(--text);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;">
             <i class="ti ti-chart-pie" style="color:var(--indigo)"></i> By Category
           </div>
-          <div class="chart-wrap" style="width:100%;height:190px;position:relative">
-            <canvas id="expTabPie" style="position:absolute;inset:0;width:100%;height:100%;cursor:pointer"></canvas>
+          <div class="chart-wrap" style="width:100%;height:200px;position:relative;margin-bottom:16px;">
+            <canvas id="expTabPie" style="position:absolute;inset:0;width:100%;height:100%;cursor:pointer;"></canvas>
           </div>
-          <div id="expTabTooltip" style="display:none;position:fixed;background:rgba(0,0,0,0.82);color:#fff;font-size:11px;font-weight:700;padding:5px 10px;border-radius:8px;pointer-events:none;z-index:9999;white-space:nowrap"></div>
-          <div id="expTabLegend" style="margin-top:16px;display:flex;flex-direction:column;gap:6px"></div>
+          <div id="expTabTooltip" style="display:none;position:fixed;background:rgba(0,0,0,0.82);color:#fff;font-size:11px;font-weight:700;padding:5px 10px;border-radius:8px;pointer-events:none;z-index:9999;white-space:nowrap;"></div>
+          <div id="expTabLegend" style="display:flex;flex-direction:column;gap:8px;font-size:11px;"></div>
         </div>
 
       </div><!-- /right col -->
 
     </div><!-- /main grid -->
 
+    <!-- Mobile Styles -->
+    <style>
+      @media (max-width:1024px) {
+        .exp-layout-grid {
+          grid-template-columns: 1fr !important;
+        }
+        .chart-col {
+          order: 2;
+        }
+      }
+    </style>
+
     <!-- President History -->
-    <div id="presHistSection" style="display:none;margin-top:14px">
+    <div id="presHistSection" style="display:none;margin-top:14px;">
       <div id="presHistInner"></div>
     </div>
 
@@ -3750,14 +3762,12 @@ function rPresident() {
     const ci  = allCatNames.indexOf(e.cat);
     const clr = catClr(ci>=0?ci:0);
     const icon= catIcon(e.cat);
-    return `<div class="exp-row" id="serow_${e.id}" style="display:flex;align-items:center;gap:12px;padding:11px 14px">
-      <div style="flex:1;min-width:0;display:grid;grid-template-columns:2fr 1fr 1fr auto;align-items:center;gap:10px">
+    return `<div class="exp-row" id="serow_${e.id}" style="display:grid;grid-template-columns:2fr 1.5fr 1.5fr 1fr auto;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid var(--border2);">
         <div style="font-size:13px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${e.title||'—'}</div>
         <div><span style="font-size:10px;font-weight:700;padding:3px 9px;border-radius:5px;background:${clr}18;color:${clr}">${e.cat||'—'}</span></div>
         <div style="font-size:11px;color:var(--muted)">${e.date||'—'}</div>
-        <div style="font-size:13px;font-weight:800;color:var(--text);white-space:nowrap">${inr(e.amt)}</div>
-      </div>
-      <div style="display:flex;align-items:center;gap:5px;flex-shrink:0">
+        <div style="font-size:13px;font-weight:800;color:var(--text);white-space:nowrap;text-align:right">${inr(e.amt)}</div>
+        <div style="display:flex;align-items:center;gap:5px;flex-shrink:0"><div style="display:flex;align-items:center;gap:5px;flex-shrink:0">
         <button onclick="window._openSEEdit('${e.id}')"
           style="background:var(--indigo-bg);border:1px solid var(--indigo);border-radius:6px;padding:4px 10px;cursor:pointer;color:var(--indigo);font-size:11px;font-weight:700;font-family:var(--font);display:inline-flex;align-items:center;gap:4px">
           <i class="ti ti-pencil" style="font-size:11px"></i> Edit
