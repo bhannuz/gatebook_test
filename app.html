@@ -1193,21 +1193,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   <!-- ANALYTICS VIEW -->
   <div id="analyticsView" style="display:none;padding:8px 12px 12px;">
 
-    <!-- Filters — responsive alignment -->
-    <div style="display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
-      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:center;">
-        <select id="anBlockFilter" class="ctrl" style="font-size:11px;height:30px;padding:0 8px;display:none" onchange="rAnalytics()">
-          <option value="all">All Blocks</option>
-        </select>
-        <select id="anFilterType" class="ctrl" style="font-size:11px;height:30px;padding:0 8px" onchange="rAnalytics()">
-          <option value="month">Month</option>
-          <option value="year">Year</option>
-        </select>
-        <select id="anFilterMonth" class="ctrl" style="font-size:11px;height:30px;padding:0 8px;min-width:110px" onchange="rAnalytics()"></select>
-        <select id="anFilterYear"  class="ctrl" style="font-size:11px;height:30px;padding:0 8px;display:none"    onchange="rAnalytics()"></select>
-      </div>
-    </div>
-
     <!-- Single 2-col grid: left 55% = chips + table stacked, right 45% = chart -->
     <div style="display:grid;grid-template-columns:55fr 45fr;gap:14px;align-items:start" class="an-layout-grid">
 
@@ -1771,9 +1756,9 @@ function rStats() {
         <button class="btn btn-indigo" onclick="window._oA()"><i class="ti ti-plus"></i> Add Payment</button>
         <button class="btn btn-indigo" onclick="window._oPresExp()"><i class="ti ti-receipt"></i> Add Expense</button>
       </div>
-      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-        <select id="histMonthFilter" class="ctrl" style="font-size:11px;height:30px;padding:0 8px;min-width:110px;" onchange="rPresident()"></select>
-        <select id="histCatFilter" class="ctrl" style="font-size:11px;height:30px;padding:0 8px;min-width:110px;" onchange="rPresident()"></select>
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+        <select id="histMonthFilter" class="ctrl" style="font-size:10px;height:28px;padding:0 6px;min-width:90px;" onchange="rPresident()"></select>
+        <select id="histCatFilter" class="ctrl" style="font-size:10px;height:28px;padding:0 6px;min-width:90px;" onchange="rPresident()"></select>
       </div>
     </div>
   `;
@@ -3463,6 +3448,7 @@ function rBlock() {
 ════════════════════════════════ */
 
 function rIssues() {
+  document.getElementById('phAct').innerHTML = '';
   const fil = IF === 'all' ? [...issues] : issues.filter(i => i.status === IF);
   const icons = {
     Plumbing: 'ti-tool', Electrical: 'ti-bolt', Lift: 'ti-elevator',
@@ -4377,6 +4363,7 @@ async function boot(){
 
 /* ══ STRUCTURE TAB — Master Data Management ══ */
 function rStructure() {
+  document.getElementById('phAct').innerHTML = '';
   // Populate block filter
   const bfSel = document.getElementById('strBlockFilter');
   if (bfSel) {
@@ -4780,7 +4767,29 @@ function _buildFlatSummary(filterType, selMonth, selYear, selBlock) {
 }
 
 function rAnalytics() {
-  _buildAnalyticsFilters();
+  // Update phAct filters for Analytics tab
+  document.getElementById('phAct').innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:12px;flex-wrap:wrap;">
+      <div style="display:flex;gap:12px;align-items:center;">
+        <button class="btn btn-indigo" onclick="window._oA()"><i class="ti ti-plus"></i> Add Payment</button>
+      </div>
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+        <select id="anFilterType" class="ctrl" style="font-size:11px;height:28px;padding:0 8px;" onchange="rAnalytics()">
+          <option value="month">Month</option>
+          <option value="year">Year</option>
+        </select>
+        <select id="anFilterMonth" class="ctrl" style="font-size:11px;height:28px;padding:0 8px;min-width:100px;" onchange="rAnalytics()"></select>
+        <select id="anFilterYear" class="ctrl" style="font-size:11px;height:28px;padding:0 8px;display:none;" onchange="rAnalytics()"></select>
+        <select id="anStatusFilter" style="height:28px;font-size:11px;padding:0 8px;border-radius:6px;border:1px solid var(--border2);background:#fff;color:var(--text);font-family:var(--font);cursor:pointer;" onchange="anSetStatus(this.value)">
+          <option value="all">All Status</option>
+          <option value="paid">✅ Paid</option>
+          <option value="partial">⚠️ Partial</option>
+          <option value="pending">❌ Pending</option>
+        </select>
+      </div>
+    </div>
+  `;
+    _buildAnalyticsFilters();
 
   const filterType = document.getElementById('anFilterType')?.value || 'month';
   const mSel  = document.getElementById('anFilterMonth');
