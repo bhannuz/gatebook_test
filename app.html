@@ -977,10 +977,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   <div id="phAct" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1rem;align-items:center"></div>
   <div id="statsRow" style="display:none"></div>
 
-  <!-- PAYMENTS VIEW -->
-    </div>
-    <div class="btabs" id="btabs"></div>
-    <div id="bcon"></div>
   </div>
 
   <!-- ISSUES VIEW -->
@@ -3148,8 +3144,6 @@ function switchView(v) {
 function rAll(){
   refreshAPP();
   rStats();
-  try{ rBTabs(); } catch(e){ console.error('rBTabs',e); }
-  try{ rBlock(); } catch(e){ console.error('rBlock',e); }
   try{ rIssues(); } catch(e){ console.error('rIssues',e); }
   const p=document.getElementById('presView');
   if(p && p.style.display!=='none') try{ rPresident(); } catch(e){ console.error('rPresident',e); }
@@ -3157,8 +3151,6 @@ function rAll(){
   if(av && av.style.display!=='none') try{ rAnalytics(); } catch(e){ console.error('rAnalytics',e); }
   const sv=document.getElementById('structureView');
   if(sv && sv.style.display!=='none') try{ rStructure(); } catch(e){ console.error('rStructure',e); }
-  const rv=document.getElementById('resView');
-  if(rv && rv.style.display!=='none') try{ rResidents(); } catch(e){ console.error('rResidents',e); }
 }
 
 function listenVehicles(){
