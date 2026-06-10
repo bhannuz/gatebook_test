@@ -966,7 +966,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
     <div class="view-tabs" id="viewTabs" style="gap:8px;padding:0">
       <button class="vtab active" data-v="analytics" onclick="switchView('analytics')"><i class="ti ti-chart-pie"></i> Analytics</button>
       <button class="vtab" data-v="president" onclick="switchView('president')"><i class="ti ti-receipt"></i> Expenses</button>
-      <button class="vtab" data-v="payments" onclick="switchView('payments')"><i class="ti ti-credit-card"></i> Payments</button>
       <button class="vtab" data-v="structure" onclick="switchView('structure')"><i class="ti ti-users"></i> Residents</button>
       <button class="vtab" data-v="issues" onclick="switchView('issues')">
         <i class="ti ti-alert-circle"></i> Issues
@@ -979,30 +978,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   <div id="statsRow" style="display:none"></div>
 
   <!-- PAYMENTS VIEW -->
-  <div id="pView" style="display:none">
-    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:1rem">
-      <select class="ctrl" id="pbf" style="height:32px;font-size:12px;padding:0 10px;border-radius:6px;border:1px solid var(--border2);background:#fff;color:var(--text);font-family:var(--font);cursor:pointer" onchange="window._sB(this.value==='all'?(window.bks()[0]||''):this.value)">
-        <option value="all">All Blocks</option>
-      </select>
-      <select class="ctrl" id="sf" style="height:32px;font-size:12px;padding:0 10px;border-radius:6px;border:1px solid var(--border2);background:#fff;color:var(--text);font-family:var(--font);cursor:pointer" onchange="window._setFS(this.value)">
-        <option value="all">All Status</option>
-        <option value="paid">✅ Paid</option>
-        <option value="partial">⚠️ Partial</option>
-        <option value="pending">❌ Pending</option>
-      </select>
-      <select class="ctrl" id="rtf" style="height:32px;font-size:12px;padding:0 10px;border-radius:6px;border:1px solid var(--border2);background:#fff;color:var(--text);font-family:var(--font);cursor:pointer" onchange="window._setRTF(this.value)">
-        <option value="all">All Types</option>
-        <option value="owner">🏠 Owner</option>
-        <option value="tenant">🔑 Tenant</option>
-        <option value="vacant">🚪 Vacant</option>
-      </select>
-      <select class="ctrl" id="flf" style="display:none;height:32px;font-size:12px;padding:0 10px;border-radius:6px;border:1px solid var(--border2);background:#fff;color:var(--text);font-family:var(--font);cursor:pointer" onchange="window._setFLF(this.value)">
-        <option value="all">All Floors</option>
-      </select>
-      <div class="sw" style="margin-left:auto">
-        <i class="ti ti-search"></i>
-        <input class="ctrl" type="text" id="qi" placeholder="Search flat or owner…" style="height:32px;font-size:12px"/>
-      </div>
     </div>
     <div class="btabs" id="btabs"></div>
     <div id="bcon"></div>
@@ -2896,15 +2871,22 @@ window._renderStructureList = () => {
         </div>
         <div style="display:grid;gap:8px;margin-top:10px;border-top:1px solid var(--border);padding-top:10px">
           ${blockFlats.length === 0 ? '<div style="color:var(--muted);font-size:11px">No flats</div>' : blockFlats.map(f => {
-            const fid = (f.block + '-' + f.flatId).replace(/[^a-z0-9-]/gi, '_').toLowerCase();
+            // Find the actual fid for this flat
+            let actualFid = '';
+            for (const [key, flat] of flats.entries()) {
+              if (flat.flatId === f.flatId && flat.block === f.block) {
+                actualFid = key;
+                break;
+              }
+            }
             return `
             <div style="background:#fff;padding:8px;border-radius:6px;border:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;font-size:11px">
-              <div style="flex:1;cursor:pointer" onclick="window._closeStructureManager(); window.oFlEdit('${fid}')">
+              <div style="flex:1;cursor:pointer" onclick="window._closeStructureManager(); window.oFlEdit('${actualFid}')">
                 <div style="font-weight:700;color:var(--indigo)">${f.flatId}</div>
                 <div style="color:var(--text2);font-size:10px">${f.owner || 'No resident'} • Floor ${f.floor || '—'}</div>
               </div>
               <div style="display:flex;gap:6px">
-                <button onclick="window._closeStructureManager(); window.oFlEdit('${fid}')" style="padding:2px 6px;background:transparent;border:none;color:var(--indigo);cursor:pointer;font-size:12px" title="Edit">✏️</button>
+                <button onclick="window._closeStructureManager(); window.oFlEdit('${actualFid}')" style="padding:2px 6px;background:transparent;border:none;color:var(--indigo);cursor:pointer;font-size:12px" title="Edit">✏️</button>
                 <button onclick="if(confirm('Delete flat ${f.flatId}?')) { window._deleteFlat('${f.flatId}', '${blockName}'); }" style="padding:2px 6px;background:transparent;border:none;color:var(--red);cursor:pointer;font-size:12px" title="Delete">🗑️</button>
               </div>
             </div>
@@ -3179,7 +3161,6 @@ window._wizLaunch = async function() {
 function switchView(v) {
   AV = v;
   refreshAPP();
-  document.getElementById('pView').style.display          = v==='payments'  ? 'block' : 'none';
   document.getElementById('iView').style.display          = v==='issues'    ? 'block' : 'none';
   document.getElementById('presView').style.display       = v==='president' ? 'block' : 'none';
   document.getElementById('analyticsView').style.display  = v==='analytics' ? 'block' : 'none';
