@@ -1081,7 +1081,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
     </div>
   </div>
 
-  <div id="phAct" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1rem;align-items:center"></div>
+  <div id="phAct" style="display:flex;gap:12px;justify-content:flex-start;align-items:center;margin-bottom:16px;flex-wrap:wrap;"></div>
   <div id="statsRow" style="display:none"></div>
 
   </div>
@@ -1163,7 +1163,27 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
           order: 2;
         }
       }
-    </style>
+    
+/* Button group styling */
+#phAct > button {
+  white-space: nowrap;
+}
+
+#phAct > button:first-child {
+  margin-right: 2px;
+}
+
+@media (max-width: 600px) {
+  #phAct {
+    gap: 8px !important;
+  }
+  #phAct > button {
+    padding: 8px 16px;
+    font-size: 12px;
+  }
+}
+
+</style>
 
     <!-- President History -->
     <div id="presHistSection" style="display:none;margin-top:14px;">
@@ -1748,8 +1768,8 @@ function rStats() {
   const totTw=[...vehicles.values()].reduce((s,v)=>s+(parseInt(v.tw)||0),0);
   const totFw=[...vehicles.values()].reduce((s,v)=>s+(parseInt(v.fw)||0),0);
   document.getElementById('phAct').innerHTML=`
-    <button class="btn btn-indigo"  onclick="window._oA()"><i class="ti ti-plus"></i> Add Payment</button>
-    <button class="btn btn-indigo"   onclick="window._oPresExp()"><i class="ti ti-receipt"></i> Add Expense</button>
+    <button class="btn btn-indigo" onclick="window._oA()"><i class="ti ti-plus"></i> Add Payment</button>
+    <button class="btn btn-indigo" onclick="window._oPresExp()"><i class="ti ti-receipt"></i> Add Expense</button>
   `;
   document.getElementById('statsRow').innerHTML=`
     <div class="scard indigo">
