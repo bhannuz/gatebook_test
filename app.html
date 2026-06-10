@@ -1255,23 +1255,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
         <button onclick="window._openStructureManager()" style="padding:8px 14px;background:var(--indigo);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);display:flex;align-items:center;gap:6px">
           <i class="ti ti-layout-sidebar" style="font-size:13px"></i>Manage Structure
         </button>
-        <!-- View toggle -->
-        <div style="display:flex;gap:4px;background:var(--surface2);padding:4px;border-radius:8px">
-          <button data-view="floor" onclick="window._setStrView('floor')" 
-            style="padding:6px 10px;border:none;background:var(--indigo);color:#fff;border-radius:6px;font-size:10px;font-weight:700;cursor:pointer;font-family:var(--font)">
-            🏘️ By Floor
-          </button>
-          <button data-view="block" onclick="window._setStrView('block')" 
-            style="padding:6px 10px;border:none;background:transparent;color:var(--text2);border-radius:6px;font-size:10px;font-weight:700;cursor:pointer;font-family:var(--font)">
-            🏢 By Block
-          </button>
-          <button data-view="all" onclick="window._setStrView('all')" 
-            style="padding:6px 10px;border:none;background:transparent;color:var(--text2);border-radius:6px;font-size:10px;font-weight:700;cursor:pointer;font-family:var(--font)">
-            📋 All Flats
-          </button>
-        </div>
-        
-        <!-- Filters -->
+        <!-- Block Filter -->
         <select id="strBlockFilter" class="ctrl" style="height:28px;font-size:10px;padding:0 6px;min-width:80px;" onchange="window.rStructure()">
           <option value="all">All Blocks</option>
         </select>
@@ -2977,16 +2961,11 @@ window._addNewFlatRow = () => {
   const container = document.getElementById('newFlatsContainer');
   const rowId = 'newflat_' + Date.now();
   const rowHtml = `
-    <div id="${rowId}" style="background:#fff;padding:12px;border-radius:8px;border:1.5px solid var(--border)">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-        <input class="newFlatNum" type="text" placeholder="Flat Number (e.g., A-101)" style="padding:8px;border:1.5px solid var(--border);border-radius:6px;font-family:var(--font);font-size:12px;box-sizing:border-box"/>
-        <input class="newFlatFloor" type="number" placeholder="Floor" min="1" style="padding:8px;border:1.5px solid var(--border);border-radius:6px;font-family:var(--font);font-size:12px;box-sizing:border-box"/>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-        <input class="newResName" type="text" placeholder="Resident Name" style="padding:8px;border:1.5px solid var(--border);border-radius:6px;font-family:var(--font);font-size:12px;box-sizing:border-box"/>
-        <input class="newMonthlyDue" type="number" placeholder="Monthly Due" min="0" style="padding:8px;border:1.5px solid var(--border);border-radius:6px;font-family:var(--font);font-size:12px;box-sizing:border-box"/>
-      </div>
-      <button type="button" onclick="document.getElementById('${rowId}').remove()" style="width:100%;padding:6px;background:transparent;border:1.5px solid var(--red);color:var(--red);border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font)">Remove Flat</button>
+    <div id="${rowId}" style="background:var(--surface2);padding:10px;border-radius:6px;border:1px solid var(--border);display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:6px;align-items:center">
+      <input class="newFlatNum" type="text" placeholder="Flat #" style="padding:6px;border:1px solid var(--border);border-radius:4px;font-family:var(--font);font-size:11px;box-sizing:border-box"/>
+      <input class="newFlatFloor" type="number" placeholder="Floor" min="1" style="padding:6px;border:1px solid var(--border);border-radius:4px;font-family:var(--font);font-size:11px;box-sizing:border-box"/>
+      <input class="newResName" type="text" placeholder="Resident" style="padding:6px;border:1px solid var(--border);border-radius:4px;font-family:var(--font);font-size:11px;box-sizing:border-box"/>
+      <button type="button" onclick="document.getElementById('${rowId}').remove()" style="padding:4px 6px;background:transparent;border:1px solid var(--red);color:var(--red);border-radius:4px;font-size:10px;font-weight:700;cursor:pointer;font-family:var(--font)">✕</button>
     </div>
   `;
   container.insertAdjacentHTML('beforeend', rowHtml);
@@ -4365,6 +4344,27 @@ async function boot(){
 
 /* ══ STRUCTURE TAB — Master Data Management ══ */
 function rStructure() {
+  // Render president card in Residents tab
+  try {
+    const presCard = document.getElementById('presBanner');
+    if (presCard && president) {
+      const presStart = president.presStart ? new Date(president.presStart).toLocaleDateString('en-IN', {year:'numeric', month:'short', day:'numeric'}) : 'N/A';
+      presCard.innerHTML = `
+        <div style="background:linear-gradient(135deg, var(--indigo) 0%, var(--indigo-dark) 100%);border-radius:12px;padding:14px;color:#fff;display:flex;align-items:center;gap:12px;">
+          <div style="width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;">
+            👤
+          </div>
+          <div style="flex:1;">
+            <div style="font-size:11px;opacity:.8;text-transform:uppercase;letter-spacing:.5px;">President</div>
+            <div style="font-size:14px;font-weight:800;margin:2px 0;">${president.presName || 'N/A'}</div>
+            <div style="font-size:10px;opacity:.9;">${president.flat || 'N/A'} • Since ${presStart}</div>
+          </div>
+          <button onclick="window.oFlEdit('${president.presFlat}')" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:6px;padding:6px 10px;cursor:pointer;font-size:10px;font-weight:700;font-family:var(--font);">✏️</button>
+        </div>
+      `;
+    }
+  } catch (e) { console.error('President card error:', e); }
+  
   document.getElementById('phAct').innerHTML = '';
   // Populate block filter
   const bfSel = document.getElementById('strBlockFilter');
@@ -5097,50 +5097,51 @@ function renderAnPayTable(filterType, selMonth, selYear, selBlock) {
 
 <!-- STRUCTURE MANAGER MODAL -->
 <div id="structureModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:2000;padding:20px;overflow-y:auto">
-  <div style="background:#fff;border-radius:12px;max-width:700px;margin:40px auto;padding:24px">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
-      <h2 style="margin:0;font-size:18px;font-weight:800">🏢 Manage Structure</h2>
+  <div style="background:#fff;border-radius:12px;max-width:800px;margin:40px auto;padding:20px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <h2 style="margin:0;font-size:16px;font-weight:800">🏢 Manage Buildings</h2>
       <button onclick="window._closeStructureManager()" style="background:none;border:none;font-size:24px;cursor:pointer;color:var(--text2)">&times;</button>
     </div>
     
-    <!-- Tabs -->
-    <div style="display:flex;gap:8px;margin-bottom:20px;border-bottom:1.5px solid var(--border);padding-bottom:12px">
-      <button onclick="document.getElementById('viewBlocksTab').style.display='block';document.getElementById('addBlockTab').style.display='none';this.style.fontWeight='800';this.style.color='var(--indigo)';document.querySelector('[data-tab=add]').style.fontWeight='400';document.querySelector('[data-tab=add]').style.color='var(--text2)'" data-tab="view" style="background:none;border:none;padding:8px;font-family:var(--font);font-size:12px;font-weight:800;color:var(--indigo);cursor:pointer">
-        📋 View All Blocks
-      </button>
-      <button onclick="document.getElementById('viewBlocksTab').style.display='none';document.getElementById('addBlockTab').style.display='block';this.style.fontWeight='800';this.style.color='var(--indigo)';document.querySelector('[data-tab=view]').style.fontWeight='400';document.querySelector('[data-tab=view]').style.color='var(--text2)'" data-tab="add" style="background:none;border:none;padding:8px;font-family:var(--font);font-size:12px;font-weight:400;color:var(--text2);cursor:pointer">
-        ➕ Add New Block
-      </button>
-    </div>
-
-    <!-- View Blocks Tab -->
-    <div id="viewBlocksTab" style="display:block">
-      <div id="structureList" style="display:grid;gap:12px">
-        <!-- Blocks and flats will be rendered here -->
-      </div>
-    </div>
-
-    <!-- Add Block Tab -->
-    <div id="addBlockTab" style="display:none">
-      <div style="margin-bottom:20px">
-        <label style="font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;display:block;margin-bottom:6px">Block Name</label>
-        <input id="newBlockName" type="text" placeholder="e.g., Block A, Wing 1" style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:8px;font-family:var(--font);font-size:13px;box-sizing:border-box"/>
-      </div>
-
-      <div style="margin-bottom:20px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-          <label style="font-size:12px;font-weight:700;color:var(--text);text-transform:uppercase">Flats</label>
-          <button onclick="window._addNewFlatRow()" style="padding:4px 8px;background:var(--indigo);color:#fff;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font)">+ Add Flat</button>
-        </div>
-        <div id="newFlatsContainer" style="display:grid;gap:12px">
-          <!-- Flat rows will be added here -->
+    <!-- Single Form Layout -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+      
+      <!-- Left: View All Blocks -->
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--text);text-transform:uppercase;margin-bottom:10px;letter-spacing:.5px">📋 Existing Blocks</div>
+        <div id="structureList" style="display:grid;gap:8px;max-height:350px;overflow-y:auto;padding-right:8px">
+          <!-- Blocks and flats will be rendered here -->
         </div>
       </div>
+      
+      <!-- Right: Add New Block & Flats -->
+      <div style="border-left:1.5px solid var(--border);padding-left:16px">
+        <div style="font-size:11px;font-weight:700;color:var(--text);text-transform:uppercase;margin-bottom:10px;letter-spacing:.5px">➕ Add New Building</div>
+        
+        <!-- Block Name -->
+        <div style="margin-bottom:12px">
+          <label style="font-size:10px;font-weight:700;color:var(--text2);display:block;margin-bottom:4px">Building Name</label>
+          <input id="newBlockName" type="text" placeholder="e.g., Block A" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-family:var(--font);font-size:12px;box-sizing:border-box"/>
+        </div>
 
-      <div style="display:flex;gap:10px;justify-content:flex-end">
-        <button onclick="window._closeStructureManager()" style="padding:10px 16px;background:transparent;border:1.5px solid var(--border);color:var(--text);border-radius:8px;font-weight:700;font-size:12px;cursor:pointer;font-family:var(--font)">Cancel</button>
-        <button onclick="window._saveNewStructure()" style="padding:10px 16px;background:var(--green);color:#fff;border:none;border-radius:8px;font-weight:700;font-size:12px;cursor:pointer;font-family:var(--font)">Create Block & Flats</button>
+        <!-- Flats List -->
+        <div style="margin-bottom:12px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <label style="font-size:10px;font-weight:700;color:var(--text);text-transform:uppercase">Flats</label>
+            <button onclick="window._addNewFlatRow()" style="padding:4px 8px;background:var(--indigo);color:#fff;border:none;border-radius:4px;font-size:9px;font-weight:700;cursor:pointer;font-family:var(--font)">+ Add</button>
+          </div>
+          <div id="newFlatsContainer" style="display:grid;gap:8px;max-height:200px;overflow-y:auto">
+            <!-- Flat rows will be added here -->
+          </div>
+        </div>
+
+        <!-- Save Button -->
+        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
+          <button onclick="window._closeStructureManager()" style="padding:8px 12px;background:transparent;border:1px solid var(--border);color:var(--text);border-radius:6px;font-weight:700;font-size:11px;cursor:pointer;font-family:var(--font)">Close</button>
+          <button onclick="window._saveNewStructure()" style="padding:8px 12px;background:var(--green);color:#fff;border:none;border-radius:6px;font-weight:700;font-size:11px;cursor:pointer;font-family:var(--font)">Save</button>
+        </div>
       </div>
+      
     </div>
   </div>
 </div>
