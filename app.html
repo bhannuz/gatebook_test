@@ -1194,46 +1194,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   </div><!-- /#structureView -->
 
   <!-- RESIDENTS VIEW -->
-  <div id="resView" style="display:none;padding:10px 14px 14px">
-    <!-- Vehicle summary cards -->
-    <div id="vehSum" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:14px"></div>
-    <!-- Toolbar -->
-    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px">
-      <div style="display:flex;gap:6px;flex-wrap:wrap">
-        <button class="mff active" data-t="all"    onclick="fMem('all')">All</button>
-        <button class="mff"        data-t="owner"  onclick="fMem('owner')"><i class="ti ti-home"></i> Owners</button>
-        <button class="mff"        data-t="tenant" onclick="fMem('tenant')"><i class="ti ti-key"></i> Tenants</button>
-        <button class="mff"        data-t="vacant" onclick="fMem('vacant')"><i class="ti ti-door"></i> Vacant</button>
-      </div>
-      <div style="margin-left:auto;display:flex;gap:6px">
-        <select id="resTF" class="ctrl" style="height:32px;font-size:12px;padding:0 10px" onchange="rResidents()">
-          <option value="all">All Vehicles</option>
-          <option value="2w">🏍 2-Wheeler</option>
-          <option value="4w">🚗 4-Wheeler</option>
-          <option value="none">No Vehicle</option>
-        </select>
-        <div style="position:relative">
-          <i class="ti ti-search" style="position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:13px;pointer-events:none"></i>
-          <input type="text" id="memQ" class="ctrl" placeholder="Search…" style="height:32px;font-size:12px;padding-left:32px" oninput="rResidents()">
-        </div>
-      </div>
-    </div>
-    <!-- Residents table -->
-    <div class="tab-table-wrap">
-      <table style="width:100%;border-collapse:collapse">
-        <thead>
-          <tr style="background:var(--surface3)">
-            <th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border2)">Flat</th>
-            <th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border2)">Resident</th>
-            <th style="padding:9px 14px;text-align:center;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border2)">🏍</th>
-            <th style="padding:9px 14px;text-align:center;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border2)">🚗</th>
-            <th style="padding:9px 14px;text-align:right;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border2)"></th>
-          </tr>
-        </thead>
-        <tbody id="resBody"></tbody>
-      </table>
-    </div>
-  </div><!-- /#resView -->
 
 <!-- FLAT DETAIL BOTTOM DRAWER -->
 <div id="drawerBg" onclick="window._cD()"></div>
@@ -3167,7 +3127,6 @@ function switchView(v) {
   document.getElementById('presView').style.display       = v==='president' ? 'block' : 'none';
   document.getElementById('analyticsView').style.display  = v==='analytics' ? 'block' : 'none';
   document.getElementById('structureView').style.display  = v==='structure' ? 'block' : 'none';
-  document.getElementById('resView').style.display        = v==='residents' ? 'block' : 'none';
   document.querySelectorAll('.vtab').forEach(p => p.classList.toggle('active', p.dataset.v===v));
   document.querySelectorAll('.bnav-item').forEach(p => p.classList.toggle('active', p.dataset.v===v));
   if(v==='analytics') try{ rAnalytics(); } catch(e){ console.error(e); }
@@ -3178,7 +3137,6 @@ function switchView(v) {
   }
   if(v==='payments')  try{ rBTabs(); rBlock(); } catch(e){ console.error(e); }
   if(v==='structure') try{ rStructure(); } catch(e){ console.error(e); }
-  if(v==='residents') try{ rResidents(); } catch(e){ console.error(e); }
   // Re-draw charts after layout settles (needed after CSS reorder on mobile)
   if(v==='analytics'||v==='president'){
     setTimeout(()=>{
