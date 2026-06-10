@@ -1105,20 +1105,20 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 
   <!-- PRESIDENT VIEW -->
   <div id="presView" style="display:none;padding:12px;">
-    
-    <!-- Summary row: President + Cards -->
-    <div style="display:grid;grid-template-columns:auto 1fr 1fr;gap:10px;align-items:stretch;margin-bottom:12px;">
-      <!-- President Card -->
-      <div id="presBanner" style="min-width:200px;"></div>
-      <!-- Summary Cards -->
-      <div id="fundRow" style="display:contents;"></div>
-    </div>
 
     <!-- Main grid: responsive layout -->
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start;" class="exp-layout-grid">
 
-      <!-- LEFT: expense records stacked -->
+      <!-- LEFT: summary cards + expense records -->
       <div style="display:flex;flex-direction:column;gap:10px;">
+
+        <!-- Summary row: President + Cards (only on left) -->
+        <div style="display:grid;grid-template-columns:auto 1fr 1fr;gap:10px;align-items:stretch;">
+          <!-- President Card -->
+          <div id="presBanner" style="min-width:180px;"></div>
+          <!-- Summary Cards -->
+          <div id="fundRow" style="display:contents;"></div>
+        </div>
 
         <!-- Expense Records -->
         <div class="exp-records-panel tab-table-wrap">
