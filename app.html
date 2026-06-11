@@ -3794,6 +3794,19 @@ function rPresident() {
       </div>`;
   }
 
+  /* ── Update phAct filters for Expenses tab ── */
+  document.getElementById('phAct').innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:12px;flex-wrap:wrap;">
+      <div style="display:flex;gap:12px;align-items:center;">
+        <button class="btn btn-indigo" onclick="window._oA()"><i class="ti ti-plus"></i> Add Payment</button>
+        <button class="btn btn-indigo" onclick="window._oPresExp()"><i class="ti ti-receipt"></i> Add Expense</button>
+      </div>
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+        <select id="histMonthFilter" class="ctrl" style="font-size:10px;height:28px;padding:0 6px;min-width:100px;" onchange="rPresident()"></select>
+      </div>
+    </div>
+  `;
+
   /* ── Category colour helpers ── */
   const CAT_ICONS2 = {Maintenance:'ti-tool',Water:'ti-droplet',Electricity:'ti-bolt',Security:'ti-shield',Cleaning:'ti-vacuum-cleaner',Lift:'ti-elevator',Gardening:'ti-plant',Painting:'ti-paint',Internet:'ti-wifi',Parking:'ti-parking',Other:'ti-clipboard'};
   const CAT_COLORS = ['#6366f1','#10b981','#f59e0b','#ef4444','#0ea5e9','#8b5cf6','#ec4899','#14b8a6','#f97316','#84cc16'];
@@ -4784,18 +4797,12 @@ function rAnalytics() {
         <button class="btn btn-indigo" onclick="window._oPresExp()"><i class="ti ti-receipt"></i> Add Expense</button>
       </div>
       <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
-        <select id="anFilterType" class="ctrl" style="font-size:11px;height:28px;padding:0 8px;" onchange="rAnalytics()">
-          <option value="month">Month</option>
-          <option value="year">Year</option>
+        <select id="anFilterType" class="ctrl" style="font-size:10px;height:28px;padding:0 6px;" onchange="rAnalytics()">
+          <option value="month">By Month</option>
+          <option value="year">By Year</option>
         </select>
-        <select id="anFilterMonth" class="ctrl" style="font-size:11px;height:28px;padding:0 8px;min-width:100px;" onchange="rAnalytics()"></select>
-        <select id="anFilterYear" class="ctrl" style="font-size:11px;height:28px;padding:0 8px;display:none;" onchange="rAnalytics()"></select>
-        <select id="anStatusFilter" style="height:28px;font-size:11px;padding:0 8px;border-radius:6px;border:1px solid var(--border2);background:#fff;color:var(--text);font-family:var(--font);cursor:pointer;" onchange="anSetStatus(this.value)">
-          <option value="all">All Status</option>
-          <option value="paid">✅ Paid</option>
-          <option value="partial">⚠️ Partial</option>
-          <option value="pending">❌ Pending</option>
-        </select>
+        <select id="anFilterMonth" class="ctrl" style="font-size:10px;height:28px;padding:0 6px;min-width:100px;" onchange="rAnalytics()"></select>
+        <select id="anFilterYear" class="ctrl" style="font-size:10px;height:28px;padding:0 6px;display:none;" onchange="rAnalytics()"></select>
       </div>
     </div>
   `;
