@@ -1747,15 +1747,7 @@ function rStats() {
         <button class="btn btn-indigo" onclick="window._oPresExp()"><i class="ti ti-receipt"></i> Add Expense</button>
       </div>
       <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
-        <span style="font-size:10px;color:var(--muted);font-weight:600;">📅</span>
-        <select id="histMonthFilter" class="ctrl" style="font-size:10px;height:28px;padding:0 6px;min-width:85px;" onchange="rPresident()" title="Filter by month"></select>
-        <span style="font-size:10px;color:var(--muted);font-weight:600;">💰</span>
-        <select id="histStatusFilter" class="ctrl" style="font-size:10px;height:28px;padding:0 6px;min-width:95px;" onchange="rPresident()" title="Filter by payment status">
-          <option value="all">All Status</option>
-          <option value="paid">✅ Paid</option>
-          <option value="partial">⚠️ Partial</option>
-          <option value="pending">❌ Pending</option>
-        </select>
+        <select id="histMonthFilter" class="ctrl" style="font-size:10px;height:28px;padding:0 6px;min-width:100px;" onchange="rPresident()"></select>
       </div>
     </div>
   `;
@@ -3812,16 +3804,12 @@ function rPresident() {
   /* ── Filter dropdowns ── */
   const allMonths = [...new Set(socExps.map(e=>e.month).filter(Boolean))].sort().reverse();
   const mSel = document.getElementById('histMonthFilter');
-  const cSel = document.getElementById('histCatFilter');
   if (mSel) { const cur=mSel.value; mSel.innerHTML=`<option value="all">All months</option>`+allMonths.map(m=>`<option value="${m}"${m===cur?' selected':''}>${m}</option>`).join(''); }
-  if (cSel) { const cur=cSel.value; cSel.innerHTML=`<option value="all">All categories</option>`+allCatNames.map(c=>`<option value="${c}"${c===cur?' selected':''}>${c}</option>`).join(''); }
 
   /* ── Filter expense rows ── */
   const mf = mSel?.value||'all';
-  const cf = cSel?.value||'all';
   const vis = socExps.filter(e=>{
     if(mf!=='all' && e.month!==mf) return false;
-    if(cf!=='all' && e.cat!==cf)   return false;
     return true;
   });
 
