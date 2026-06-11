@@ -1749,8 +1749,13 @@ function rStats() {
       <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
         <span style="font-size:10px;color:var(--muted);font-weight:600;">📅</span>
         <select id="histMonthFilter" class="ctrl" style="font-size:10px;height:28px;padding:0 6px;min-width:85px;" onchange="rPresident()" title="Filter by month"></select>
-        <span style="font-size:10px;color:var(--muted);font-weight:600;">🏷️</span>
-        <select id="histCatFilter" class="ctrl" style="font-size:10px;height:28px;padding:0 6px;min-width:85px;" onchange="rPresident()" title="Filter by category"></select>
+        <span style="font-size:10px;color:var(--muted);font-weight:600;">💰</span>
+        <select id="histStatusFilter" class="ctrl" style="font-size:10px;height:28px;padding:0 6px;min-width:95px;" onchange="rPresident()" title="Filter by payment status">
+          <option value="all">All Status</option>
+          <option value="paid">✅ Paid</option>
+          <option value="partial">⚠️ Partial</option>
+          <option value="pending">❌ Pending</option>
+        </select>
       </div>
     </div>
   `;
@@ -4689,9 +4694,7 @@ function buildLegend(legendId, segments, total) {
 
 function _buildAnalyticsFilters() {
   const months = new Set();
-  [...flats.values()].forEach(f=>{ if(f.month) months.add(f.month); });
-  socExps.forEach(e=>{ if(e.month) months.add(e.month); });
-  // Also include months from payment transactions (historical data)
+  // Collect months from payment transactions only
   exps.forEach(records => records.forEach(e=>{ if(e.month) months.add(e.month); }));
   months.add(AM);
   const sorted = [...months].sort().reverse();
