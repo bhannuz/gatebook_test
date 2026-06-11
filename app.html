@@ -1245,13 +1245,23 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 
   <!-- STRUCTURE VIEW -->
   <div id="structureView" style="display:none;padding:10px 14px 14px">
+    
+    <!-- President Card -->
+    <div id="presBanner" style="margin-bottom:12px;"></div>
+    
+    <!-- Header with filters and buttons -->
     <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:14px">
       <div>
         <div style="font-size:15px;font-weight:800;color:var(--text)">🏢 Residents</div>
         <div style="font-size:11px;color:var(--muted);margin-top:2px">Master data for all flats</div>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-<!-- Block Filter -->
+        <!-- Manage Structure Button -->
+        <button onclick="window._openStructureManager()" style="padding:8px 14px;background:var(--indigo);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);display:flex;align-items:center;gap:6px">
+          <i class="ti ti-layout-sidebar" style="font-size:13px"></i>Manage Structure
+        </button>
+
+        <!-- Block Filter -->
         <select id="strBlockFilter" class="ctrl" style="height:28px;font-size:10px;padding:0 6px;min-width:80px;" onchange="window.rStructure()">
           <option value="all">All Blocks</option>
         </select>
