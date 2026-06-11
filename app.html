@@ -1251,11 +1251,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
         <div style="font-size:11px;color:var(--muted);margin-top:2px">Master data for all flats</div>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-        <!-- Manage Structure Button -->
-        <button onclick="window._openStructureManager()" style="padding:8px 14px;background:var(--indigo);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);display:flex;align-items:center;gap:6px">
-          <i class="ti ti-layout-sidebar" style="font-size:13px"></i>Manage Structure
-        </button>
-        <!-- Block Filter -->
+<!-- Block Filter -->
         <select id="strBlockFilter" class="ctrl" style="height:28px;font-size:10px;padding:0 6px;min-width:80px;" onchange="window.rStructure()">
           <option value="all">All Blocks</option>
         </select>
@@ -4347,8 +4343,19 @@ function rStructure() {
   // Render president card in Residents tab
   try {
     const presCard = document.getElementById('presBanner');
-    if (presCard && president) {
-      const presStart = president.presStart ? new Date(president.presStart).toLocaleDateString('en-IN', {year:'numeric', month:'short', day:'numeric'}) : 'N/A';
+    if (presCard && president && president.name) {
+      // Find the flat for the president
+      let presFlat = null;
+      for (const f of flats.values()) {
+        if (f.flatId === president.flatId) {
+          presFlat = f;
+          break;
+        }
+      }
+      
+      const flatDisplay = presFlat ? `${presFlat.block}-${presFlat.flatId}` : 'N/A';
+      const presStart = president.termStart ? new Date(president.termStart).toLocaleDateString('en-IN', {year:'numeric', month:'short', day:'numeric'}) : 'N/A';
+      
       presCard.innerHTML = `
         <div style="background:linear-gradient(135deg, var(--indigo) 0%, var(--indigo-dark) 100%);border-radius:12px;padding:14px;color:#fff;display:flex;align-items:center;gap:12px;">
           <div style="width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;">
@@ -4356,10 +4363,9 @@ function rStructure() {
           </div>
           <div style="flex:1;">
             <div style="font-size:11px;opacity:.8;text-transform:uppercase;letter-spacing:.5px;">President</div>
-            <div style="font-size:14px;font-weight:800;margin:2px 0;">${president.presName || 'N/A'}</div>
-            <div style="font-size:10px;opacity:.9;">${president.flat || 'N/A'} • Since ${presStart}</div>
+            <div style="font-size:14px;font-weight:800;margin:2px 0;">${president.name || 'N/A'}</div>
+            <div style="font-size:10px;opacity:.9;">${flatDisplay} • Since ${presStart}</div>
           </div>
-          <button onclick="window.oFlEdit('${president.presFlat}')" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:6px;padding:6px 10px;cursor:pointer;font-size:10px;font-weight:700;font-family:var(--font);">✏️</button>
         </div>
       `;
     }
