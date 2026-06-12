@@ -5,12 +5,13 @@
 
 // Firebase Configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyDLzKwFBK98K5t3YzqCsRo5XfO_0m3rD8s",
-  authDomain: "gatebook-4d5c0.firebaseapp.com",
-  projectId: "gatebook-4d5c0",
-  storageBucket: "gatebook-4d5c0.appspot.com",
-  messagingSenderId: "1036395738996",
-  appId: "1:1036395738996:web:e3b2a3e6c8d9f0a1b2c3d4"
+  apiKey: "AIzaSyAnUvPo_G_efbacdDApbULQgY5OToghJYM",
+  authDomain: "gatebook-17065.firebaseapp.com",
+  projectId: "gatebook-17065",
+  storageBucket: "gatebook-17065.firebasestorage.app",
+  messagingSenderId: "732765572762",
+  appId: "1:732765572762:web:55f1cb897bb5804a831923",
+  measurementId: "G-6YKLV11L0G"
 };
 
 // ============================================
