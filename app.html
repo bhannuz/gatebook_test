@@ -1120,6 +1120,22 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
           <div id="fundRow" style="display:contents;"></div>
         </div>
 
+        <!-- FILTERS -->
+        <div style="display:flex;gap:10px;margin-bottom:12px;align-items:flex-end;">
+          <div style="flex:1;min-width:150px;">
+            <label style="display:block;font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;">Month</label>
+            <select id="histMonthFilter" class="ctrl" style="width:100%;font-size:11px;height:32px;padding:6px 8px;border:1px solid var(--border2);border-radius:6px;background:var(--surface);color:var(--text);cursor:pointer;" onchange="rPresident()">
+              <option value="all">All Months</option>
+            </select>
+          </div>
+          <div style="flex:1;min-width:150px;">
+            <label style="display:block;font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;">Category</label>
+            <select id="histCatFilter" class="ctrl" style="width:100%;font-size:11px;height:32px;padding:6px 8px;border:1px solid var(--border2);border-radius:6px;background:var(--surface);color:var(--text);cursor:pointer;" onchange="rPresident()">
+              <option value="all">All Categories</option>
+            </select>
+          </div>
+        </div>
+
         <!-- Expense Records -->
         <div class="exp-records-panel tab-table-wrap">
           <div style="padding:10px 14px;border-bottom:1px solid var(--border2);font-size:11px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.4px;">
@@ -4776,59 +4792,51 @@ function _buildFlatSummary(filterType, selMonth, selYear, selBlock) {
 }
 
 function rAnalytics() {
+  // Simple filter UI
   document.getElementById('phAct').innerHTML = `
     <div style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:12px;flex-wrap:wrap;">
       <div style="display:flex;gap:12px;align-items:center;">
         <button class="btn btn-indigo" onclick="window._oA()"><i class="ti ti-plus"></i> Add Payment</button>
         <button class="btn btn-indigo" onclick="window._oPresExp()"><i class="ti ti-receipt"></i> Add Expense</button>
       </div>
-      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
-        <select id="anFilterType" class="ctrl" style="font-size:11px;height:28px;padding:0 8px;" onchange="rAnalytics()">
-          <option value="month">Month</option>
-          <option value="year">Year</option>
-        </select>
-        <select id="anFilterMonth" class="ctrl" style="font-size:11px;height:28px;padding:0 8px;min-width:100px;" onchange="rAnalytics()"></select>
-        <select id="anFilterYear" class="ctrl" style="font-size:11px;height:28px;padding:0 8px;display:none;" onchange="rAnalytics()"></select>
+      <div style="display:flex;gap:6px;align-items:center;">
+        <label style="font-size:11px;font-weight:600;color:var(--muted)">Month:</label>
+        <select id="anFilterMonth" style="font-size:11px;height:28px;padding:0 8px;border:1px solid var(--border2);border-radius:4px;" onchange="rAnalytics()"></select>
       </div>
     </div>
   `;
-  
-  // Get previously selected values BEFORE rebuilding
-  const prevFilterType = document.getElementById('anFilterType')?.value || 'month';
-  const prevMonth = document.getElementById('anFilterMonth')?.value || AM;
-  const prevYear = document.getElementById('anFilterYear')?.value || new Date().getFullYear().toString();
-  
-  // Rebuild filters HTML (this clears DOM)
-  _buildAnalyticsFilters();
-  
-  // Restore previously selected values
-  const filterType = prevFilterType;
-  const mSel = document.getElementById('anFilterMonth');
-  const ySel = document.getElementById('anFilterYear');
-  const tSel = document.getElementById('anFilterType');
-  
-  if (tSel) tSel.value = filterType;
-  if (mSel) { 
-    mSel.value = prevMonth;
-    mSel.style.display = filterType === 'month' ? '' : 'none'; 
-  }
-  if (ySel) { 
-    ySel.value = prevYear;
-    ySel.style.display = filterType === 'year' ? '' : 'none'; 
-  }
-  
-  const selMonth = prevMonth;
-  const selYear = prevYear;
-  const periodLabel = filterType === 'month' 
-    ? new Date(selMonth + '-01').toLocaleDateString('en-IN', { month: 'long', year: 'numeric' })
-    : `FY ${selYear}`;
 
-  const all = _buildFlatSummary(filterType, selMonth, selYear, 'all');
+  // Build month options
+  const months = [...new Set(exps.forEach(e => {}) || [])];
+  const mSel = document.getElementById('anFilterMonth');
+  if (mSel) {
+    const curVal = mSel.value || AM;
+    const allMonths = [...new Set(
+      [...flats.values()].flatMap(f => 
+        (f.paymentHistory || []).map(p => p.month)
+      ).filter(Boolean)
+    )].sort().reverse();
+    
+    mSel.innerHTML = '<option value="">All Months</option>' + 
+      allMonths.map(m => {
+        const lbl = new Date(m + '-01').toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+        return `<option value="${m}"${m === curVal ? ' selected' : ''}>${lbl}</option>`;
+      }).join('');
+    
+    if (curVal) mSel.value = curVal;
+  }
+
+  // Get selected month
+  const selMonth = document.getElementById('anFilterMonth')?.value || '';
+
+  // Build all flats data
+  const all = _buildFlatSummary('month', selMonth || AM, '', '');
   const paid = all.filter(f => f._status === 'paid');
   const partial = all.filter(f => f._status === 'partial');
   const pending = all.filter(f => f._status === 'pending');
   const vacant = all.filter(f => f._status === 'vacant');
 
+  // Draw pie chart
   const paySegs = [
     { label: 'Paid', value: paid.length, color: '#22c55e', displayValue: paid.length + ' flats' },
     { label: 'Partial', value: partial.length, color: '#f59e0b', displayValue: partial.length + ' flats' },
@@ -4836,16 +4844,22 @@ function rAnalytics() {
     { label: 'Vacant', value: vacant.length, color: '#d1d5db', displayValue: vacant.length + ' flats' }
   ].filter(s => s.value > 0);
 
-  requestAnimationFrame(() => requestAnimationFrame(() => {
+  requestAnimationFrame(() => {
     drawPie('payPie', paySegs, 'payTooltip');
     buildLegend('payLegend', paySegs.map(s => ({ ...s, count: s.value })), all.length);
-  }));
+  });
 
+  // Calculate totals
   const totalCollected = all.reduce((s, f) => s + (f.paid || 0), 0);
   const totalDue = all.reduce((s, f) => s + (f.due || 0), 0);
   const totalOutstanding = Math.max(0, totalDue - totalCollected);
   const pct = totalDue ? Math.round(totalCollected / totalDue * 100) : 0;
 
+  const periodLabel = selMonth 
+    ? new Date(selMonth + '-01').toLocaleDateString('en-IN', { month: 'long', year: 'numeric' })
+    : 'All Time';
+
+  // Update cards
   const doc1 = document.getElementById('analyticsTotals');
   if (doc1) doc1.innerHTML = `
     <div class="vscard green" style="cursor:default">
@@ -4867,9 +4881,12 @@ function rAnalytics() {
       </div>
     </div>`;
 
-  renderAnPayTable(filterType, selMonth, selYear, 'all');
+  // Update table
+  renderAnPayTable('month', selMonth || AM, '', 'all');
 }
 window.rAnalytics = rAnalytics;
+
+
 
 let _resizeTimer;
 window.addEventListener('resize', () => {
