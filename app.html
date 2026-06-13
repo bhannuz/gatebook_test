@@ -4776,7 +4776,6 @@ function _buildFlatSummary(filterType, selMonth, selYear, selBlock) {
 }
 
 function rAnalytics() {
-  // Update phAct filters for Analytics tab
   document.getElementById('phAct').innerHTML = `
     <div style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:12px;flex-wrap:wrap;">
       <div style="display:flex;gap:12px;align-items:center;">
@@ -4793,51 +4792,57 @@ function rAnalytics() {
       </div>
     </div>
   `;
-    _buildAnalyticsFilters();
-
-  const filterType = document.getElementById('anFilterType')?.value || 'month';
-  const mSel  = document.getElementById('anFilterMonth');
-  const ySel  = document.getElementById('anFilterYear');
-  const bSel  = document.getElementById('anBlockFilter');
-  const bSel2 = document.getElementById('anBlockFilter2');
-
-  if (mSel) mSel.style.display = filterType==='month' ? '' : 'none';
-  if (ySel) ySel.style.display = filterType==='year'  ? '' : 'none';
-
-  const selMonth = mSel?.value || AM;
-  const selYear  = ySel?.value || new Date().getFullYear().toString();
-  const selBlock = bSel?.value || 'all';
-  _anFilterType = filterType; _anSelMonth = selMonth; _anSelYear = selYear; _anBlock = selBlock;
-
-  // Keep both block selects in sync
-  if (bSel2 && bSel2.value !== selBlock) bSel2.value = selBlock;
-
-  // Human-readable period label for cards
-  const periodLabel = filterType === 'month'
+  
+  // Get previously selected values BEFORE rebuilding
+  const prevFilterType = document.getElementById('anFilterType')?.value || 'month';
+  const prevMonth = document.getElementById('anFilterMonth')?.value || AM;
+  const prevYear = document.getElementById('anFilterYear')?.value || new Date().getFullYear().toString();
+  
+  // Rebuild filters HTML (this clears DOM)
+  _buildAnalyticsFilters();
+  
+  // Restore previously selected values
+  const filterType = prevFilterType;
+  const mSel = document.getElementById('anFilterMonth');
+  const ySel = document.getElementById('anFilterYear');
+  const tSel = document.getElementById('anFilterType');
+  
+  if (tSel) tSel.value = filterType;
+  if (mSel) { 
+    mSel.value = prevMonth;
+    mSel.style.display = filterType === 'month' ? '' : 'none'; 
+  }
+  if (ySel) { 
+    ySel.value = prevYear;
+    ySel.style.display = filterType === 'year' ? '' : 'none'; 
+  }
+  
+  const selMonth = prevMonth;
+  const selYear = prevYear;
+  const periodLabel = filterType === 'month' 
     ? new Date(selMonth + '-01').toLocaleDateString('en-IN', { month: 'long', year: 'numeric' })
     : `FY ${selYear}`;
-  const blockLabel  = selBlock !== 'all' ? ` · Block ${selBlock}` : '';
 
-  const all     = _buildFlatSummary(filterType, selMonth, selYear, selBlock);
-  const paid    = all.filter(f => f._status==='paid');
-  const partial = all.filter(f => f._status==='partial');
-  const pending = all.filter(f => f._status==='pending');
-  const vacant  = all.filter(f => f._status==='vacant');
+  const all = _buildFlatSummary(filterType, selMonth, selYear, 'all');
+  const paid = all.filter(f => f._status === 'paid');
+  const partial = all.filter(f => f._status === 'partial');
+  const pending = all.filter(f => f._status === 'pending');
+  const vacant = all.filter(f => f._status === 'vacant');
 
   const paySegs = [
-    { label:'Paid',    value:paid.length,    color:'#22c55e', amt:paid.reduce((s,f)=>s+(f.paid||0),0),    displayValue:paid.length    +' flats' },
-    { label:'Partial', value:partial.length, color:'#f59e0b', amt:partial.reduce((s,f)=>s+(f.paid||0),0), displayValue:partial.length +' flats' },
-    { label:'Pending', value:pending.length, color:'#ef4444', amt:0,                                       displayValue:pending.length +' flats' },
-    { label:'Vacant',  value:vacant.length,  color:'#d1d5db', amt:0,                                       displayValue:vacant.length  +' flats' },
+    { label: 'Paid', value: paid.length, color: '#22c55e', displayValue: paid.length + ' flats' },
+    { label: 'Partial', value: partial.length, color: '#f59e0b', displayValue: partial.length + ' flats' },
+    { label: 'Pending', value: pending.length, color: '#ef4444', displayValue: pending.length + ' flats' },
+    { label: 'Vacant', value: vacant.length, color: '#d1d5db', displayValue: vacant.length + ' flats' }
   ].filter(s => s.value > 0);
 
   requestAnimationFrame(() => requestAnimationFrame(() => {
     drawPie('payPie', paySegs, 'payTooltip');
-    buildLegend('payLegend', paySegs.map(s=>({...s, count:s.value})), all.length);
+    buildLegend('payLegend', paySegs.map(s => ({ ...s, count: s.value })), all.length);
   }));
 
-  const totalCollected   = all.reduce((s,f) => s+(f.paid||0), 0);
-  const totalDue         = all.reduce((s,f) => s+(f.due||0),  0);
+  const totalCollected = all.reduce((s, f) => s + (f.paid || 0), 0);
+  const totalDue = all.reduce((s, f) => s + (f.due || 0), 0);
   const totalOutstanding = Math.max(0, totalDue - totalCollected);
   const pct = totalDue ? Math.round(totalCollected / totalDue * 100) : 0;
 
@@ -4848,21 +4853,21 @@ function rAnalytics() {
       <div>
         <div class="vscard-label">Collected</div>
         <div class="vscard-val" style="color:var(--green)">${inr(totalCollected)}</div>
-        <div style="font-size:10px;color:var(--muted);margin-top:2px">${paid.length+partial.length} flats · ${pct}%</div>
-        <div style="font-size:10px;font-weight:700;color:var(--green);margin-top:1px">${periodLabel}${blockLabel}</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px">${paid.length + partial.length} flats · ${pct}%</div>
+        <div style="font-size:10px;font-weight:700;color:var(--green);margin-top:1px">${periodLabel}</div>
       </div>
     </div>
-    <div class="vscard red" onclick="window._showPending()" style="cursor:pointer" title="Click to view pending flats">
+    <div class="vscard red" style="cursor:pointer">
       <div class="vscard-icon" style="background:var(--red-bg);color:var(--red)"><i class="ti ti-clock"></i></div>
       <div>
         <div class="vscard-label">Outstanding</div>
         <div class="vscard-val" style="color:var(--red)">${inr(totalOutstanding)}</div>
         <div style="font-size:10px;color:var(--muted);margin-top:2px">${pending.length} pending · ${partial.length} partial</div>
-        <div style="font-size:10px;font-weight:700;color:var(--red-txt);margin-top:1px">${periodLabel}${blockLabel}</div>
+        <div style="font-size:10px;font-weight:700;color:var(--red-txt);margin-top:1px">${periodLabel}</div>
       </div>
     </div>`;
 
-  renderAnPayTable(filterType, selMonth, selYear, selBlock);
+  renderAnPayTable(filterType, selMonth, selYear, 'all');
 }
 window.rAnalytics = rAnalytics;
 
