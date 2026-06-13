@@ -1120,22 +1120,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
           <div id="fundRow" style="display:contents;"></div>
         </div>
 
-        <!-- FILTERS -->
-        <div style="display:flex;gap:10px;margin-bottom:12px;align-items:flex-end;">
-          <div style="flex:1;min-width:150px;">
-            <label style="display:block;font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;">Month</label>
-            <select id="histMonthFilter" class="ctrl" style="width:100%;font-size:11px;height:32px;padding:6px 8px;border:1px solid var(--border2);border-radius:6px;background:var(--surface);color:var(--text);cursor:pointer;" onchange="rPresident()">
-              <option value="all">All Months</option>
-            </select>
-          </div>
-          <div style="flex:1;min-width:150px;">
-            <label style="display:block;font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;">Category</label>
-            <select id="histCatFilter" class="ctrl" style="width:100%;font-size:11px;height:32px;padding:6px 8px;border:1px solid var(--border2);border-radius:6px;background:var(--surface);color:var(--text);cursor:pointer;" onchange="rPresident()">
-              <option value="all">All Categories</option>
-            </select>
-          </div>
-        </div>
-
         <!-- Expense Records -->
         <div class="exp-records-panel tab-table-wrap">
           <div style="padding:10px 14px;border-bottom:1px solid var(--border2);font-size:11px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.4px;">
@@ -4792,7 +4776,7 @@ function _buildFlatSummary(filterType, selMonth, selYear, selBlock) {
 }
 
 function rAnalytics() {
-  // Build filter UI
+  // Update phAct filters for Analytics tab
   document.getElementById('phAct').innerHTML = `
     <div style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:12px;flex-wrap:wrap;">
       <div style="display:flex;gap:12px;align-items:center;">
@@ -4806,44 +4790,51 @@ function rAnalytics() {
         </select>
         <select id="anFilterMonth" class="ctrl" style="font-size:11px;height:28px;padding:0 8px;min-width:100px;" onchange="rAnalytics()"></select>
         <select id="anFilterYear" class="ctrl" style="font-size:11px;height:28px;padding:0 8px;display:none;" onchange="rAnalytics()"></select>
+        <select id="anStatusFilter" style="height:28px;font-size:11px;padding:0 8px;border-radius:6px;border:1px solid var(--border2);background:#fff;color:var(--text);font-family:var(--font);cursor:pointer;" onchange="anSetStatus(this.value)">
+          <option value="all">All Status</option>
+          <option value="paid">✅ Paid</option>
+          <option value="partial">⚠️ Partial</option>
+          <option value="pending">❌ Pending</option>
+        </select>
       </div>
     </div>
   `;
-  
-  // Populate filter dropdowns
-  _buildAnalyticsFilters();
+    _buildAnalyticsFilters();
 
-  // READ FILTER VALUES FROM DOM
   const filterType = document.getElementById('anFilterType')?.value || 'month';
   const mSel  = document.getElementById('anFilterMonth');
   const ySel  = document.getElementById('anFilterYear');
-  
-  // Show/hide month/year selector based on filter type
+  const bSel  = document.getElementById('anBlockFilter');
+  const bSel2 = document.getElementById('anBlockFilter2');
+
   if (mSel) mSel.style.display = filterType==='month' ? '' : 'none';
   if (ySel) ySel.style.display = filterType==='year'  ? '' : 'none';
 
-  // Get selected values
   const selMonth = mSel?.value || AM;
   const selYear  = ySel?.value || new Date().getFullYear().toString();
-  
-  // Period label for cards
+  const selBlock = bSel?.value || 'all';
+  _anFilterType = filterType; _anSelMonth = selMonth; _anSelYear = selYear; _anBlock = selBlock;
+
+  // Keep both block selects in sync
+  if (bSel2 && bSel2.value !== selBlock) bSel2.value = selBlock;
+
+  // Human-readable period label for cards
   const periodLabel = filterType === 'month'
     ? new Date(selMonth + '-01').toLocaleDateString('en-IN', { month: 'long', year: 'numeric' })
     : `FY ${selYear}`;
+  const blockLabel  = selBlock !== 'all' ? ` · Block ${selBlock}` : '';
 
-  // BUILD FILTERED DATA
-  const all     = _buildFlatSummary(filterType, selMonth, selYear, 'all');
+  const all     = _buildFlatSummary(filterType, selMonth, selYear, selBlock);
   const paid    = all.filter(f => f._status==='paid');
   const partial = all.filter(f => f._status==='partial');
   const pending = all.filter(f => f._status==='pending');
   const vacant  = all.filter(f => f._status==='vacant');
 
-  // Pie chart data
   const paySegs = [
-    { label:'Paid',    value:paid.length,    color:'#22c55e', displayValue:paid.length+' flats' },
-    { label:'Partial', value:partial.length, color:'#f59e0b', displayValue:partial.length+' flats' },
-    { label:'Pending', value:pending.length, color:'#ef4444', displayValue:pending.length+' flats' },
-    { label:'Vacant',  value:vacant.length,  color:'#d1d5db', displayValue:vacant.length+' flats' },
+    { label:'Paid',    value:paid.length,    color:'#22c55e', amt:paid.reduce((s,f)=>s+(f.paid||0),0),    displayValue:paid.length    +' flats' },
+    { label:'Partial', value:partial.length, color:'#f59e0b', amt:partial.reduce((s,f)=>s+(f.paid||0),0), displayValue:partial.length +' flats' },
+    { label:'Pending', value:pending.length, color:'#ef4444', amt:0,                                       displayValue:pending.length +' flats' },
+    { label:'Vacant',  value:vacant.length,  color:'#d1d5db', amt:0,                                       displayValue:vacant.length  +' flats' },
   ].filter(s => s.value > 0);
 
   requestAnimationFrame(() => requestAnimationFrame(() => {
@@ -4851,13 +4842,11 @@ function rAnalytics() {
     buildLegend('payLegend', paySegs.map(s=>({...s, count:s.value})), all.length);
   }));
 
-  // CALCULATE CARD VALUES FROM FILTERED DATA
   const totalCollected   = all.reduce((s,f) => s+(f.paid||0), 0);
   const totalDue         = all.reduce((s,f) => s+(f.due||0),  0);
   const totalOutstanding = Math.max(0, totalDue - totalCollected);
   const pct = totalDue ? Math.round(totalCollected / totalDue * 100) : 0;
 
-  // UPDATE CARDS WITH FILTERED VALUES
   const doc1 = document.getElementById('analyticsTotals');
   if (doc1) doc1.innerHTML = `
     <div class="vscard green" style="cursor:default">
@@ -4866,21 +4855,20 @@ function rAnalytics() {
         <div class="vscard-label">Collected</div>
         <div class="vscard-val" style="color:var(--green)">${inr(totalCollected)}</div>
         <div style="font-size:10px;color:var(--muted);margin-top:2px">${paid.length+partial.length} flats · ${pct}%</div>
-        <div style="font-size:10px;font-weight:700;color:var(--green);margin-top:1px">${periodLabel}</div>
+        <div style="font-size:10px;font-weight:700;color:var(--green);margin-top:1px">${periodLabel}${blockLabel}</div>
       </div>
     </div>
-    <div class="vscard red" style="cursor:pointer" title="Pending payments">
+    <div class="vscard red" onclick="window._showPending()" style="cursor:pointer" title="Click to view pending flats">
       <div class="vscard-icon" style="background:var(--red-bg);color:var(--red)"><i class="ti ti-clock"></i></div>
       <div>
         <div class="vscard-label">Outstanding</div>
         <div class="vscard-val" style="color:var(--red)">${inr(totalOutstanding)}</div>
         <div style="font-size:10px;color:var(--muted);margin-top:2px">${pending.length} pending · ${partial.length} partial</div>
-        <div style="font-size:10px;font-weight:700;color:var(--red-txt);margin-top:1px">${periodLabel}</div>
+        <div style="font-size:10px;font-weight:700;color:var(--red-txt);margin-top:1px">${periodLabel}${blockLabel}</div>
       </div>
     </div>`;
 
-  // UPDATE TABLE WITH FILTERED DATA
-  renderAnPayTable(filterType, selMonth, selYear, 'all');
+  renderAnPayTable(filterType, selMonth, selYear, selBlock);
 }
 window.rAnalytics = rAnalytics;
 
