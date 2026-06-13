@@ -4783,7 +4783,14 @@ function rAnalytics() {
         <button class="btn btn-indigo" onclick="window._oA()"><i class="ti ti-plus"></i> Add Payment</button>
         <button class="btn btn-indigo" onclick="window._oPresExp()"><i class="ti ti-receipt"></i> Add Expense</button>
       </div>
-
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+        <select id="anFilterType" class="ctrl" style="font-size:11px;height:28px;padding:0 8px;" onchange="rAnalytics()">
+          <option value="month">Month</option>
+          <option value="year">Year</option>
+        </select>
+        <select id="anFilterMonth" class="ctrl" style="font-size:11px;height:28px;padding:0 8px;min-width:100px;" onchange="rAnalytics()"></select>
+        <select id="anFilterYear" class="ctrl" style="font-size:11px;height:28px;padding:0 8px;display:none;" onchange="rAnalytics()"></select>
+      </div>
     </div>
   `;
     _buildAnalyticsFilters();
