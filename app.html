@@ -4792,74 +4792,97 @@ function _buildFlatSummary(filterType, selMonth, selYear, selBlock) {
 }
 
 function rAnalytics() {
-  // Simple filter UI
+  // Build filter UI with month dropdown
   document.getElementById('phAct').innerHTML = `
     <div style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:12px;flex-wrap:wrap;">
-      <div style="display:flex;gap:12px;align-items:center;">
+      <div style="display:flex;gap:12px;">
         <button class="btn btn-indigo" onclick="window._oA()"><i class="ti ti-plus"></i> Add Payment</button>
         <button class="btn btn-indigo" onclick="window._oPresExp()"><i class="ti ti-receipt"></i> Add Expense</button>
       </div>
-      <div style="display:flex;gap:6px;align-items:center;">
-        <label style="font-size:11px;font-weight:600;color:var(--muted)">Month:</label>
-        <select id="anFilterMonth" style="font-size:11px;height:28px;padding:0 8px;border:1px solid var(--border2);border-radius:4px;" onchange="rAnalytics()"></select>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;">Month:</label>
+        <select id="anFilterMonth" style="font-size:11px;height:28px;padding:4px 8px;border:1px solid var(--border2);border-radius:4px;background:white;cursor:pointer;" onchange="rAnalytics()"></select>
       </div>
     </div>
   `;
 
-  // Build month options
-  const months = [...new Set(exps.forEach(e => {}) || [])];
+  // Extract all months from flats payment history
+  const allMonths = new Set();
+  [...flats.values()].forEach(flat => {
+    if (flat.paymentHistory) {
+      flat.paymentHistory.forEach(p => {
+        if (p.month) allMonths.add(p.month);
+      });
+    }
+  });
+  const sortedMonths = [...allMonths].sort().reverse();
+  
+  // Populate month dropdown
   const mSel = document.getElementById('anFilterMonth');
   if (mSel) {
-    const curVal = mSel.value || AM;
-    const allMonths = [...new Set(
-      [...flats.values()].flatMap(f => 
-        (f.paymentHistory || []).map(p => p.month)
-      ).filter(Boolean)
-    )].sort().reverse();
-    
+    const prevVal = mSel.value || '';
     mSel.innerHTML = '<option value="">All Months</option>' + 
-      allMonths.map(m => {
-        const lbl = new Date(m + '-01').toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
-        return `<option value="${m}"${m === curVal ? ' selected' : ''}>${lbl}</option>`;
+      sortedMonths.map(m => {
+        const date = new Date(m + '-01');
+        const lbl = date.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+        return `<option value="${m}">${lbl}</option>`;
       }).join('');
-    
-    if (curVal) mSel.value = curVal;
+    if (prevVal) mSel.value = prevVal;
   }
 
-  // Get selected month
-  const selMonth = document.getElementById('anFilterMonth')?.value || '';
+  // Get selected month filter
+  const selectedMonth = document.getElementById('anFilterMonth')?.value || '';
 
-  // Build all flats data
-  const all = _buildFlatSummary('month', selMonth || AM, '', '');
-  const paid = all.filter(f => f._status === 'paid');
-  const partial = all.filter(f => f._status === 'partial');
-  const pending = all.filter(f => f._status === 'pending');
-  const vacant = all.filter(f => f._status === 'vacant');
+  // Build filtered flat summary
+  const allFlats = [...flats.values()];
+  const filtered = selectedMonth 
+    ? allFlats.map(f => {
+        const flat = { ...f };
+        // Filter payments for selected month only
+        if (flat.paymentHistory) {
+          flat.paymentHistory = flat.paymentHistory.filter(p => p.month === selectedMonth);
+        }
+        return flat;
+      })
+    : allFlats;
 
-  // Draw pie chart
+  // Calculate status for each flat based on filtered payments
+  const flatData = filtered.map(f => {
+    const totalDue = parseFloat(f.due) || 0;
+    const totalPaid = (f.paymentHistory || []).reduce((s, p) => s + (parseFloat(p.amt) || 0), 0);
+    const status = totalPaid >= totalDue ? 'paid' : (totalPaid > 0 ? 'partial' : (f.vacant ? 'vacant' : 'pending'));
+    return { ...f, _status: status, paid: totalPaid, due: totalDue };
+  });
+
+  const paid = flatData.filter(f => f._status === 'paid').length;
+  const partial = flatData.filter(f => f._status === 'partial').length;
+  const pending = flatData.filter(f => f._status === 'pending').length;
+  const vacant = flatData.filter(f => f._status === 'vacant').length;
+
+  // Pie chart
   const paySegs = [
-    { label: 'Paid', value: paid.length, color: '#22c55e', displayValue: paid.length + ' flats' },
-    { label: 'Partial', value: partial.length, color: '#f59e0b', displayValue: partial.length + ' flats' },
-    { label: 'Pending', value: pending.length, color: '#ef4444', displayValue: pending.length + ' flats' },
-    { label: 'Vacant', value: vacant.length, color: '#d1d5db', displayValue: vacant.length + ' flats' }
+    { label: 'Paid', value: paid, color: '#22c55e', displayValue: paid + ' flats' },
+    { label: 'Partial', value: partial, color: '#f59e0b', displayValue: partial + ' flats' },
+    { label: 'Pending', value: pending, color: '#ef4444', displayValue: pending + ' flats' },
+    { label: 'Vacant', value: vacant, color: '#d1d5db', displayValue: vacant + ' flats' }
   ].filter(s => s.value > 0);
 
   requestAnimationFrame(() => {
     drawPie('payPie', paySegs, 'payTooltip');
-    buildLegend('payLegend', paySegs.map(s => ({ ...s, count: s.value })), all.length);
+    buildLegend('payLegend', paySegs.map(s => ({ ...s, count: s.value })), flatData.length);
   });
 
-  // Calculate totals
-  const totalCollected = all.reduce((s, f) => s + (f.paid || 0), 0);
-  const totalDue = all.reduce((s, f) => s + (f.due || 0), 0);
+  // Calculate totals from filtered data
+  const totalCollected = flatData.reduce((s, f) => s + (f.paid || 0), 0);
+  const totalDue = flatData.reduce((s, f) => s + (f.due || 0), 0);
   const totalOutstanding = Math.max(0, totalDue - totalCollected);
   const pct = totalDue ? Math.round(totalCollected / totalDue * 100) : 0;
 
-  const periodLabel = selMonth 
-    ? new Date(selMonth + '-01').toLocaleDateString('en-IN', { month: 'long', year: 'numeric' })
+  const periodLabel = selectedMonth 
+    ? new Date(selectedMonth + '-01').toLocaleDateString('en-IN', { month: 'long', year: 'numeric' })
     : 'All Time';
 
-  // Update cards
+  // Update cards with filtered values
   const doc1 = document.getElementById('analyticsTotals');
   if (doc1) doc1.innerHTML = `
     <div class="vscard green" style="cursor:default">
@@ -4867,7 +4890,7 @@ function rAnalytics() {
       <div>
         <div class="vscard-label">Collected</div>
         <div class="vscard-val" style="color:var(--green)">${inr(totalCollected)}</div>
-        <div style="font-size:10px;color:var(--muted);margin-top:2px">${paid.length + partial.length} flats · ${pct}%</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px">${paid + partial} flats · ${pct}%</div>
         <div style="font-size:10px;font-weight:700;color:var(--green);margin-top:1px">${periodLabel}</div>
       </div>
     </div>
@@ -4876,15 +4899,37 @@ function rAnalytics() {
       <div>
         <div class="vscard-label">Outstanding</div>
         <div class="vscard-val" style="color:var(--red)">${inr(totalOutstanding)}</div>
-        <div style="font-size:10px;color:var(--muted);margin-top:2px">${pending.length} pending · ${partial.length} partial</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px">${pending} pending · ${partial} partial</div>
         <div style="font-size:10px;font-weight:700;color:var(--red-txt);margin-top:1px">${periodLabel}</div>
       </div>
     </div>`;
 
-  // Update table
-  renderAnPayTable('month', selMonth || AM, '', 'all');
+  // Update table with filtered data
+  const tbody = document.getElementById('anPayTable');
+  if (tbody) {
+    tbody.innerHTML = flatData.map(f => {
+      const bal = (f.due || 0) - (f.paid || 0);
+      const s = f._status || 'pending';
+      const balColor = bal > 0 ? 'var(--red)' : 'var(--green)';
+      const v = vehicles.get(f.flatId) || {};
+      const tw = parseInt(v.tw) || 0;
+      const fw = parseInt(v.fw) || 0;
+      const vehCell = (tw === 0 && fw === 0)
+        ? `<span style="font-size:11px;color:var(--muted)">—</span>`
+        : `<span>${tw > 0 ? '🏍 ' + tw : ''} ${fw > 0 ? '🚗 ' + fw : ''}</span>`;
+      
+      return `<tr style="border-bottom:1px solid var(--border);">
+        <td style="padding:10px 14px;font-weight:800;color:var(--indigo)">${f.flatId}</td>
+        <td style="padding:10px 14px;">${f.owner || '<em style="color:var(--muted)">Vacant</em>'}</td>
+        <td style="padding:10px 14px;text-align:center;"><span style="background:${s === 'paid' ? '#dcfce7' : s === 'partial' ? '#fef3c7' : s === 'pending' ? '#fee2e2' : '#f3f4f6'};color:${s === 'paid' ? '#065f46' : s === 'partial' ? '#92400e' : s === 'pending' ? '#991b1b' : '#4b5563'};padding:4px 8px;border-radius:4px;font-size:11px;font-weight:700;">${s.charAt(0).toUpperCase() + s.slice(1)}</span></td>
+        <td style="padding:10px 14px;text-align:center;">${vehCell}</td>
+        <td style="padding:10px 14px;text-align:right;font-weight:700;color:${balColor}">${inr(bal)}</td>
+      </tr>`;
+    }).join('');
+  }
 }
 window.rAnalytics = rAnalytics;
+
 
 
 
