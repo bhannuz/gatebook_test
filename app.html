@@ -3819,9 +3819,26 @@ function rPresident() {
 
   /* ── Filter dropdowns ── */
   const allMonths = [...new Set(socExps.map(e=>e.month).filter(Boolean))].sort().reverse();
-  const mSel = document.getElementById('histMonthFilter');
-  if (mSel) { const cur=mSel.value; mSel.innerHTML=`<option value="all">All months</option>`+allMonths.map(m=>`<option value="${m}"${m===cur?' selected':''}>${m}</option>`).join(''); }
+const allCats   = [...new Set(socExps.map(e=>e.cat).filter(Boolean))].sort();
 
+const mSel = document.getElementById('histMonthFilter');
+if (mSel) {
+  const cur = mSel.value;
+  mSel.innerHTML = `<option value="all">All months</option>` +
+    allMonths.map(m => {
+      const lbl = new Date(m + '-01').toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+      return `<option value="${m}"${m === cur ? ' selected' : ''}>${lbl}</option>`;
+    }).join('');
+  if (cur && allMonths.includes(cur)) mSel.value = cur;
+}
+
+const cSel = document.getElementById('histCatFilter');
+if (cSel) {
+  const cur = cSel.value;
+  cSel.innerHTML = `<option value="all">All Categories</option>` +
+    allCats.map(c => `<option value="${c}"${c === cur ? ' selected' : ''}>${c}</option>`).join('');
+  if (cur && allCats.includes(cur)) cSel.value = cur;
+}
   /* ── Filter expense rows ── */
   const mf = mSel?.value||'all';
   const vis = socExps.filter(e=>{
