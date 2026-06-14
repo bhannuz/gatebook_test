@@ -822,7 +822,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   .str-floor-grid{grid-template-columns:repeat(3,1fr)!important}
 
   /* ── Expense filter selects in presView ── */
-  #histMonthFilter,#histCatFilter{font-size:11px;height:30px}
+  #histYearFilter,#histMonthFilter,#histCatFilter{font-size:11px;height:30px}
 }
 /* ── Bottom Nav Bar (mobile ≤600px only) ── */
 .bottom-nav-bar{
@@ -1121,14 +1121,20 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
         </div>
 
         <!-- FILTERS -->
-        <div style="display:flex;gap:10px;margin-bottom:12px;align-items:flex-end;">
-          <div style="flex:1;min-width:150px;">
+        <div style="display:flex;gap:10px;margin-bottom:12px;align-items:flex-end;flex-wrap:wrap;">
+          <div style="flex:1;min-width:110px;">
+            <label style="display:block;font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;">Year</label>
+            <select id="histYearFilter" class="ctrl" style="width:100%;font-size:11px;height:32px;padding:6px 8px;border:1px solid var(--border2);border-radius:6px;background:var(--surface);color:var(--text);cursor:pointer;" onchange="rPresident()">
+              <option value="all">All Years</option>
+            </select>
+          </div>
+          <div style="flex:1;min-width:110px;">
             <label style="display:block;font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;">Month</label>
             <select id="histMonthFilter" class="ctrl" style="width:100%;font-size:11px;height:32px;padding:6px 8px;border:1px solid var(--border2);border-radius:6px;background:var(--surface);color:var(--text);cursor:pointer;" onchange="rPresident()">
               <option value="all">All Months</option>
             </select>
           </div>
-          <div style="flex:1;min-width:150px;">
+          <div style="flex:1;min-width:110px;">
             <label style="display:block;font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;">Category</label>
             <select id="histCatFilter" class="ctrl" style="width:100%;font-size:11px;height:32px;padding:6px 8px;border:1px solid var(--border2);border-radius:6px;background:var(--surface);color:var(--text);cursor:pointer;" onchange="rPresident()">
               <option value="all">All Categories</option>
@@ -1763,7 +1769,6 @@ function rStats() {
         <button class="btn btn-indigo" onclick="window._oPresExp()"><i class="ti ti-receipt"></i> Add Expense</button>
       </div>
       <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
-        <select id="histMonthFilter" class="ctrl" style="font-size:10px;height:28px;padding:0 6px;min-width:100px;" onchange="rPresident()"></select>
       </div>
     </div>
   `;
@@ -3819,34 +3824,50 @@ function rPresident() {
 
   /* ── Filter dropdowns ── */
   const allMonths = [...new Set(socExps.map(e=>e.month).filter(Boolean))].sort().reverse();
-const allCats   = [...new Set(socExps.map(e=>e.cat).filter(Boolean))].sort();
+  const allYears  = [...new Set(allMonths.map(m=>m.slice(0,4)))].sort().reverse();
+  const allCats   = [...new Set(socExps.map(e=>e.cat).filter(Boolean))].sort();
 
-const mSel = document.getElementById('histMonthFilter');
-if (mSel) {
-  const cur = mSel.value;
-  mSel.innerHTML = `<option value="all">All months</option>` +
-    allMonths.map(m => {
-      const lbl = new Date(m + '-01').toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
-      return `<option value="${m}"${m === cur ? ' selected' : ''}>${lbl}</option>`;
-    }).join('');
-  if (cur && allMonths.includes(cur)) mSel.value = cur;
-}
+  // Year dropdown
+  const ySel = document.getElementById('histYearFilter');
+  if (ySel) {
+    const cur = ySel.value;
+    ySel.innerHTML = `<option value="all">All Years</option>` +
+      allYears.map(y => `<option value="${y}"${y === cur ? ' selected' : ''}>${y}</option>`).join('');
+    if (cur && allYears.includes(cur)) ySel.value = cur;
+  }
 
-const cSel = document.getElementById('histCatFilter');
-if (cSel) {
-  const cur = cSel.value;
-  cSel.innerHTML = `<option value="all">All Categories</option>` +
-    allCats.map(c => `<option value="${c}"${c === cur ? ' selected' : ''}>${c}</option>`).join('');
-  if (cur && allCats.includes(cur)) cSel.value = cur;
-}
+  // Month dropdown — cascade filter by selected year
+  const selectedYear = ySel?.value || 'all';
+  const filteredMonths = selectedYear === 'all' ? allMonths : allMonths.filter(m => m.startsWith(selectedYear));
+  const mSel = document.getElementById('histMonthFilter');
+  if (mSel) {
+    const cur = mSel.value;
+    mSel.innerHTML = `<option value="all">All Months</option>` +
+      filteredMonths.map(m => {
+        const lbl = new Date(m + '-01').toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+        return `<option value="${m}"${m === cur ? ' selected' : ''}>${lbl}</option>`;
+      }).join('');
+    if (cur && filteredMonths.includes(cur)) mSel.value = cur;
+  }
+
+  // Category dropdown
+  const cSel = document.getElementById('histCatFilter');
+  if (cSel) {
+    const cur = cSel.value;
+    cSel.innerHTML = `<option value="all">All Categories</option>` +
+      allCats.map(c => `<option value="${c}"${c === cur ? ' selected' : ''}>${c}</option>`).join('');
+    if (cur && allCats.includes(cur)) cSel.value = cur;
+  }
+
   /* ── Filter expense rows ── */
-/* ── Filter expense rows ── */
+  const yf  = document.getElementById('histYearFilter')?.value  || 'all';
   const mf  = document.getElementById('histMonthFilter')?.value || 'all';
   const cf  = document.getElementById('histCatFilter')?.value   || 'all';
 
   const vis = socExps.filter(e => {
-    if (mf !== 'all' && e.month !== mf) return false;
-    if (cf !== 'all' && e.cat   !== cf) return false;
+    if (yf !== 'all' && !(e.month||'').startsWith(yf)) return false;
+    if (mf !== 'all' && e.month !== mf)                return false;
+    if (cf !== 'all' && e.cat   !== cf)                return false;
     return true;
   });
 
@@ -5014,6 +5035,8 @@ function _anRender() {
   /* ── Payment records table ── */
   renderAnPayTable('month', selectedMonth || AM, selectedYear, 'all');
 }
+window.rAnalytics = rAnalytics;
+
 let _resizeTimer;
 window.addEventListener('resize', () => {
   clearTimeout(_resizeTimer);
