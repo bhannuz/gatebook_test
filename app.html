@@ -3840,9 +3840,13 @@ if (cSel) {
   if (cur && allCats.includes(cur)) cSel.value = cur;
 }
   /* ── Filter expense rows ── */
-  const mf = mSel?.value||'all';
-  const vis = socExps.filter(e=>{
-    if(mf!=='all' && e.month!==mf) return false;
+/* ── Filter expense rows ── */
+  const mf  = document.getElementById('histMonthFilter')?.value || 'all';
+  const cf  = document.getElementById('histCatFilter')?.value   || 'all';
+
+  const vis = socExps.filter(e => {
+    if (mf !== 'all' && e.month !== mf) return false;
+    if (cf !== 'all' && e.cat   !== cf) return false;
     return true;
   });
 
