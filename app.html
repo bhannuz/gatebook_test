@@ -4792,54 +4792,83 @@ function _buildFlatSummary(filterType, selMonth, selYear, selBlock) {
 }
 
 function rAnalytics() {
-  // Build filter UI with month dropdown
+  // Build filter UI with year and month dropdowns
   document.getElementById('phAct').innerHTML = `
     <div style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:12px;flex-wrap:wrap;">
       <div style="display:flex;gap:12px;">
         <button class="btn btn-indigo" onclick="window._oA()"><i class="ti ti-plus"></i> Add Payment</button>
         <button class="btn btn-indigo" onclick="window._oPresExp()"><i class="ti ti-receipt"></i> Add Expense</button>
       </div>
-      <div style="display:flex;gap:8px;align-items:center;">
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;">Year:</label>
+        <select id="payFilterYear" style="font-size:11px;height:28px;padding:4px 8px;border:1px solid var(--border2);border-radius:4px;background:white;cursor:pointer;" onchange="rAnalytics()"></select>
+        
         <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;">Month:</label>
         <select id="payFilterMonth" style="font-size:11px;height:28px;padding:4px 8px;border:1px solid var(--border2);border-radius:4px;background:white;cursor:pointer;" onchange="rAnalytics()"></select>
       </div>
     </div>
   `;
 
-  // Get saved filter value
-  const savedFilter = window._paymentFilter || '';
-
-  // Extract all unique months from all flats payment history
-  const monthSet = new Set();
+  // Extract all years and months from payment history
+  const yearSet = new Set();
+  const monthMap = {};
+  
   [...flats.values()].forEach(f => {
     if (f.paymentHistory && Array.isArray(f.paymentHistory)) {
       f.paymentHistory.forEach(p => {
-        if (p && p.month) monthSet.add(p.month);
+        if (p && p.month) {
+          const year = p.month.substring(0, 4);
+          yearSet.add(year);
+          if (!monthMap[year]) monthMap[year] = new Set();
+          monthMap[year].add(p.month);
+        }
       });
     }
   });
-  
-  const sortedMonths = [...monthSet].sort().reverse();
 
-  // Populate month dropdown
-  const mSel = document.getElementById('payFilterMonth');
-  if (mSel) {
-    mSel.innerHTML = '<option value="">All Months</option>' +
-      sortedMonths.map(m => {
-        const dt = new Date(m + '-01');
-        const lbl = dt.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
-        return `<option value="${m}">${lbl}</option>`;
-      }).join('');
-    
-    // Restore previous selection
-    if (savedFilter) mSel.value = savedFilter;
+  const sortedYears = [...yearSet].sort().reverse();
+  const currentYear = new Date().getFullYear().toString();
+  const selectedYear = document.getElementById('payFilterYear')?.value || currentYear;
+  const selectedMonth = document.getElementById('payFilterMonth')?.value || '';
+
+  // Populate year dropdown
+  const ySel = document.getElementById('payFilterYear');
+  if (ySel) {
+    ySel.innerHTML = '<option value="">All Years</option>' +
+      sortedYears.map(y => `<option value="${y}">${y}</option>`).join('');
+    ySel.value = selectedYear;
   }
 
-  // Get selected month filter
-  const selectedMonth = document.getElementById('payFilterMonth')?.value || '';
-  window._paymentFilter = selectedMonth; // Save for next call
+  // Populate month dropdown based on selected year
+  const mSel = document.getElementById('payFilterMonth');
+  if (mSel) {
+    if (selectedYear) {
+      const monthsInYear = monthMap[selectedYear] || new Set();
+      const sortedMonths = [...monthsInYear].sort().reverse();
+      mSel.innerHTML = '<option value="">All Months</option>' +
+        sortedMonths.map(m => {
+          const dt = new Date(m + '-01');
+          const lbl = dt.toLocaleDateString('en-IN', { month: 'long' });
+          return `<option value="${m}">${lbl}</option>`;
+        }).join('');
+    } else {
+      // Show all months if no year selected
+      const allMonths = new Set();
+      Object.values(monthMap).forEach(months => {
+        months.forEach(m => allMonths.add(m));
+      });
+      const sortedAllMonths = [...allMonths].sort().reverse();
+      mSel.innerHTML = '<option value="">All Months</option>' +
+        sortedAllMonths.map(m => {
+          const dt = new Date(m + '-01');
+          const lbl = dt.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+          return `<option value="${m}">${lbl}</option>`;
+        }).join('');
+    }
+    if (selectedMonth) mSel.value = selectedMonth;
+  }
 
-  // Calculate payment status for each flat based on selected month
+  // Calculate based on selected year and month
   const allFlats = [...flats.values()];
   let paid = 0, partial = 0, pending = 0, vacant = 0;
   let totalCollected = 0, totalDue = 0;
@@ -4849,22 +4878,19 @@ function rAnalytics() {
     let collected = 0;
 
     if (f.paymentHistory && Array.isArray(f.paymentHistory)) {
-      if (selectedMonth) {
-        // Count only payments from selected month
-        collected = f.paymentHistory
-          .filter(p => p && p.month === selectedMonth)
-          .reduce((s, p) => s + (parseFloat(p.amt) || 0), 0);
-      } else {
-        // Count all payments
-        collected = f.paymentHistory
-          .reduce((s, p) => s + (parseFloat(p.amt) || 0), 0);
-      }
+      collected = f.paymentHistory
+        .filter(p => {
+          if (!p || !p.month) return false;
+          if (selectedMonth) return p.month === selectedMonth;
+          if (selectedYear) return p.month.substring(0, 4) === selectedYear;
+          return true;
+        })
+        .reduce((s, p) => s + (parseFloat(p.amt) || 0), 0);
     }
 
     totalDue += due;
     totalCollected += collected;
 
-    // Determine status
     if (f.vacant || !f.owner) {
       vacant++;
     } else if (collected >= due) {
@@ -4878,11 +4904,16 @@ function rAnalytics() {
 
   const outstanding = Math.max(0, totalDue - totalCollected);
   const pct = totalDue ? Math.round(totalCollected / totalDue * 100) : 0;
-  const periodLabel = selectedMonth
-    ? new Date(selectedMonth + '-01').toLocaleDateString('en-IN', { month: 'long', year: 'numeric' })
-    : 'All Time';
+  
+  let periodLabel = 'All Time';
+  if (selectedMonth) {
+    const dt = new Date(selectedMonth + '-01');
+    periodLabel = dt.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+  } else if (selectedYear) {
+    periodLabel = `Year ${selectedYear}`;
+  }
 
-  // Pie chart data
+  // Pie chart
   const segments = [
     { label: 'Paid', value: paid, color: '#22c55e', displayValue: paid + ' flats' },
     { label: 'Partial', value: partial, color: '#f59e0b', displayValue: partial + ' flats' },
@@ -4918,9 +4949,10 @@ function rAnalytics() {
     </div>`;
 
   // Render table
-  renderAnPayTable('month', selectedMonth || AM, '', 'all');
+  renderAnPayTable('month', selectedMonth || AM, selectedYear || '', 'all');
 }
 window.rAnalytics = rAnalytics;
+
 
 
 
