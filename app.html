@@ -4809,59 +4809,81 @@ function rAnalytics() {
     </div>
   `;
 
+  // Extract ACTUAL years and months from payment data
+  const yearSet = new Set();
+  const monthsByYear = {};
+
+  [...flats.values()].forEach(f => {
+    if (f.paymentHistory && Array.isArray(f.paymentHistory)) {
+      f.paymentHistory.forEach(p => {
+        if (p && p.month) {
+          const year = p.month.substring(0, 4);
+          yearSet.add(year);
+          if (!monthsByYear[year]) monthsByYear[year] = new Set();
+          monthsByYear[year].add(p.month);
+        }
+      });
+    }
+  });
+
+  const sortedYears = [...yearSet].sort().reverse();
+  
   // Get current filter values
   const ySel = document.getElementById('payFilterYear');
   const mSel = document.getElementById('payFilterMonth');
   const savedYear = ySel?.value || '';
   const savedMonth = mSel?.value || '';
 
-  // Build year list (2020 to current year + 1)
-  const currentYear = new Date().getFullYear();
-  const years = [];
-  for (let y = 2020; y <= currentYear + 1; y++) {
-    years.push(y.toString());
-  }
-  const sortedYears = years.sort().reverse();
-
-  // Build month list for selected year
-  const selectedYear = savedYear || currentYear.toString();
-  const months = [];
-  
-  if (selectedYear) {
-    for (let m = 1; m <= 12; m++) {
-      const month = selectedYear + '-' + String(m).padStart(2, '0');
-      months.push(month);
-    }
-  }
-  const sortedMonths = months.sort().reverse();
-
-  // Populate year dropdown
+  // Populate year dropdown with ACTUAL years from data
   if (ySel) {
     ySel.innerHTML = '<option value="">All Years</option>' +
       sortedYears.map(y => `<option value="${y}">${y}</option>`).join('');
-    if (savedYear) ySel.value = savedYear;
+    if (savedYear && yearSet.has(savedYear)) {
+      ySel.value = savedYear;
+    }
   }
 
-  // Populate month dropdown
+  // Get selected year
+  const selectedYear = document.getElementById('payFilterYear')?.value || '';
+
+  // Populate month dropdown based on selected year
   if (mSel) {
-    if (selectedYear) {
+    if (selectedYear && monthsByYear[selectedYear]) {
+      const sortedMonths = [...monthsByYear[selectedYear]].sort().reverse();
       mSel.innerHTML = '<option value="">All Months</option>' +
         sortedMonths.map(m => {
           const dt = new Date(m + '-01');
-          const lbl = dt.toLocaleDateString('en-IN', { month: 'long' });
+          const lbl = dt.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
           return `<option value="${m}">${lbl}</option>`;
         }).join('');
+      if (savedMonth && monthsByYear[selectedYear].has(savedMonth)) {
+        mSel.value = savedMonth;
+      }
+    } else if (selectedYear) {
+      // No months for this year
+      mSel.innerHTML = '<option value="">No Data</option>';
     } else {
-      mSel.innerHTML = '<option value="">All Months</option>';
+      // Show all months across all years
+      const allMonths = new Set();
+      Object.values(monthsByYear).forEach(months => {
+        months.forEach(m => allMonths.add(m));
+      });
+      const sortedAllMonths = [...allMonths].sort().reverse();
+      mSel.innerHTML = '<option value="">All Months</option>' +
+        sortedAllMonths.map(m => {
+          const dt = new Date(m + '-01');
+          const lbl = dt.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+          return `<option value="${m}">${lbl}</option>`;
+        }).join('');
+      if (savedMonth) mSel.value = savedMonth;
     }
-    if (savedMonth) mSel.value = savedMonth;
   }
 
-  // Get selected filters
+  // Get final selected values
   const selectedYearVal = document.getElementById('payFilterYear')?.value || '';
   const selectedMonthVal = document.getElementById('payFilterMonth')?.value || '';
 
-  // Calculate data
+  // Calculate data based on filters
   const allFlats = [...flats.values()];
   let paid = 0, partial = 0, pending = 0, vacant = 0;
   let totalCollected = 0, totalDue = 0;
@@ -4945,6 +4967,7 @@ function rAnalytics() {
   renderAnPayTable('month', selectedMonthVal || AM, selectedYearVal || '', 'all');
 }
 window.rAnalytics = rAnalytics;
+
 
 
 
