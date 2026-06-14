@@ -4790,158 +4790,185 @@ function _buildFlatSummary(filterType, selMonth, selYear, selBlock) {
   });
   return result.sort((a,b) => (a.flatId||'').localeCompare(b.flatId||''));
 }
+// ════════════════════════════════════════════════════════
+//  ANALYTICS TAB — FIXED rAnalytics()
+//  Replace the existing rAnalytics() function in app.html
+//  with this version.
+//
+//  Root cause: old code read f.paymentHistory (undefined)
+//  instead of the exps Map loaded from Firestore subcollection.
+// ════════════════════════════════════════════════════════
 
 function rAnalytics() {
-  // Build filter UI
+
+  /* ── 1. Collect every month/year that appears in real payments ── */
+  const monthSet = new Set();
+  exps.forEach(records => records.forEach(e => { if (e.month) monthSet.add(e.month); }));
+  monthSet.add(AM); // always include current month
+  const sortedMonths = [...monthSet].sort().reverse();
+  const yearSet = new Set(sortedMonths.map(m => m.slice(0, 4)));
+  const sortedYears = [...yearSet].sort().reverse();
+
+  /* ── 2. Build / update filter bar inside #phAct ── */
+  // Preserve previous selections across re-renders
+  const prevYear  = document.getElementById('payFilterYear')?.value  || sortedYears[0]  || '';
+  const prevMonth = document.getElementById('payFilterMonth')?.value || AM;
+
   document.getElementById('phAct').innerHTML = `
     <div style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:12px;flex-wrap:wrap;">
-      <div style="display:flex;gap:12px;">
+      <div style="display:flex;gap:8px;">
         <button class="btn btn-indigo" onclick="window._oA()"><i class="ti ti-plus"></i> Add Payment</button>
         <button class="btn btn-indigo" onclick="window._oPresExp()"><i class="ti ti-receipt"></i> Add Expense</button>
       </div>
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-        <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;">Year:</label>
-        <select id="payFilterYear" style="font-size:11px;height:28px;padding:4px 8px;border:1px solid var(--border2);border-radius:4px;background:white;cursor:pointer;" onchange="rAnalytics()"></select>
-        
-        <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;">Month:</label>
-        <select id="payFilterMonth" style="font-size:11px;height:28px;padding:4px 8px;border:1px solid var(--border2);border-radius:4px;background:white;cursor:pointer;" onchange="rAnalytics()"></select>
+        <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;">Year</label>
+        <select id="payFilterYear"
+          style="font-size:11px;height:28px;padding:0 6px;border:1px solid var(--border2);border-radius:6px;background:#fff;cursor:pointer;"
+          onchange="window._anOnYearChange()">
+        </select>
+        <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;">Month</label>
+        <select id="payFilterMonth"
+          style="font-size:11px;height:28px;padding:0 6px;border:1px solid var(--border2);border-radius:6px;background:#fff;cursor:pointer;"
+          onchange="window._anOnMonthChange()">
+        </select>
       </div>
-    </div>
-  `;
+    </div>`;
 
-  // Extract ACTUAL years and months from payment data
-  const yearSet = new Set();
-  const monthsByYear = {};
+  /* ── 3. Populate Year dropdown ── */
+  const ySel = document.getElementById('payFilterYear');
+  ySel.innerHTML = `<option value="">All years</option>` +
+    sortedYears.map(y => `<option value="${y}">${y}</option>`).join('');
+  // Restore or default
+  if (sortedYears.includes(prevYear)) ySel.value = prevYear;
+  else ySel.value = sortedYears[0] || '';
 
-  [...flats.values()].forEach(f => {
-    if (f.paymentHistory && Array.isArray(f.paymentHistory)) {
-      f.paymentHistory.forEach(p => {
-        if (p && p.month) {
-          const year = p.month.substring(0, 4);
-          yearSet.add(year);
-          if (!monthsByYear[year]) monthsByYear[year] = new Set();
-          monthsByYear[year].add(p.month);
-        }
-      });
-    }
-  });
+  /* ── 4. Populate Month dropdown based on selected year ── */
+  _anPopulateMonths(sortedMonths);
 
-  const sortedYears = [...yearSet].sort().reverse();
-  
-  // Get current filter values
+  // Restore month selection
+  const mSel = document.getElementById('payFilterMonth');
+  const monthsForYear = sortedMonths.filter(m =>
+    !ySel.value || m.startsWith(ySel.value));
+  if (monthsForYear.includes(prevMonth)) mSel.value = prevMonth;
+
+  /* ── 5. Compute stats from real exps data ── */
+  _anRender();
+}
+
+/* Called when year dropdown changes */
+window._anOnYearChange = function () {
+  const monthSet = new Set();
+  exps.forEach(records => records.forEach(e => { if (e.month) monthSet.add(e.month); }));
+  monthSet.add(AM);
+  _anPopulateMonths([...monthSet].sort().reverse());
+  _anRender();
+};
+
+/* Called when month dropdown changes */
+window._anOnMonthChange = function () { _anRender(); };
+
+/* Repopulate month <select> filtered by chosen year */
+function _anPopulateMonths(sortedMonths) {
   const ySel = document.getElementById('payFilterYear');
   const mSel = document.getElementById('payFilterMonth');
-  const savedYear = ySel?.value || '';
-  const savedMonth = mSel?.value || '';
+  if (!mSel) return;
+  const selectedYear = ySel?.value || '';
+  const filtered = selectedYear
+    ? sortedMonths.filter(m => m.startsWith(selectedYear))
+    : sortedMonths;
 
-  // Populate year dropdown with ACTUAL years from data
-  if (ySel) {
-    ySel.innerHTML = '<option value="">All Years</option>' +
-      sortedYears.map(y => `<option value="${y}">${y}</option>`).join('');
-    if (savedYear && yearSet.has(savedYear)) {
-      ySel.value = savedYear;
-    }
+  mSel.innerHTML = `<option value="">All months</option>` +
+    filtered.map(m => {
+      const lbl = new Date(m + '-01').toLocaleDateString('en-IN',
+        { month: 'long', year: 'numeric' });
+      return `<option value="${m}">${lbl}</option>`;
+    }).join('');
+
+  // Default to first available month in the year
+  if (filtered.length) mSel.value = filtered[0];
+}
+
+/* Core render: reads exps Map, no paymentHistory needed */
+function _anRender() {
+  const selectedYear  = document.getElementById('payFilterYear')?.value  || '';
+  const selectedMonth = document.getElementById('payFilterMonth')?.value || '';
+
+  /* ── period label ── */
+  let periodLabel = 'All time';
+  if (selectedMonth) {
+    periodLabel = new Date(selectedMonth + '-01')
+      .toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+  } else if (selectedYear) {
+    periodLabel = `Year ${selectedYear}`;
   }
 
-  // Get selected year
-  const selectedYear = document.getElementById('payFilterYear')?.value || '';
-
-  // Populate month dropdown based on selected year
-  if (mSel) {
-    if (selectedYear && monthsByYear[selectedYear]) {
-      const sortedMonths = [...monthsByYear[selectedYear]].sort().reverse();
-      mSel.innerHTML = '<option value="">All Months</option>' +
-        sortedMonths.map(m => {
-          const dt = new Date(m + '-01');
-          const lbl = dt.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
-          return `<option value="${m}">${lbl}</option>`;
-        }).join('');
-      if (savedMonth && monthsByYear[selectedYear].has(savedMonth)) {
-        mSel.value = savedMonth;
-      }
-    } else if (selectedYear) {
-      // No months for this year
-      mSel.innerHTML = '<option value="">No Data</option>';
-    } else {
-      // Show all months across all years
-      const allMonths = new Set();
-      Object.values(monthsByYear).forEach(months => {
-        months.forEach(m => allMonths.add(m));
-      });
-      const sortedAllMonths = [...allMonths].sort().reverse();
-      mSel.innerHTML = '<option value="">All Months</option>' +
-        sortedAllMonths.map(m => {
-          const dt = new Date(m + '-01');
-          const lbl = dt.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
-          return `<option value="${m}">${lbl}</option>`;
-        }).join('');
-      if (savedMonth) mSel.value = savedMonth;
-    }
+  /* ── filter helper: does an expense record fall in the chosen period? ── */
+  function inPeriod(e) {
+    const m = e.month || (e.rawDate || '').slice(0, 7) || '';
+    if (selectedMonth) return m === selectedMonth;
+    if (selectedYear)  return m.startsWith(selectedYear);
+    return true; // all time
   }
 
-  // Get final selected values
-  const selectedYearVal = document.getElementById('payFilterYear')?.value || '';
-  const selectedMonthVal = document.getElementById('payFilterMonth')?.value || '';
-
-  // Calculate data based on filters
-  const allFlats = [...flats.values()];
-  let paid = 0, partial = 0, pending = 0, vacant = 0;
+  /* ── aggregate per flat ── */
   let totalCollected = 0, totalDue = 0;
+  let paid = 0, partial = 0, pending = 0, vacant = 0;
 
-  allFlats.forEach(f => {
-    const due = parseFloat(f.due) || 0;
-    let collected = 0;
+  flats.forEach((f, fid) => {
+    const isVacant = !(f.owner || '').trim();
+    if (isVacant) { vacant++; return; }
 
-    if (f.paymentHistory && Array.isArray(f.paymentHistory)) {
-      collected = f.paymentHistory
-        .filter(p => {
-          if (!p || !p.month) return false;
-          if (selectedMonthVal) return p.month === selectedMonthVal;
-          if (selectedYearVal) return p.month.startsWith(selectedYearVal);
-          return true;
-        })
-        .reduce((s, p) => s + (parseFloat(p.amt) || 0), 0);
+    // Due: for a month filter use f.due; for year/all multiply
+    let due = f.due || 0;
+    if (selectedYear && !selectedMonth) {
+      // count months in the year that appear in data for this flat
+      const flatMonths = new Set(
+        (exps.get(fid) || [])
+          .map(e => e.month || (e.rawDate || '').slice(0, 7))
+          .filter(m => m.startsWith(selectedYear))
+      );
+      due = due * (flatMonths.size || 1);
+    } else if (!selectedMonth && !selectedYear) {
+      const flatMonths = new Set(
+        (exps.get(fid) || [])
+          .map(e => e.month || (e.rawDate || '').slice(0, 7))
+          .filter(Boolean)
+      );
+      due = due * (flatMonths.size || 1);
     }
 
-    totalDue += due;
+    // Collected: sum matching expense records
+    const collected = (exps.get(fid) || [])
+      .filter(inPeriod)
+      .reduce((s, e) => s + (e.amt || 0), 0);
+
+    totalDue       += due;
     totalCollected += collected;
 
-    if (f.vacant || !f.owner) {
-      vacant++;
-    } else if (collected >= due) {
-      paid++;
-    } else if (collected > 0) {
-      partial++;
-    } else {
-      pending++;
-    }
+    if      (collected >= due && due > 0) paid++;
+    else if (collected > 0)               partial++;
+    else                                  pending++;
   });
 
   const outstanding = Math.max(0, totalDue - totalCollected);
   const pct = totalDue ? Math.round(totalCollected / totalDue * 100) : 0;
 
-  let periodLabel = 'All Time';
-  if (selectedMonthVal) {
-    const dt = new Date(selectedMonthVal + '-01');
-    periodLabel = dt.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
-  } else if (selectedYearVal) {
-    periodLabel = `Year ${selectedYearVal}`;
-  }
-
-  // Pie chart
+  /* ── Pie chart segments ── */
   const segments = [
-    { label: 'Paid', value: paid, color: '#22c55e', displayValue: paid + ' flats' },
-    { label: 'Partial', value: partial, color: '#f59e0b', displayValue: partial + ' flats' },
-    { label: 'Pending', value: pending, color: '#ef4444', displayValue: pending + ' flats' },
-    { label: 'Vacant', value: vacant, color: '#d1d5db', displayValue: vacant + ' flats' }
+    { label:'Paid',    value:paid,    color:'#22c55e', displayValue:`${paid} flats`    },
+    { label:'Partial', value:partial, color:'#f59e0b', displayValue:`${partial} flats` },
+    { label:'Pending', value:pending, color:'#ef4444', displayValue:`${pending} flats` },
+    { label:'Vacant',  value:vacant,  color:'#d1d5db', displayValue:`${vacant} flats`  },
   ].filter(s => s.value > 0);
+
+  const totalFlats = paid + partial + pending + vacant;
 
   requestAnimationFrame(() => {
     drawPie('payPie', segments, 'payTooltip');
-    buildLegend('payLegend', segments.map(s => ({ ...s, count: s.value })), allFlats.length);
+    buildLegend('payLegend', segments.map(s => ({ ...s, count: s.value })), totalFlats);
   });
 
-  // Update cards
+  /* ── Summary cards ── */
   const cardsDiv = document.getElementById('analyticsTotals');
   if (cardsDiv) cardsDiv.innerHTML = `
     <div class="vscard green">
@@ -4963,20 +4990,9 @@ function rAnalytics() {
       </div>
     </div>`;
 
-  // Render table
-  renderAnPayTable('month', selectedMonthVal || AM, selectedYearVal || '', 'all');
+  /* ── Payment records table ── */
+  renderAnPayTable('month', selectedMonth || AM, selectedYear, 'all');
 }
-window.rAnalytics = rAnalytics;
-
-
-
-
-
-
-
-
-
-
 let _resizeTimer;
 window.addEventListener('resize', () => {
   clearTimeout(_resizeTimer);
