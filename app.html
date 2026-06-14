@@ -4792,68 +4792,29 @@ function _buildFlatSummary(filterType, selMonth, selYear, selBlock) {
 }
 
 function rAnalytics() {
-  // Build filter UI
+  // Build action buttons only
   document.getElementById('phAct').innerHTML = `
     <div style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:12px;">
       <div style="display:flex;gap:12px;">
         <button class="btn btn-indigo" onclick="window._oA()"><i class="ti ti-plus"></i> Add Payment</button>
         <button class="btn btn-indigo" onclick="window._oPresExp()"><i class="ti ti-receipt"></i> Add Expense</button>
       </div>
-      <div style="display:flex;gap:8px;align-items:center;">
-        <label style="font-size:11px;font-weight:700;color:var(--muted);">Month:</label>
-        <select id="anFilterMonth" style="font-size:11px;height:28px;padding:4px 8px;border:1px solid var(--border2);border-radius:4px;" onchange="rAnalytics()"></select>
-      </div>
     </div>
   `;
 
-  // Get all months from payments
-  const months = new Set();
-  [...flats.values()].forEach(f => {
-    if (f.paymentHistory) {
-      f.paymentHistory.forEach(p => {
-        if (p.month) months.add(p.month);
-      });
-    }
-  });
-  const sortedMonths = [...months].sort().reverse();
-  
-  // Populate dropdown
-  const mSel = document.getElementById('anFilterMonth');
-  const prevVal = mSel?.value || '';
-  if (mSel) {
-    mSel.innerHTML = '<option value="">All Months</option>' + 
-      sortedMonths.map(m => `<option value="${m}">${new Date(m + '-01').toLocaleDateString('en-IN', {month:'long',year:'numeric'})}</option>`).join('');
-    if (prevVal) mSel.value = prevVal;
-  }
-
-  // Get selected month
-  const selMonth = document.getElementById('anFilterMonth')?.value || '';
-
-  // Calculate status: if month selected, only count payments from that month; else count all
+  // Count all flats - no filtering
   const allFlats = [...flats.values()];
   let paid = 0, partial = 0, pending = 0, vacant = 0;
   let totalCollected = 0, totalDue = 0;
 
   allFlats.forEach(f => {
     const due = parseFloat(f.due) || 0;
-    let collected = 0;
-    
-    if (f.paymentHistory) {
-      if (selMonth) {
-        // Count only selected month
-        collected = f.paymentHistory
-          .filter(p => p.month === selMonth)
-          .reduce((s, p) => s + (parseFloat(p.amt) || 0), 0);
-      } else {
-        // Count all payments
-        collected = f.paymentHistory.reduce((s, p) => s + (parseFloat(p.amt) || 0), 0);
-      }
-    }
+    const payments = f.paymentHistory || [];
+    const collected = payments.reduce((s, p) => s + (parseFloat(p.amt) || 0), 0);
 
     totalDue += due;
     totalCollected += collected;
 
-    // Determine status
     if (f.vacant || !f.owner) {
       vacant++;
     } else if (collected >= due) {
@@ -4867,9 +4828,8 @@ function rAnalytics() {
 
   const outstanding = Math.max(0, totalDue - totalCollected);
   const pct = totalDue ? Math.round(totalCollected / totalDue * 100) : 0;
-  const period = selMonth ? new Date(selMonth + '-01').toLocaleDateString('en-IN', {month:'long',year:'numeric'}) : 'All Time';
 
-  // Pie chart
+  // Pie chart segments
   const segs = [
     { label: 'Paid', value: paid, color: '#22c55e', displayValue: paid + ' flats' },
     { label: 'Partial', value: partial, color: '#f59e0b', displayValue: partial + ' flats' },
@@ -4891,7 +4851,7 @@ function rAnalytics() {
         <div class="vscard-label">Collected</div>
         <div class="vscard-val" style="color:var(--green)">${inr(totalCollected)}</div>
         <div style="font-size:10px;color:var(--muted);margin-top:2px">${paid + partial} flats · ${pct}%</div>
-        <div style="font-size:10px;font-weight:700;color:var(--green);margin-top:1px">${period}</div>
+        <div style="font-size:10px;font-weight:700;color:var(--green);margin-top:1px">All Time</div>
       </div>
     </div>
     <div class="vscard red">
@@ -4900,14 +4860,15 @@ function rAnalytics() {
         <div class="vscard-label">Outstanding</div>
         <div class="vscard-val" style="color:var(--red)">${inr(outstanding)}</div>
         <div style="font-size:10px;color:var(--muted);margin-top:2px">${pending} pending · ${partial} partial</div>
-        <div style="font-size:10px;font-weight:700;color:var(--red-txt);margin-top:1px">${period}</div>
+        <div style="font-size:10px;font-weight:700;color:var(--red-txt);margin-top:1px">All Time</div>
       </div>
     </div>`;
 
-  // Render table with all flats
-  renderAnPayTable('month', selMonth || AM, '', 'all');
+  // Render table
+  renderAnPayTable('month', AM, '', 'all');
 }
 window.rAnalytics = rAnalytics;
+
 
 
 
