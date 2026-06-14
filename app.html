@@ -4792,29 +4792,79 @@ function _buildFlatSummary(filterType, selMonth, selYear, selBlock) {
 }
 
 function rAnalytics() {
-  // Build action buttons only
+  // Build filter UI with month dropdown
   document.getElementById('phAct').innerHTML = `
-    <div style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:12px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:12px;flex-wrap:wrap;">
       <div style="display:flex;gap:12px;">
         <button class="btn btn-indigo" onclick="window._oA()"><i class="ti ti-plus"></i> Add Payment</button>
         <button class="btn btn-indigo" onclick="window._oPresExp()"><i class="ti ti-receipt"></i> Add Expense</button>
       </div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;">Month:</label>
+        <select id="payFilterMonth" style="font-size:11px;height:28px;padding:4px 8px;border:1px solid var(--border2);border-radius:4px;background:white;cursor:pointer;" onchange="rAnalytics()"></select>
+      </div>
     </div>
   `;
 
-  // Count all flats - no filtering
+  // Get saved filter value
+  const savedFilter = window._paymentFilter || '';
+
+  // Extract all unique months from all flats payment history
+  const monthSet = new Set();
+  [...flats.values()].forEach(f => {
+    if (f.paymentHistory && Array.isArray(f.paymentHistory)) {
+      f.paymentHistory.forEach(p => {
+        if (p && p.month) monthSet.add(p.month);
+      });
+    }
+  });
+  
+  const sortedMonths = [...monthSet].sort().reverse();
+
+  // Populate month dropdown
+  const mSel = document.getElementById('payFilterMonth');
+  if (mSel) {
+    mSel.innerHTML = '<option value="">All Months</option>' +
+      sortedMonths.map(m => {
+        const dt = new Date(m + '-01');
+        const lbl = dt.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+        return `<option value="${m}">${lbl}</option>`;
+      }).join('');
+    
+    // Restore previous selection
+    if (savedFilter) mSel.value = savedFilter;
+  }
+
+  // Get selected month filter
+  const selectedMonth = document.getElementById('payFilterMonth')?.value || '';
+  window._paymentFilter = selectedMonth; // Save for next call
+
+  // Calculate payment status for each flat based on selected month
   const allFlats = [...flats.values()];
   let paid = 0, partial = 0, pending = 0, vacant = 0;
   let totalCollected = 0, totalDue = 0;
 
   allFlats.forEach(f => {
     const due = parseFloat(f.due) || 0;
-    const payments = f.paymentHistory || [];
-    const collected = payments.reduce((s, p) => s + (parseFloat(p.amt) || 0), 0);
+    let collected = 0;
+
+    if (f.paymentHistory && Array.isArray(f.paymentHistory)) {
+      if (selectedMonth) {
+        // Count only payments from selected month
+        collected = f.paymentHistory
+          .filter(p => p && p.month === selectedMonth)
+          .reduce((s, p) => s + (parseFloat(p.amt) || 0), 0);
+      } else {
+        // Count all payments
+        collected = f.paymentHistory
+          .reduce((s, p) => s + (parseFloat(p.amt) || 0), 0);
+      }
+    }
 
     totalDue += due;
     totalCollected += collected;
 
+    // Determine status
     if (f.vacant || !f.owner) {
       vacant++;
     } else if (collected >= due) {
@@ -4828,9 +4878,12 @@ function rAnalytics() {
 
   const outstanding = Math.max(0, totalDue - totalCollected);
   const pct = totalDue ? Math.round(totalCollected / totalDue * 100) : 0;
+  const periodLabel = selectedMonth
+    ? new Date(selectedMonth + '-01').toLocaleDateString('en-IN', { month: 'long', year: 'numeric' })
+    : 'All Time';
 
-  // Pie chart segments
-  const segs = [
+  // Pie chart data
+  const segments = [
     { label: 'Paid', value: paid, color: '#22c55e', displayValue: paid + ' flats' },
     { label: 'Partial', value: partial, color: '#f59e0b', displayValue: partial + ' flats' },
     { label: 'Pending', value: pending, color: '#ef4444', displayValue: pending + ' flats' },
@@ -4838,20 +4891,20 @@ function rAnalytics() {
   ].filter(s => s.value > 0);
 
   requestAnimationFrame(() => {
-    drawPie('payPie', segs, 'payTooltip');
-    buildLegend('payLegend', segs.map(s => ({...s, count: s.value})), allFlats.length);
+    drawPie('payPie', segments, 'payTooltip');
+    buildLegend('payLegend', segments.map(s => ({ ...s, count: s.value })), allFlats.length);
   });
 
   // Update cards
-  const cards = document.getElementById('analyticsTotals');
-  if (cards) cards.innerHTML = `
+  const cardsDiv = document.getElementById('analyticsTotals');
+  if (cardsDiv) cardsDiv.innerHTML = `
     <div class="vscard green">
       <div class="vscard-icon fw"><i class="ti ti-circle-check"></i></div>
       <div>
         <div class="vscard-label">Collected</div>
         <div class="vscard-val" style="color:var(--green)">${inr(totalCollected)}</div>
         <div style="font-size:10px;color:var(--muted);margin-top:2px">${paid + partial} flats · ${pct}%</div>
-        <div style="font-size:10px;font-weight:700;color:var(--green);margin-top:1px">All Time</div>
+        <div style="font-size:10px;font-weight:700;color:var(--green);margin-top:1px">${periodLabel}</div>
       </div>
     </div>
     <div class="vscard red">
@@ -4860,14 +4913,15 @@ function rAnalytics() {
         <div class="vscard-label">Outstanding</div>
         <div class="vscard-val" style="color:var(--red)">${inr(outstanding)}</div>
         <div style="font-size:10px;color:var(--muted);margin-top:2px">${pending} pending · ${partial} partial</div>
-        <div style="font-size:10px;font-weight:700;color:var(--red-txt);margin-top:1px">All Time</div>
+        <div style="font-size:10px;font-weight:700;color:var(--red-txt);margin-top:1px">${periodLabel}</div>
       </div>
     </div>`;
 
   // Render table
-  renderAnPayTable('month', AM, '', 'all');
+  renderAnPayTable('month', selectedMonth || AM, '', 'all');
 }
 window.rAnalytics = rAnalytics;
+
 
 
 
