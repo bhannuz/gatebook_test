@@ -821,6 +821,12 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   /* ── Structure floor grid: 3 cols on mobile ── */
   .str-floor-grid{grid-template-columns:repeat(3,1fr)!important}
 
+  /* ── Structure view mobile fixes ── */
+  #structureView{padding:6px 8px 12px!important}
+  #strStats{gap:5px!important;margin-bottom:8px!important}
+  #strChips{gap:8px!important;padding:2px 0!important}
+  .str-divider{display:none!important}
+
   /* ── Expense filter selects in presView ── */
   #histYearFilter,#histMonthFilter,#histCatFilter{font-size:11px;height:30px}
 }
@@ -1241,46 +1247,58 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   </div><!-- /#analyticsView -->
 
   <!-- STRUCTURE VIEW -->
-  <div id="structureView" style="display:none;padding:10px 14px 14px">
-    
-    <!-- President Card -->
-    <div id="presBanner" style="margin-bottom:12px;"></div>
-    
-    <!-- Header with filters and buttons -->
-    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:14px">
-      <div>
-        <div style="font-size:15px;font-weight:800;color:var(--text)">🏢 Residents</div>
-        <div style="font-size:11px;color:var(--muted);margin-top:2px">Master data for all flats</div>
-      </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-        <!-- Manage Structure Button -->
-        <button onclick="window._openStructureManager()" style="padding:8px 14px;background:var(--indigo);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);display:flex;align-items:center;gap:6px">
-          <i class="ti ti-layout-sidebar" style="font-size:13px"></i>Manage Structure
-        </button>
+  <div id="structureView" style="display:none;padding:8px 14px 14px">
 
-        <!-- Block Filter -->
-        <select id="strBlockFilter" class="ctrl" style="height:28px;font-size:10px;padding:0 6px;min-width:80px;" onchange="window.rStructure()">
+    <!-- Single toolbar row: President chip + title + controls all in one line -->
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
+
+      <!-- President chip (injected by rStructure) -->
+      <div id="presBanner" style="flex-shrink:0;"></div>
+
+      <!-- Divider (hidden on mobile when wrapping) -->
+      <div style="width:1px;height:28px;background:var(--border2);flex-shrink:0;" class="str-divider"></div>
+
+      <!-- Title -->
+      <div style="flex-shrink:0;">
+        <div style="font-size:13px;font-weight:800;color:var(--text);line-height:1.2;">🏢 Residents</div>
+        <div style="font-size:10px;color:var(--muted);">Master data for all flats</div>
+      </div>
+
+      <!-- Spacer -->
+      <div style="flex:1;min-width:8px;"></div>
+
+      <!-- Controls: all filters + buttons -->
+      <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+        <button onclick="window._openStructureManager()"
+          style="height:32px;padding:0 12px;background:var(--indigo);color:#fff;border:none;border-radius:var(--r-md);font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font);display:inline-flex;align-items:center;gap:5px;white-space:nowrap;">
+          <i class="ti ti-layout-sidebar" style="font-size:12px"></i>Structure
+        </button>
+        <select id="strBlockFilter" class="ctrl" style="height:32px;font-size:11px;padding:0 8px;" onchange="window.rStructure()">
           <option value="all">All Blocks</option>
         </select>
-        <select id="strTypeFilter" class="ctrl" style="height:32px;font-size:12px;padding:0 10px" onchange="window.rStructure()">
+        <select id="strTypeFilter" class="ctrl" style="height:32px;font-size:11px;padding:0 8px;" onchange="window.rStructure()">
           <option value="all">All Types</option>
           <option value="owner">🏠 Owner</option>
           <option value="tenant">🔑 Tenant</option>
           <option value="vacant">🚪 Vacant</option>
         </select>
-        <div style="position:relative">
-          <i class="ti ti-search" style="position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:13px;pointer-events:none"></i>
-          <input type="text" id="strSearch" class="ctrl" placeholder="Search…" style="height:32px;font-size:12px;padding-left:32px;width:140px" oninput="window.rStructure()">
+        <div style="position:relative;">
+          <i class="ti ti-search" style="position:absolute;left:8px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:12px;pointer-events:none;"></i>
+          <input type="text" id="strSearch" class="ctrl" placeholder="Search…"
+            style="height:32px;font-size:11px;padding-left:28px;width:110px;" oninput="window.rStructure()">
         </div>
-        <button class="btn btn-indigo btn-sm" onclick="window._oAF()" style="padding:6px 12px;font-size:11px"><i class="ti ti-plus"></i> Add</button>
+        <button class="btn btn-indigo btn-sm" onclick="window._oAF()"
+          style="height:32px;padding:0 12px;font-size:11px;white-space:nowrap;">
+          <i class="ti ti-plus"></i> Add
+        </button>
       </div>
     </div>
-    
-    <!-- Summary stat cards -->
-    <div id="strStats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:14px"></div>
-    
+
+    <!-- Summary stat cards — compact, no extra margin -->
+    <div id="strStats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:6px;margin-bottom:10px;"></div>
+
     <!-- Flats as chips (grouped) -->
-    <div id="strChips" style="display:grid;gap:14px;padding:10px 0"></div>
+    <div id="strChips" style="display:grid;gap:10px;padding:4px 0;"></div>
   </div><!-- /#structureView -->
 
   <!-- RESIDENTS VIEW -->
@@ -4395,12 +4413,12 @@ function rStructure() {
         ? new Date(president.termStart).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})
         : '';
       presCard.innerHTML = `
-        <div class="pres-chip" style="margin-bottom:12px;">
+        <div class="pres-chip" style="margin-bottom:0;">
           <div class="pres-chip-av">${ini}</div>
           <div>
             <div class="pres-chip-label">🏆 President</div>
             <div class="pres-chip-name">${president.name}</div>
-            <div class="pres-chip-flat">Flat ${president.flatId||''}${president.phone?' · '+president.phone:''}${since?' · Since '+since:''}</div>
+            <div class="pres-chip-flat">Flat ${president.flatId||''}${since?' · Since '+since:''}</div>
           </div>
           <button class="pres-chip-edit" onclick="window._oPresM()" title="Change president">
             <i class="ti ti-pencil"></i>
@@ -4408,14 +4426,12 @@ function rStructure() {
         </div>`;
     } else {
       presCard.innerHTML = `
-        <div class="pres-empty" style="margin-bottom:12px;">
-          <i class="ti ti-crown"></i>
-          <div>
-            <div style="font-size:13px;font-weight:800;color:var(--text);margin-bottom:4px">No President Elected</div>
-            <div style="font-size:12px;margin-bottom:10px">Elect a flat member to manage society expenses.</div>
-            <button class="btn btn-indigo btn-sm" onclick="window._oPresM()"><i class="ti ti-crown"></i> Elect President</button>
-          </div>
-        </div>`;
+        <button onclick="window._oPresM()"
+          style="display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;
+            border:1.5px dashed var(--border3);border-radius:99px;background:transparent;
+            color:var(--text2);font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font);white-space:nowrap;">
+          <i class="ti ti-crown" style="font-size:13px;color:var(--indigo)"></i> Elect President
+        </button>`;
     }
   }
   
