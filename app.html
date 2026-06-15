@@ -1120,28 +1120,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
           <div id="fundRow" style="display:contents;"></div>
         </div>
 
-        <!-- FILTERS -->
-        <div style="display:flex;gap:10px;margin-bottom:12px;align-items:flex-end;flex-wrap:wrap;">
-          <div style="flex:1;min-width:110px;">
-            <label style="display:block;font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;">Year</label>
-            <select id="histYearFilter" class="ctrl" style="width:100%;font-size:11px;height:32px;padding:6px 8px;border:1px solid var(--border2);border-radius:6px;background:var(--surface);color:var(--text);cursor:pointer;" onchange="rPresident()">
-              <option value="all">All Years</option>
-            </select>
-          </div>
-          <div style="flex:1;min-width:110px;">
-            <label style="display:block;font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;">Month</label>
-            <select id="histMonthFilter" class="ctrl" style="width:100%;font-size:11px;height:32px;padding:6px 8px;border:1px solid var(--border2);border-radius:6px;background:var(--surface);color:var(--text);cursor:pointer;" onchange="rPresident()">
-              <option value="all">All Months</option>
-            </select>
-          </div>
-          <div style="flex:1;min-width:110px;">
-            <label style="display:block;font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;">Category</label>
-            <select id="histCatFilter" class="ctrl" style="width:100%;font-size:11px;height:32px;padding:6px 8px;border:1px solid var(--border2);border-radius:6px;background:var(--surface);color:var(--text);cursor:pointer;" onchange="rPresident()">
-              <option value="all">All Categories</option>
-            </select>
-          </div>
-        </div>
-
         <!-- Expense Records -->
         <div class="exp-records-panel tab-table-wrap">
           <div style="padding:10px 14px;border-bottom:1px solid var(--border2);font-size:11px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.4px;">
@@ -1762,16 +1740,14 @@ function rStats() {
   if(badge){badge.textContent=`${all.length} flats`;badge.style.display='';}
   const totTw=[...vehicles.values()].reduce((s,v)=>s+(parseInt(v.tw)||0),0);
   const totFw=[...vehicles.values()].reduce((s,v)=>s+(parseInt(v.fw)||0),0);
-  document.getElementById('phAct').innerHTML=`
-    <div style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:12px;flex-wrap:wrap;">
-      <div style="display:flex;gap:12px;align-items:center;">
+  // Only set phAct if not on president/analytics tab (those tabs set their own phAct)
+  if (AV !== 'president' && AV !== 'analytics') {
+    document.getElementById('phAct').innerHTML=`
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
         <button class="btn btn-indigo" onclick="window._oA()"><i class="ti ti-plus"></i> Add Payment</button>
         <button class="btn btn-indigo" onclick="window._oPresExp()"><i class="ti ti-receipt"></i> Add Expense</button>
-      </div>
-      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
-      </div>
-    </div>
-  `;
+      </div>`;
+  }
   document.getElementById('statsRow').innerHTML=`
     <div class="scard indigo">
       <div class="sc-top"><div class="sc-icon"><i class="ti ti-receipt"></i></div><span class="sc-trend up">This month</span></div>
@@ -3786,6 +3762,37 @@ const CAT_CLR = {
 };
 
 function rPresident() {
+  /* ── Save filter selections BEFORE rebuilding DOM ── */
+  const _savedYear  = document.getElementById('histYearFilter')?.value  || 'all';
+  const _savedMonth = document.getElementById('histMonthFilter')?.value || 'all';
+  const _savedCat   = document.getElementById('histCatFilter')?.value   || 'all';
+
+  /* ── Action bar: buttons LEFT, filters RIGHT ── */
+  document.getElementById('phAct').innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:10px;flex-wrap:wrap;">
+      <div style="display:flex;gap:8px;align-items:center;flex-shrink:0;">
+        <button class="btn btn-indigo" onclick="window._oA()"><i class="ti ti-plus"></i> Add Payment</button>
+        <button class="btn btn-indigo" onclick="window._oPresExp()"><i class="ti ti-receipt"></i> Add Expense</button>
+      </div>
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+        <select id="histYearFilter"
+          style="font-size:11px;height:32px;padding:0 8px;border:1.5px solid var(--border2);border-radius:var(--r-md);background:#fff;color:var(--text);font-family:var(--font);font-weight:600;cursor:pointer;outline:none;"
+          onchange="rPresident()">
+          <option value="all">All Years</option>
+        </select>
+        <select id="histMonthFilter"
+          style="font-size:11px;height:32px;padding:0 8px;border:1.5px solid var(--border2);border-radius:var(--r-md);background:#fff;color:var(--text);font-family:var(--font);font-weight:600;cursor:pointer;outline:none;"
+          onchange="rPresident()">
+          <option value="all">All Months</option>
+        </select>
+        <select id="histCatFilter"
+          style="font-size:11px;height:32px;padding:0 8px;border:1.5px solid var(--border2);border-radius:var(--r-md);background:#fff;color:var(--text);font-family:var(--font);font-weight:600;cursor:pointer;outline:none;"
+          onchange="rPresident()">
+          <option value="all">All Categories</option>
+        </select>
+      </div>
+    </div>`;
+
   /* ── President chip (compact) ── */
   const pres = president;
   if (!pres || !pres.name) {
@@ -3827,42 +3834,39 @@ function rPresident() {
   const allYears  = [...new Set(allMonths.map(m=>m.slice(0,4)))].sort().reverse();
   const allCats   = [...new Set(socExps.map(e=>e.cat).filter(Boolean))].sort();
 
-  // Year dropdown
+  // Year dropdown — restore saved selection
   const ySel = document.getElementById('histYearFilter');
   if (ySel) {
-    const cur = ySel.value;
     ySel.innerHTML = `<option value="all">All Years</option>` +
-      allYears.map(y => `<option value="${y}"${y === cur ? ' selected' : ''}>${y}</option>`).join('');
-    if (cur && allYears.includes(cur)) ySel.value = cur;
+      allYears.map(y => `<option value="${y}">${y}</option>`).join('');
+    if (_savedYear && allYears.includes(_savedYear)) ySel.value = _savedYear;
   }
 
-  // Month dropdown — cascade filter by selected year
+  // Month dropdown — cascade by selected year, restore saved selection
   const selectedYear = ySel?.value || 'all';
   const filteredMonths = selectedYear === 'all' ? allMonths : allMonths.filter(m => m.startsWith(selectedYear));
   const mSel = document.getElementById('histMonthFilter');
   if (mSel) {
-    const cur = mSel.value;
     mSel.innerHTML = `<option value="all">All Months</option>` +
       filteredMonths.map(m => {
         const lbl = new Date(m + '-01').toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
-        return `<option value="${m}"${m === cur ? ' selected' : ''}>${lbl}</option>`;
+        return `<option value="${m}">${lbl}</option>`;
       }).join('');
-    if (cur && filteredMonths.includes(cur)) mSel.value = cur;
+    if (_savedMonth && filteredMonths.includes(_savedMonth)) mSel.value = _savedMonth;
   }
 
-  // Category dropdown
+  // Category dropdown — restore saved selection
   const cSel = document.getElementById('histCatFilter');
   if (cSel) {
-    const cur = cSel.value;
     cSel.innerHTML = `<option value="all">All Categories</option>` +
-      allCats.map(c => `<option value="${c}"${c === cur ? ' selected' : ''}>${c}</option>`).join('');
-    if (cur && allCats.includes(cur)) cSel.value = cur;
+      allCats.map(c => `<option value="${c}">${c}</option>`).join('');
+    if (_savedCat && allCats.includes(_savedCat)) cSel.value = _savedCat;
   }
 
-  /* ── Filter expense rows ── */
-  const yf  = document.getElementById('histYearFilter')?.value  || 'all';
-  const mf  = document.getElementById('histMonthFilter')?.value || 'all';
-  const cf  = document.getElementById('histCatFilter')?.value   || 'all';
+  /* ── Filter expense rows using saved values ── */
+  const yf = _savedYear;
+  const mf = (_savedMonth && filteredMonths.includes(_savedMonth)) ? _savedMonth : (mSel?.value || 'all');
+  const cf = (_savedCat  && allCats.includes(_savedCat))           ? _savedCat  : (cSel?.value || 'all');
 
   const vis = socExps.filter(e => {
     if (yf !== 'all' && !(e.month||'').startsWith(yf)) return false;
