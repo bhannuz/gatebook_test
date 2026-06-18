@@ -765,9 +765,11 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 }
 @media(max-width:600px){
   .bottom-nav-bar{display:flex}
-  .tab-bar-wrap{display:none}
+  .tab-bar-wrap{display:none!important}
   .app{padding:0 .75rem 5.5rem}
   #phAct{padding-top:8px;padding-bottom:6px;}
+  /* Views sit flush under phAct on mobile */
+  #analyticsView,#presView,#structureView,#iView{padding-top:4px!important}
 
   /* ── Stat chips: 2-col on mobile ── */
   #analyticsTotals{grid-template-columns:1fr 1fr!important}
@@ -1110,7 +1112,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 <!-- APP -->
 <div class="app">
   <!-- Tab bar now at very top, card-sized, full width -->
-  <div class="tab-bar-wrap" style="margin:1rem 0 1rem;position:static;border:none;padding:0;background:transparent">
+  <div class="tab-bar-wrap" style="margin:0 0 0.5rem;position:static;border:none;padding:0;background:transparent">
     <div class="view-tabs" id="viewTabs" style="gap:8px;padding:0">
       <button class="vtab active" data-v="analytics" onclick="switchView('analytics')"><i class="ti ti-chart-pie"></i> Analytics</button>
       <button class="vtab" data-v="president" onclick="switchView('president')"><i class="ti ti-receipt"></i> Expenses</button>
@@ -1124,8 +1126,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 
   <div id="phAct" style="display:flex;gap:12px;justify-content:flex-start;align-items:center;margin-bottom:0;margin-top:0;flex-wrap:wrap;"></div>
   <div id="statsRow" style="display:none"></div>
-
-  </div>
 
   <!-- ISSUES VIEW -->
   <div id="iView" style="display:none">
@@ -1335,6 +1335,8 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
     <!-- Flats as chips (grouped) -->
     <div id="strChips" style="display:grid;gap:10px;padding:4px 0;"></div>
   </div><!-- /#structureView -->
+
+</div><!-- /.app -->
 
   <!-- RESIDENTS VIEW -->
 
