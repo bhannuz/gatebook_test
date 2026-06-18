@@ -767,6 +767,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   .bottom-nav-bar{display:flex}
   .tab-bar-wrap{display:none}
   .app{padding:0 .75rem 5.5rem}
+  #phAct{padding-top:8px;padding-bottom:6px;}
 
   /* ── Stat chips: 2-col on mobile ── */
   #analyticsTotals{grid-template-columns:1fr 1fr!important}
@@ -829,6 +830,40 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 
   /* ── Expense filter selects in presView ── */
   #histYearFilter,#histMonthFilter,#histCatFilter{font-size:11px;height:30px}
+
+  /* ── phAct filter bar: stack vertically on mobile, no overflow ── */
+  #phAct > div {
+    flex-direction:column !important;
+    align-items:stretch !important;
+    width:100% !important;
+  }
+  #phAct > div > div {
+    width:100% !important;
+    flex-wrap:wrap !important;
+    gap:6px !important;
+  }
+  /* Buttons fill full width row */
+  #phAct > div > div:first-child {
+    width:100% !important;
+  }
+  #phAct > div > div:first-child button {
+    flex:1 !important;
+    justify-content:center !important;
+  }
+  /* Selects fill available space */
+  #phAct select, #phAct #payFilterYear, #phAct #payFilterMonth,
+  #phAct #histYearFilter, #phAct #histMonthFilter, #phAct #histCatFilter {
+    flex:1 !important;
+    min-width:0 !important;
+    width:auto !important;
+    font-size:11px !important;
+    height:30px !important;
+  }
+  /* Labels inline with selects */
+  #phAct label {
+    white-space:nowrap;
+    align-self:center;
+  }
 }
 /* ── Bottom Nav Bar (mobile ≤600px only) ── */
 .bottom-nav-bar{
@@ -1087,7 +1122,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
     </div>
   </div>
 
-  <div id="phAct" style="display:flex;gap:12px;justify-content:flex-start;align-items:center;margin-bottom:8px;margin-top:8px;flex-wrap:wrap;"></div>
+  <div id="phAct" style="display:flex;gap:12px;justify-content:flex-start;align-items:center;margin-bottom:0;margin-top:0;flex-wrap:wrap;"></div>
   <div id="statsRow" style="display:none"></div>
 
   </div>
@@ -1110,7 +1145,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   <!-- DIRECTORY VIEW — Owners, Tenants & Payment History -->
 
   <!-- PRESIDENT VIEW -->
-  <div id="presView" style="display:none;padding:12px;">
+  <div id="presView" style="display:none;padding:0 12px 12px;">
 
     <!-- Main grid: responsive layout -->
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start;" class="exp-layout-grid">
@@ -1194,7 +1229,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   </div><!-- /#presView -->
 
   <!-- ANALYTICS VIEW -->
-  <div id="analyticsView" style="display:none;padding:8px 12px 12px;">
+  <div id="analyticsView" style="display:none;padding:0 12px 12px;">
 
     <!-- Single 2-col grid: left 55% = chips + table stacked, right 45% = chart -->
     <div style="display:grid;grid-template-columns:55fr 45fr;gap:14px;align-items:start" class="an-layout-grid">
