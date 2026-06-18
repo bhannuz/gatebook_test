@@ -340,7 +340,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .tab-table-wrap{
   background:#fff;
   border-radius:var(--r-lg);
-  overflow:hidden;
+  overflow:visible;
   position:relative;
   border:1px solid var(--border2);
   border-top:3px solid #6366F1;
@@ -488,8 +488,21 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .micon.veh{background:linear-gradient(135deg,rgba(2,132,199,.12),rgba(8,145,178,.08));color:var(--sky)}
 
 /* ── Analytics/Expenses shared panels ── */
-.exp-records-panel{background:#fff;border:1px solid var(--border2);border-top:3px solid #6366F1;border-radius:var(--r-lg);overflow:hidden;position:relative}
+.exp-records-panel{background:#fff;border:1px solid var(--border2);border-top:3px solid #6366F1;border-radius:var(--r-lg);overflow:visible;position:relative}
 .exp-pie-panel{background:#fff;border:1px solid var(--border2);border-top:3px solid #6366F1;border-radius:var(--r-lg);padding:16px;position:relative;overflow:hidden}
+
+/* ── Residents tab toolbar ── */
+.str-toolbar{display:flex;flex-direction:column;gap:8px;margin-bottom:12px;}
+.str-toolbar-top{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.str-toolbar-title{display:flex;flex-direction:column;gap:1px;}
+.str-toolbar-filters{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;}
+.str-filter-group{display:flex;flex-direction:column;gap:3px;}
+.str-filter-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;padding-left:2px;}
+.str-filter-sel{height:34px;font-size:12px;padding:0 10px;min-width:0;}
+.str-filter-search{flex:1;min-width:140px;}
+.str-filter-search .str-filter-sel{width:100%;}
+/* divider between president banner and toolbar gone — presBanner handles its own spacing */
+.str-divider{display:none}
 
 /* ── MODALS ── */
 .mbg{display:none;position:fixed;inset:0;z-index:500;
@@ -804,13 +817,15 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   }
 
   /* ── Table: horizontal scroll on mobile ── */
-  .exp-records-panel .tab-table-wrap,
-  .exp-records-panel{overflow-x:auto}
+  .exp-records-panel{ overflow:hidden!important; border-radius:var(--r-lg)!important; }
+  .exp-records-panel > div:last-child{ overflow-x:auto!important; overflow-y:auto!important; max-height:340px!important; }
+  /* Ensure table fits - reduce padding on mobile */
+  #anPayTable th, #anPayTable td{ padding:8px 8px!important; font-size:11px!important; }
   #anPayTable th:nth-child(4),
   #anPayTable td:nth-child(4){ display:none } /* hide 2W/4W col on mobile */
-
-  /* ── Payment records table max-height on mobile ── */
-  .exp-records-panel > div:last-child{ max-height:260px!important; overflow-y:auto }
+  /* Analytics view must not clip its children */
+  #analyticsView{ overflow:visible!important; }
+  .an-layout-grid{ overflow:visible!important; }
 
   /* ── Filters row wraps cleanly ── */
   #analyticsView > div:first-child{
@@ -828,6 +843,13 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   #structureView{padding:6px 8px 12px!important}
   #strStats{gap:5px!important;margin-bottom:8px!important}
   #strChips{gap:8px!important;padding:2px 0!important}
+  /* Toolbar stacks cleanly on mobile */
+  .str-toolbar-filters{gap:6px!important;}
+  .str-filter-group{flex:1;min-width:calc(50% - 6px);}
+  .str-filter-search{flex:1;min-width:100%!important;}
+  .str-filter-sel{height:36px!important;font-size:13px!important;width:100%!important;}
+  .str-filter-label{font-size:11px!important;}
+  .str-toolbar-top button{font-size:12px!important;padding:0 12px!important;height:36px!important;}
   .str-divider{display:none!important}
 
   /* ── Expense filter selects in presView ── */
@@ -942,7 +964,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   
   table {
     width: 100%;
-    min-width: 400px;
+    min-width: 0;
   }
   
   /* Chart centered */
@@ -956,8 +978,8 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
     height: 200px !important;
   }
   
-  /* Buttons responsive */
-  button {
+  /* Buttons responsive - scope to table actions only */
+  .tab-table-wrap button {
     font-size: 10px !important;
     padding: 6px 10px !important;
   }
@@ -981,8 +1003,8 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
     gap: 8px !important;
   }
   
-  /* Very compact buttons */
-  button {
+  /* Very compact buttons - scope to table actions only */
+  .tab-table-wrap button {
     padding: 4px 8px !important;
     font-size: 9px !important;
   }
@@ -998,8 +1020,8 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
     height: 160px !important;
   }
   
-  /* Compact filters */
-  select, input {
+  /* Compact filters - scope to phAct only */
+  #phAct select, #phAct input {
     font-size: 10px !important;
     height: 28px !important;
     padding: 0 6px !important;
@@ -1245,7 +1267,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
           <div style="padding:10px 14px;border-bottom:1px solid var(--border2);font-size:11px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.4px">
             <i class="ti ti-table" style="color:var(--indigo)"></i> Payment Records <span id="anPayCount" style="font-size:10px;color:var(--muted);font-weight:600;text-transform:none;letter-spacing:0"></span>
           </div>
-          <div style="overflow-x:auto;max-height:340px;overflow-y:auto">
+          <div style="overflow-x:auto;max-height:340px;overflow-y:auto;border-radius:0 0 var(--r-lg) var(--r-lg);">
             <table style="width:100%;border-collapse:collapse">
               <thead style="position:sticky;top:0;z-index:1">
                 <tr style="background:var(--surface3)">
@@ -1284,49 +1306,57 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   <!-- STRUCTURE VIEW -->
   <div id="structureView" style="display:none;padding:8px 14px 14px">
 
-    <!-- Single toolbar row: President chip + title + controls all in one line -->
-    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
+    <!-- President banner (injected by rStructure) -->
+    <div id="presBanner" style="margin-bottom:10px;"></div>
 
-      <!-- President chip (injected by rStructure) -->
-      <div id="presBanner" style="flex-shrink:0;"></div>
+    <!-- Residents toolbar: title row + filter row -->
+    <div class="str-toolbar">
 
-      <!-- Divider (hidden on mobile when wrapping) -->
-      <div style="width:1px;height:28px;background:var(--border2);flex-shrink:0;" class="str-divider"></div>
-
-      <!-- Title -->
-      <div style="flex-shrink:0;">
-        <div style="font-size:13px;font-weight:800;color:var(--text);line-height:1.2;">🏢 Residents</div>
-        <div style="font-size:10px;color:var(--muted);">Master data for all flats</div>
-      </div>
-
-      <!-- Spacer -->
-      <div style="flex:1;min-width:8px;"></div>
-
-      <!-- Controls: all filters + buttons -->
-      <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
-        <button onclick="window._openStructureManager()"
-          style="height:32px;padding:0 12px;background:var(--indigo);color:#fff;border:none;border-radius:var(--r-md);font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font);display:inline-flex;align-items:center;gap:5px;white-space:nowrap;">
-          <i class="ti ti-layout-sidebar" style="font-size:12px"></i>Structure
-        </button>
-        <select id="strBlockFilter" class="ctrl" style="height:32px;font-size:11px;padding:0 8px;" onchange="window.rStructure()">
-          <option value="all">All Blocks</option>
-        </select>
-        <select id="strTypeFilter" class="ctrl" style="height:32px;font-size:11px;padding:0 8px;" onchange="window.rStructure()">
-          <option value="all">All Types</option>
-          <option value="owner">🏠 Owner</option>
-          <option value="tenant">🔑 Tenant</option>
-          <option value="vacant">🚪 Vacant</option>
-        </select>
-        <div style="position:relative;">
-          <i class="ti ti-search" style="position:absolute;left:8px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:12px;pointer-events:none;"></i>
-          <input type="text" id="strSearch" class="ctrl" placeholder="Search…"
-            style="height:32px;font-size:11px;padding-left:28px;width:110px;" oninput="window.rStructure()">
+      <!-- Row 1: Title + action buttons -->
+      <div class="str-toolbar-top">
+        <div class="str-toolbar-title">
+          <span style="font-size:15px;font-weight:800;color:var(--text);">🏢 Residents</span>
+          <span style="font-size:11px;color:var(--muted);font-weight:500;">All flats</span>
         </div>
-        <button class="btn btn-indigo btn-sm" onclick="window._oAF()"
-          style="height:32px;padding:0 12px;font-size:11px;white-space:nowrap;">
-          <i class="ti ti-plus"></i> Add
-        </button>
+        <div style="display:flex;gap:6px;flex-shrink:0;">
+          <button onclick="window._openStructureManager()"
+            style="height:34px;padding:0 12px;background:var(--surface2);color:var(--text);border:1.5px solid var(--border2);border-radius:var(--r-md);font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font);display:inline-flex;align-items:center;gap:5px;white-space:nowrap;">
+            <i class="ti ti-settings" style="font-size:13px;color:var(--indigo)"></i>Manage
+          </button>
+          <button class="btn btn-indigo" onclick="window._oAF()"
+            style="height:34px;padding:0 14px;font-size:12px;white-space:nowrap;">
+            <i class="ti ti-plus"></i> Add Flat
+          </button>
+        </div>
       </div>
+
+      <!-- Row 2: Filters with clear labels -->
+      <div class="str-toolbar-filters">
+        <div class="str-filter-group">
+          <label class="str-filter-label">Block</label>
+          <select id="strBlockFilter" class="ctrl str-filter-sel" onchange="window.rStructure()">
+            <option value="all">All Blocks</option>
+          </select>
+        </div>
+        <div class="str-filter-group">
+          <label class="str-filter-label">Type</label>
+          <select id="strTypeFilter" class="ctrl str-filter-sel" onchange="window.rStructure()">
+            <option value="all">All</option>
+            <option value="owner">🏠 Owner</option>
+            <option value="tenant">🔑 Tenant</option>
+            <option value="vacant">🚪 Vacant</option>
+          </select>
+        </div>
+        <div class="str-filter-group str-filter-search">
+          <label class="str-filter-label">Search</label>
+          <div style="position:relative;">
+            <i class="ti ti-search" style="position:absolute;left:8px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:12px;pointer-events:none;"></i>
+            <input type="text" id="strSearch" class="ctrl str-filter-sel" placeholder="Name or flat no."
+              style="padding-left:28px;" oninput="window.rStructure()">
+          </div>
+        </div>
+      </div>
+
     </div>
 
     <!-- Summary stat cards — compact, no extra margin -->
