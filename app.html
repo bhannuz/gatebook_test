@@ -1309,54 +1309,26 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
     <!-- President banner (injected by rStructure) -->
     <div id="presBanner" style="margin-bottom:10px;"></div>
 
-    <!-- Residents toolbar: title row + filter row -->
-    <div class="str-toolbar">
-
-      <!-- Row 1: Title + action buttons -->
-      <div class="str-toolbar-top">
-        <div class="str-toolbar-title">
-          <span style="font-size:15px;font-weight:800;color:var(--text);">🏢 Residents</span>
-          <span style="font-size:11px;color:var(--muted);font-weight:500;">All flats</span>
-        </div>
-        <div style="display:flex;gap:6px;flex-shrink:0;">
-          <button onclick="window._openStructureManager()"
-            style="height:34px;padding:0 12px;background:var(--surface2);color:var(--text);border:1.5px solid var(--border2);border-radius:var(--r-md);font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font);display:inline-flex;align-items:center;gap:5px;white-space:nowrap;">
-            <i class="ti ti-settings" style="font-size:13px;color:var(--indigo)"></i>Manage
-          </button>
-          <button class="btn btn-indigo" onclick="window._oAF()"
-            style="height:34px;padding:0 14px;font-size:12px;white-space:nowrap;">
-            <i class="ti ti-plus"></i> Add Flat
-          </button>
-        </div>
+    <!-- Residents toolbar: single row -->
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
+      <button onclick="window._openStructureManager()"
+        style="height:34px;padding:0 12px;background:var(--surface2);color:var(--text);border:1.5px solid var(--border2);border-radius:var(--r-md);font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font);display:inline-flex;align-items:center;gap:5px;white-space:nowrap;flex-shrink:0;">
+        <i class="ti ti-settings" style="font-size:13px;color:var(--indigo)"></i>Manage
+      </button>
+      <select id="strBlockFilter" class="ctrl" style="height:34px;font-size:12px;padding:0 10px;flex-shrink:0;" onchange="window.rStructure()">
+        <option value="all">All Blocks</option>
+      </select>
+      <select id="strTypeFilter" class="ctrl" style="height:34px;font-size:12px;padding:0 10px;flex-shrink:0;" onchange="window.rStructure()">
+        <option value="all">All Types</option>
+        <option value="owner">🏠 Owner</option>
+        <option value="tenant">🔑 Tenant</option>
+        <option value="vacant">🚪 Vacant</option>
+      </select>
+      <div style="position:relative;flex:1;min-width:120px;">
+        <i class="ti ti-search" style="position:absolute;left:8px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:12px;pointer-events:none;"></i>
+        <input type="text" id="strSearch" class="ctrl" placeholder="Search name or flat no."
+          style="height:34px;font-size:12px;padding-left:28px;width:100%;box-sizing:border-box;" oninput="window.rStructure()">
       </div>
-
-      <!-- Row 2: Filters with clear labels -->
-      <div class="str-toolbar-filters">
-        <div class="str-filter-group">
-          <label class="str-filter-label">Block</label>
-          <select id="strBlockFilter" class="ctrl str-filter-sel" onchange="window.rStructure()">
-            <option value="all">All Blocks</option>
-          </select>
-        </div>
-        <div class="str-filter-group">
-          <label class="str-filter-label">Type</label>
-          <select id="strTypeFilter" class="ctrl str-filter-sel" onchange="window.rStructure()">
-            <option value="all">All</option>
-            <option value="owner">🏠 Owner</option>
-            <option value="tenant">🔑 Tenant</option>
-            <option value="vacant">🚪 Vacant</option>
-          </select>
-        </div>
-        <div class="str-filter-group str-filter-search">
-          <label class="str-filter-label">Search</label>
-          <div style="position:relative;">
-            <i class="ti ti-search" style="position:absolute;left:8px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:12px;pointer-events:none;"></i>
-            <input type="text" id="strSearch" class="ctrl str-filter-sel" placeholder="Name or flat no."
-              style="padding-left:28px;" oninput="window.rStructure()">
-          </div>
-        </div>
-      </div>
-
     </div>
 
     <!-- Summary stat cards — compact, no extra margin -->
@@ -3043,10 +3015,11 @@ window._addNewFlatRow = () => {
   const container = document.getElementById('newFlatsContainer');
   const rowId = 'newflat_' + Date.now();
   const rowHtml = `
-    <div id="${rowId}" style="background:var(--surface2);padding:10px;border-radius:6px;border:1px solid var(--border);display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:6px;align-items:center">
+    <div id="${rowId}" style="background:var(--surface2);padding:10px;border-radius:6px;border:1px solid var(--border);display:grid;grid-template-columns:1fr 1fr 1fr 1fr auto;gap:6px;align-items:center">
       <input class="newFlatNum" type="text" placeholder="Flat #" style="padding:6px;border:1px solid var(--border);border-radius:4px;font-family:var(--font);font-size:11px;box-sizing:border-box"/>
       <input class="newFlatFloor" type="number" placeholder="Floor" min="1" style="padding:6px;border:1px solid var(--border);border-radius:4px;font-family:var(--font);font-size:11px;box-sizing:border-box"/>
       <input class="newResName" type="text" placeholder="Resident" style="padding:6px;border:1px solid var(--border);border-radius:4px;font-family:var(--font);font-size:11px;box-sizing:border-box"/>
+      <input class="newMonthlyDue" type="number" placeholder="₹ Due" min="0" style="padding:6px;border:1px solid var(--border);border-radius:4px;font-family:var(--font);font-size:11px;box-sizing:border-box"/>
       <button type="button" onclick="document.getElementById('${rowId}').remove()" style="padding:4px 6px;background:transparent;border:1px solid var(--red);color:var(--red);border-radius:4px;font-size:10px;font-weight:700;cursor:pointer;font-family:var(--font)">✕</button>
     </div>
   `;
