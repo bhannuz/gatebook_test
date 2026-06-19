@@ -843,6 +843,21 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   #structureView{padding:6px 8px 12px!important}
   #strStats{gap:5px!important;margin-bottom:8px!important}
   #strChips{gap:8px!important;padding:2px 0!important}
+
+  /* ── Manage Buildings modal: stack vertically on mobile ── */
+  .sm-grid{grid-template-columns:1fr!important;gap:12px!important}
+  .sm-inner{margin:8px auto!important;padding:14px!important;border-radius:10px!important}
+  /* Remove left border divider on stacked layout */
+  .sm-grid > div:last-child{border-left:none!important;padding-left:0!important;border-top:1.5px solid var(--border);padding-top:14px!important}
+
+  /* ── Expense records table: compact on mobile ── */
+  .exp-records-panel table th,
+  .exp-records-panel table td{padding:7px 8px!important;font-size:11px!important}
+  /* Hide Title column on mobile - Category covers it */
+  .exp-records-panel table th:nth-child(1),
+  .exp-records-panel table td:nth-child(1){display:none}
+  /* Make action buttons smaller */
+  .exp-records-panel table .act-btn{padding:4px 7px!important;font-size:11px!important}
   /* Toolbar stacks cleanly on mobile */
   .str-toolbar-filters{gap:6px!important;}
   .str-filter-group{flex:1;min-width:calc(50% - 6px);}
@@ -1186,7 +1201,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
             <i class="ti ti-receipt" style="color:var(--indigo)"></i> Expense Records
           </div>
           <div style="max-height:420px;overflow-x:auto;overflow-y:auto;">
-            <div id="presExpList" style="min-width:500px;"></div>
+            <div id="presExpList"></div>
           </div>
         </div>
 
@@ -5311,15 +5326,15 @@ function renderAnPayTable(filterType, selMonth, selYear, selBlock) {
 </nav>
 
 <!-- STRUCTURE MANAGER MODAL -->
-<div id="structureModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:2000;padding:20px;overflow-y:auto">
-  <div style="background:#fff;border-radius:12px;max-width:800px;margin:40px auto;padding:20px">
+<div id="structureModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:2000;padding:12px;overflow-y:auto">
+  <div style="background:#fff;border-radius:12px;max-width:800px;margin:16px auto;padding:16px" class="sm-inner">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
       <h2 style="margin:0;font-size:16px;font-weight:800">🏢 Manage Buildings</h2>
       <button onclick="window._closeStructureManager()" style="background:none;border:none;font-size:24px;cursor:pointer;color:var(--text2)">&times;</button>
     </div>
     
     <!-- Single Form Layout -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px" class="sm-grid">
       
       <!-- Left: View All Blocks -->
       <div>
