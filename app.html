@@ -764,7 +764,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   /* Stack both layout grids to single column */
   .exp-layout-grid{grid-template-columns:1fr!important}
   .an-layout-grid{grid-template-columns:1fr!important}
-  .an-layout-grid #analyticsTotals{grid-template-columns:1fr 1fr}
   .exp-layout-grid #fundRow{grid-template-columns:1fr 1fr}
   .exp-records-panel{max-height:none!important}
   /* Chart column comes FIRST on tablet/mobile */
@@ -785,7 +784,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   #analyticsView,#presView,#structureView,#iView{padding-top:4px!important}
 
   /* ── Stat chips: 2-col on mobile ── */
-  #analyticsTotals{grid-template-columns:1fr 1fr!important}
+  #analyticsTotals{grid-template-columns:1fr 1fr!important;gap:8px!important;margin-bottom:8px!important}
   #fundRow{grid-template-columns:1fr 1fr!important}
 
   /* ── Chart panel: full-width card ── */
@@ -821,8 +820,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   .exp-records-panel > div:last-child{ overflow-x:auto!important; overflow-y:auto!important; max-height:340px!important; }
   /* Ensure table fits - reduce padding on mobile */
   #anPayTable th, #anPayTable td{ padding:8px 8px!important; font-size:11px!important; }
-  #anPayTable th:nth-child(4),
-  #anPayTable td:nth-child(4){ display:none } /* hide 2W/4W col on mobile */
   /* Analytics view must not clip its children */
   #analyticsView{ overflow:visible!important; }
   .an-layout-grid{ overflow:visible!important; }
@@ -853,9 +850,12 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   /* ── Expense records table: compact on mobile ── */
   .exp-records-panel table th,
   .exp-records-panel table td{padding:7px 8px!important;font-size:11px!important}
-  /* Hide Title column on mobile - Category covers it */
-  .exp-records-panel table th:nth-child(1),
-  .exp-records-panel table td:nth-child(1){display:none}
+  /* Hide Title col (col 1) in expense tab only */
+  #presExpList table th:nth-child(1),
+  #presExpList table td:nth-child(1){display:none!important}
+  /* Hide 2W/4W col (col 4) in payment table only */
+  #anPayTable th:nth-child(4),
+  #anPayTable td:nth-child(4){display:none!important}
   /* Make action buttons smaller */
   .exp-records-panel table .act-btn{padding:4px 7px!important;font-size:11px!important}
   /* Toolbar stacks cleanly on mobile */
@@ -1268,14 +1268,16 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   <!-- ANALYTICS VIEW -->
   <div id="analyticsView" style="display:none;padding:0 12px 12px;">
 
-    <!-- Single 2-col grid: left 55% = chips + table stacked, right 45% = chart -->
+    <!-- Stat chips: always 2-col, above the main grid -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px" id="analyticsTotals"></div>
+
+    <!-- 2-col grid: left = table, right = chart -->
     <div style="display:grid;grid-template-columns:55fr 45fr;gap:14px;align-items:start" class="an-layout-grid">
 
-      <!-- LEFT: stat chips + table -->
+      <!-- LEFT: payment table -->
       <div style="display:flex;flex-direction:column;gap:14px">
 
-        <!-- Stat chips span full left column width -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px" id="analyticsTotals"></div>
+        <!-- placeholder kept for structure -->
 
         <!-- Payment Records Table -->
         <div class="exp-records-panel tab-table-wrap">
