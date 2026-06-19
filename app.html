@@ -844,11 +844,11 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   #strStats{gap:5px!important;margin-bottom:8px!important}
   #strChips{gap:8px!important;padding:2px 0!important}
 
-  /* ── Manage Buildings modal: stack vertically on mobile ── */
-  .sm-grid{grid-template-columns:1fr!important;gap:12px!important}
-  .sm-inner{margin:8px auto!important;padding:14px!important;border-radius:10px!important}
-  /* Remove left border divider on stacked layout */
-  .sm-grid > div:last-child{border-left:none!important;padding-left:0!important;border-top:1.5px solid var(--border);padding-top:14px!important}
+  /* ── Manage Buildings modal: full-screen on mobile ── */
+  #structureModal{padding:0!important;align-items:stretch}
+  #structureModal > div{border-radius:0!important;margin:0!important;width:100%!important;max-width:100%!important;min-height:100vh;padding:14px!important;box-sizing:border-box!important}
+  .sm-grid{grid-template-columns:1fr!important;gap:0!important}
+  .sm-grid > div:last-child{border-left:none!important;padding-left:0!important;border-top:1.5px solid var(--border)!important;padding-top:14px!important;margin-top:14px!important}
 
   /* ── Expense records table: compact on mobile ── */
   .exp-records-panel table th,
@@ -1346,11 +1346,8 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
       </div>
     </div>
 
-    <!-- Summary stat cards — compact, no extra margin -->
-    <div id="strStats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:6px;margin-bottom:10px;"></div>
-
-    <!-- Flats as chips (grouped) -->
-    <div id="strChips" style="display:grid;gap:10px;padding:4px 0;"></div>
+    <!-- Flat list -->
+    <div id="strChips" style="display:flex;flex-direction:column;gap:6px;padding:4px 0;"></div>
   </div><!-- /#structureView -->
 
 </div><!-- /.app -->
@@ -4574,7 +4571,7 @@ function rStructure() {
               <div style="font-size:10px;color:var(--muted)">${fts.length} flat${fts.length!==1?'s':''} · ${paidCnt} paid</div>
             </div>
           </div>
-          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:8px">
+          <div style="display:flex;flex-direction:column;gap:6px">
             ${fts.map(f => makeChip(f)).join('')}
           </div>
         </div>`
@@ -4605,7 +4602,7 @@ function rStructure() {
               <div style="font-size:10px;color:var(--muted)">${fts.length} flat${fts.length!==1?'s':''} · ${paidCnt} paid</div>
             </div>
           </div>
-          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:8px">
+          <div style="display:flex;flex-direction:column;gap:6px">
             ${fts.map(f => makeChip(f)).join('')}
           </div>
         </div>`
@@ -4613,7 +4610,7 @@ function rStructure() {
 
   } else {
     // All flats in one grid
-    chipsEl.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:8px">
+    chipsEl.innerHTML = `<div style="display:flex;flex-direction:column;gap:6px">
       ${rows.map(f => makeChip(f)).join('')}
     </div>`;
   }
@@ -4640,29 +4637,20 @@ function rStructure() {
     const statusIcon = {paid:'ti-circle-check',partial:'ti-clock',pending:'ti-alert-circle'}[status];
     const statusIconColor = {paid:'var(--green)',partial:'var(--amber)',pending:'var(--red)'}[status];
 
-    return `<button 
-      onclick="window.oFlEdit('${fid}')" 
-      style="
-        background:#fff;border:none;border-left:4px solid ${borderColor};border-radius:8px;
-        padding:10px;cursor:pointer;font-family:var(--font);transition:all .12s;
-        display:flex;flex-direction:column;gap:6px;
-        box-shadow:var(--shadow-sm);position:relative;text-align:left
-      "
-      title="${f.owner||'Vacant'}"
-      onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='var(--shadow-md)'"
-      onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='var(--shadow-sm)'"
+    return `<button
+      onclick="window.oFlEdit('${fid}')"
+      style="width:100%;background:#fff;border:none;border-left:3px solid ${borderColor};border-radius:8px;
+        padding:10px 12px;cursor:pointer;font-family:var(--font);transition:background .12s;
+        display:flex;align-items:center;gap:10px;text-align:left;box-shadow:var(--shadow-sm);"
+      onmouseover="this.style.background='var(--surface2)'"
+      onmouseout="this.style.background='#fff'"
     >
-      <!-- Top row: Flat ID + Status Icon -->
-      <div style="display:flex;justify-content:space-between;align-items:flex-start">
-        <div style="font-weight:800;font-size:12px;color:var(--text)">${f.flatId}</div>
-        <i class="ti ${statusIcon}" style="color:${statusIconColor};font-size:14px"></i>
+      <i class="ti ${statusIcon}" style="color:${statusIconColor};font-size:16px;flex-shrink:0;"></i>
+      <div style="flex:1;min-width:0;">
+        <div style="font-weight:800;font-size:12px;color:var(--text)">${f.flatId} <span style="font-size:10px;font-weight:600;color:var(--muted)">${isVacant ? 'Vacant' : rType==='tenant' ? '🔑 Tenant' : '🏠 Owner'}</span></div>
+        <div style="font-size:11px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${f.owner || 'Vacant'}</div>
       </div>
-
-      <!-- Resident name -->
-      <div style="font-size:10px;color:var(--text2);line-height:1.3">${f.owner ? f.owner.substring(0,12) : 'Vacant'}</div>
-
-      <!-- Type badge -->
-      <div style="font-size:9px;color:var(--text2);font-weight:600">${isVacant ? 'Vacant' : rType==='tenant' ? 'Tenant' : 'Owner'}</div>
+      <i class="ti ti-chevron-right" style="color:var(--muted);font-size:13px;flex-shrink:0;"></i>
     </button>`;
   }
 }
