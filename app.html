@@ -841,11 +841,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   #strStats{gap:5px!important;margin-bottom:8px!important}
   #strChips{gap:8px!important;padding:2px 0!important}
 
-  /* ── Manage Buildings modal: full-screen on mobile ── */
-  #structureModal{padding:0!important;align-items:stretch}
-  #structureModal > div{border-radius:0!important;margin:0!important;width:100%!important;max-width:100%!important;min-height:100vh;padding:14px!important;box-sizing:border-box!important}
-  .sm-grid{grid-template-columns:1fr!important;gap:0!important}
-  .sm-grid > div:last-child{border-left:none!important;padding-left:0!important;border-top:1.5px solid var(--border)!important;padding-top:14px!important;margin-top:14px!important}
+  /* ── Manage Buildings modal: bottom sheet, handled via inline styles ── */
 
   /* ── Expense records table: compact on mobile ── */
   .exp-records-panel table th{padding:7px 8px!important;font-size:11px!important;font-weight:800!important;color:var(--text)!important;text-transform:uppercase!important;letter-spacing:.5px!important}
@@ -2968,12 +2964,25 @@ window._toggleBlockInput = () => {
     newBlockInput.style.display = 'none';
   }
 };
+window._smSwitchTab = (n) => {
+  document.getElementById('smPanel1').style.display = n===1 ? 'flex' : 'none';
+  document.getElementById('smPanel1').style.flexDirection = 'column';
+  document.getElementById('smPanel2').style.display = n===2 ? 'flex' : 'none';
+  document.getElementById('smPanel2').style.flexDirection = 'column';
+  const t1 = document.getElementById('smTab1');
+  const t2 = document.getElementById('smTab2');
+  t1.style.borderBottomColor = n===1 ? 'var(--indigo)' : 'transparent';
+  t1.style.color = n===1 ? 'var(--indigo)' : 'var(--muted)';
+  t2.style.borderBottomColor = n===2 ? 'var(--indigo)' : 'transparent';
+  t2.style.color = n===2 ? 'var(--indigo)' : 'var(--muted)';
+};
 window._openStructureManager = () => {
   document.getElementById('structureModal').style.display = 'block';
   document.getElementById('newBlockName').value = '';
   document.getElementById('newFlatsContainer').innerHTML = '';
   window._addNewFlatRow();
   window._renderStructureList();
+  window._smSwitchTab(1);
 };
 window._closeStructureManager = () => {
   document.getElementById('structureModal').style.display = 'none';
@@ -3029,12 +3038,33 @@ window._addNewFlatRow = () => {
   const container = document.getElementById('newFlatsContainer');
   const rowId = 'newflat_' + Date.now();
   const rowHtml = `
-    <div id="${rowId}" style="background:var(--surface2);padding:10px;border-radius:6px;border:1px solid var(--border);display:grid;grid-template-columns:1fr 1fr 1fr 1fr auto;gap:6px;align-items:center">
-      <input class="newFlatNum" type="text" placeholder="Flat #" style="padding:6px;border:1px solid var(--border);border-radius:4px;font-family:var(--font);font-size:11px;box-sizing:border-box"/>
-      <input class="newFlatFloor" type="number" placeholder="Floor" min="1" style="padding:6px;border:1px solid var(--border);border-radius:4px;font-family:var(--font);font-size:11px;box-sizing:border-box"/>
-      <input class="newResName" type="text" placeholder="Resident" style="padding:6px;border:1px solid var(--border);border-radius:4px;font-family:var(--font);font-size:11px;box-sizing:border-box"/>
-      <input class="newMonthlyDue" type="number" placeholder="₹ Due" min="0" style="padding:6px;border:1px solid var(--border);border-radius:4px;font-family:var(--font);font-size:11px;box-sizing:border-box"/>
-      <button type="button" onclick="document.getElementById('${rowId}').remove()" style="padding:4px 6px;background:transparent;border:1px solid var(--red);color:var(--red);border-radius:4px;font-size:10px;font-weight:700;cursor:pointer;font-family:var(--font)">✕</button>
+    <div id="${rowId}" style="background:var(--surface2);padding:12px;border-radius:10px;border:1px solid var(--border);display:flex;flex-direction:column;gap:8px;position:relative;">
+      <button type="button" onclick="document.getElementById('${rowId}').remove()"
+        style="position:absolute;top:8px;right:8px;padding:2px 7px;background:transparent;border:1px solid var(--red);color:var(--red);border-radius:4px;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font)">✕</button>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <div>
+          <label style="font-size:10px;font-weight:700;color:var(--text2);display:block;margin-bottom:3px;">FLAT #</label>
+          <input class="newFlatNum" type="text" placeholder="e.g. 101"
+            style="width:100%;padding:9px 10px;border:1.5px solid var(--border);border-radius:7px;font-family:var(--font);font-size:13px;box-sizing:border-box;"/>
+        </div>
+        <div>
+          <label style="font-size:10px;font-weight:700;color:var(--text2);display:block;margin-bottom:3px;">FLOOR</label>
+          <input class="newFlatFloor" type="number" placeholder="1" min="1"
+            style="width:100%;padding:9px 10px;border:1.5px solid var(--border);border-radius:7px;font-family:var(--font);font-size:13px;box-sizing:border-box;"/>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <div>
+          <label style="font-size:10px;font-weight:700;color:var(--text2);display:block;margin-bottom:3px;">RESIDENT</label>
+          <input class="newResName" type="text" placeholder="Name"
+            style="width:100%;padding:9px 10px;border:1.5px solid var(--border);border-radius:7px;font-family:var(--font);font-size:13px;box-sizing:border-box;"/>
+        </div>
+        <div>
+          <label style="font-size:10px;font-weight:700;color:var(--text2);display:block;margin-bottom:3px;">MONTHLY DUE</label>
+          <input class="newMonthlyDue" type="number" placeholder="₹ 0" min="0"
+            style="width:100%;padding:9px 10px;border:1.5px solid var(--border);border-radius:7px;font-family:var(--font);font-size:13px;box-sizing:border-box;"/>
+        </div>
+      </div>
     </div>
   `;
   container.insertAdjacentHTML('beforeend', rowHtml);
@@ -5316,53 +5346,66 @@ function renderAnPayTable(filterType, selMonth, selYear, selBlock) {
 </nav>
 
 <!-- STRUCTURE MANAGER MODAL -->
-<div id="structureModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:2000;padding:12px;overflow-y:auto">
-  <div style="background:#fff;border-radius:12px;max-width:800px;margin:16px auto;padding:16px" class="sm-inner">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-      <h2 style="margin:0;font-size:16px;font-weight:800">🏢 Manage Buildings</h2>
-      <button onclick="window._closeStructureManager()" style="background:none;border:none;font-size:24px;cursor:pointer;color:var(--text2)">&times;</button>
-    </div>
-    
-    <!-- Single Form Layout -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px" class="sm-grid">
-      
-      <!-- Left: View All Blocks -->
-      <div>
-        <div style="font-size:11px;font-weight:700;color:var(--text);text-transform:uppercase;margin-bottom:10px;letter-spacing:.5px">📋 Existing Blocks</div>
-        <div id="structureList" style="display:grid;gap:8px;max-height:350px;overflow-y:auto;padding-right:8px">
-          <!-- Blocks and flats will be rendered here -->
-        </div>
-      </div>
-      
-      <!-- Right: Add New Block & Flats -->
-      <div style="border-left:1.5px solid var(--border);padding-left:16px">
-        <div style="font-size:11px;font-weight:700;color:var(--text);text-transform:uppercase;margin-bottom:10px;letter-spacing:.5px">➕ Add New Building</div>
-        
-        <!-- Block Name -->
-        <div style="margin-bottom:12px">
-          <label style="font-size:10px;font-weight:700;color:var(--text2);display:block;margin-bottom:4px">Building Name</label>
-          <input id="newBlockName" type="text" placeholder="e.g., Block A" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-family:var(--font);font-size:12px;box-sizing:border-box"/>
-        </div>
+<div id="structureModal" style="display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,0.5);" onclick="if(event.target===this)window._closeStructureManager()">
+  <div style="position:absolute;bottom:0;left:0;right:0;background:#fff;border-radius:20px 20px 0 0;max-height:92vh;display:flex;flex-direction:column;overflow:hidden;">
 
-        <!-- Flats List -->
-        <div style="margin-bottom:12px">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-            <label style="font-size:10px;font-weight:700;color:var(--text);text-transform:uppercase">Flats</label>
-            <button onclick="window._addNewFlatRow()" style="padding:4px 8px;background:var(--indigo);color:#fff;border:none;border-radius:4px;font-size:9px;font-weight:700;cursor:pointer;font-family:var(--font)">+ Add</button>
-          </div>
-          <div id="newFlatsContainer" style="display:grid;gap:8px;max-height:200px;overflow-y:auto">
-            <!-- Flat rows will be added here -->
-          </div>
-        </div>
-
-        <!-- Save Button -->
-        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
-          <button onclick="window._closeStructureManager()" style="padding:8px 12px;background:transparent;border:1px solid var(--border);color:var(--text);border-radius:6px;font-weight:700;font-size:11px;cursor:pointer;font-family:var(--font)">Close</button>
-          <button onclick="window._saveNewStructure()" style="padding:8px 12px;background:var(--green);color:#fff;border:none;border-radius:6px;font-weight:700;font-size:11px;cursor:pointer;font-family:var(--font)">Save</button>
-        </div>
-      </div>
-      
+    <!-- Handle bar -->
+    <div style="display:flex;justify-content:center;padding:10px 0 0">
+      <div style="width:40px;height:4px;background:var(--border2);border-radius:2px;"></div>
     </div>
+
+    <!-- Header -->
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 18px 0;">
+      <div style="font-size:16px;font-weight:800;color:var(--text)">🏢 Manage Buildings</div>
+      <button onclick="window._closeStructureManager()" style="background:var(--surface2);border:none;width:32px;height:32px;border-radius:50%;font-size:18px;cursor:pointer;color:var(--text2);display:flex;align-items:center;justify-content:center;line-height:1">&times;</button>
+    </div>
+
+    <!-- Tabs -->
+    <div style="display:flex;gap:0;padding:12px 18px 0;border-bottom:2px solid var(--border);">
+      <button id="smTab1" onclick="window._smSwitchTab(1)"
+        style="flex:1;padding:8px 0;font-size:13px;font-weight:700;cursor:pointer;background:none;border:none;border-bottom:2px solid var(--indigo);color:var(--indigo);font-family:var(--font);margin-bottom:-2px;">
+        📋 Existing
+      </button>
+      <button id="smTab2" onclick="window._smSwitchTab(2)"
+        style="flex:1;padding:8px 0;font-size:13px;font-weight:700;cursor:pointer;background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);font-family:var(--font);margin-bottom:-2px;">
+        ➕ Add New
+      </button>
+    </div>
+
+    <!-- Tab 1: Existing Blocks -->
+    <div id="smPanel1" style="flex:1;overflow-y:auto;padding:14px 18px 24px;">
+      <div id="structureList" style="display:flex;flex-direction:column;gap:10px;">
+      </div>
+    </div>
+
+    <!-- Tab 2: Add New Block -->
+    <div id="smPanel2" style="display:none;flex:1;overflow-y:auto;padding:14px 18px 24px;">
+      <!-- Block Name -->
+      <div style="margin-bottom:14px;">
+        <label style="font-size:11px;font-weight:700;color:var(--text2);display:block;margin-bottom:5px;">BUILDING NAME</label>
+        <input id="newBlockName" type="text" placeholder="e.g., Block A"
+          style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:var(--font);font-size:14px;box-sizing:border-box;"/>
+      </div>
+
+      <!-- Flats -->
+      <div style="margin-bottom:14px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <label style="font-size:11px;font-weight:700;color:var(--text2);">FLATS</label>
+          <button onclick="window._addNewFlatRow()"
+            style="padding:6px 12px;background:var(--indigo);color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);">+ Add Flat</button>
+        </div>
+        <div id="newFlatsContainer" style="display:flex;flex-direction:column;gap:8px;"></div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div style="display:flex;gap:10px;margin-top:8px;">
+        <button onclick="window._closeStructureManager()"
+          style="flex:1;padding:12px;background:var(--surface2);border:1.5px solid var(--border);color:var(--text);border-radius:10px;font-weight:700;font-size:13px;cursor:pointer;font-family:var(--font);">Cancel</button>
+        <button onclick="window._saveNewStructure()"
+          style="flex:1;padding:12px;background:var(--green);color:#fff;border:none;border-radius:10px;font-weight:700;font-size:13px;cursor:pointer;font-family:var(--font);">💾 Save</button>
+      </div>
+    </div>
+
   </div>
 </div>
 
