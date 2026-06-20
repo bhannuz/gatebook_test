@@ -820,6 +820,9 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   .exp-records-panel > div:last-child{ overflow-x:auto!important; overflow-y:auto!important; max-height:340px!important; }
   /* Ensure table fits - reduce padding on mobile */
   #anPayTable th, #anPayTable td{ padding:8px 8px!important; font-size:11px!important; }
+  /* Hide 2W/4W column header + data on mobile */
+  .exp-records-panel thead th:nth-child(4),
+  #anPayTable td:nth-child(4){ display:none!important; }
   /* Analytics view must not clip its children */
   #analyticsView{ overflow:visible!important; }
   .an-layout-grid{ overflow:visible!important; }
@@ -956,8 +959,8 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   }
   
   /* Summary cards - single column */
-  #fundRow, #analyticsTotals {
-    grid-template-columns: 1fr !important;
+  #fundRow {
+    grid-template-columns: 1fr 1fr !important;
   }
   
   /* Filters centered */
@@ -1009,8 +1012,8 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   }
   
   /* Single column everything */
-  #fundRow, #analyticsTotals {
-    grid-template-columns: 1fr !important;
+  #fundRow {
+    grid-template-columns: 1fr 1fr !important;
     gap: 8px !important;
   }
   
@@ -1018,12 +1021,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   .tab-table-wrap button {
     padding: 4px 8px !important;
     font-size: 9px !important;
-  }
-  
-  /* Compact text */
-  table th, table td {
-    padding: 6px 4px !important;
-    font-size: 10px !important;
   }
   
   /* Small chart */
