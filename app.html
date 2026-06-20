@@ -1279,7 +1279,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
           <div style="padding:10px 14px;border-bottom:1px solid var(--border2);font-size:11px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.4px">
             <i class="ti ti-table" style="color:var(--indigo)"></i> Payment Records <span id="anPayCount" style="font-size:10px;color:var(--muted);font-weight:600;text-transform:none;letter-spacing:0"></span>
           </div>
-          <div style="overflow-x:auto;max-height:340px;overflow-y:auto;border-radius:0 0 var(--r-lg) var(--r-lg);">
+          <div style="overflow-x:auto;max-height:420px;overflow-y:auto;">
             <table style="width:100%;border-collapse:collapse">
               <thead style="position:sticky;top:0;z-index:1">
                 <tr style="background:var(--surface3)">
@@ -2983,6 +2983,19 @@ window._openStructureManager = () => {
   window._renderStructureList();
   window._smSwitchTab(1);
 };
+window._renameBlockPrompt = async (oldName) => {
+  const newName = prompt('Rename block:', oldName);
+  if (!newName || newName.trim() === oldName) return;
+  const nn = newName.trim();
+  const toUpdate = [...flats.entries()].filter(([,f]) => f.block === oldName);
+  sync('saving');
+  try {
+    await Promise.all(toUpdate.map(([fid]) => updateDoc(doc(db,'apartments',UID,'flats',fid), {block: nn})));
+    toUpdate.forEach(([fid, f]) => { f.block = nn; flats.set(fid, f); });
+    sync('live'); toast('Block renamed ✓');
+    window._renderStructureList(); rStructure();
+  } catch(e) { sync('error'); toast('Rename failed','error'); }
+};
 window._closeStructureManager = () => {
   document.getElementById('structureModal').style.display = 'none';
 };
@@ -3001,10 +3014,13 @@ window._renderStructureList = () => {
     html += `
       <div style="background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;padding:12px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-          <div style="font-weight:700;color:var(--text);font-size:13px">${blockName}</div>
-          <button onclick="if(confirm('Delete block ${blockName} and all its flats?')) window._deleteBlock('${blockName}')" style="padding:4px 8px;background:transparent;border:1.5px solid var(--red);color:var(--red);border-radius:6px;font-size:10px;font-weight:700;cursor:pointer;font-family:var(--font)">🗑️ Delete Block</button>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span id="blkLabel_${blockName}" style="font-weight:700;color:var(--text);font-size:13px">${blockName}</span>
+            <button onclick="window._renameBlockPrompt('${blockName}')" style="background:none;border:none;color:var(--indigo);cursor:pointer;font-size:12px;padding:2px 4px;" title="Rename">✏️</button>
+          </div>
+          <button onclick="if(confirm('Delete block ${blockName} and all its flats?')) window._deleteBlock('${blockName}')" style="padding:4px 8px;background:transparent;border:1.5px solid var(--red);color:var(--red);border-radius:6px;font-size:10px;font-weight:700;cursor:pointer;font-family:var(--font)">🗑️</button>
         </div>
-        <div style="display:grid;gap:8px;margin-top:10px;border-top:1px solid var(--border);padding-top:10px">
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;border-top:1px solid var(--border);padding-top:10px">
           ${blockFlats.length === 0 ? '<div style="color:var(--muted);font-size:11px">No flats</div>' : blockFlats.map(f => {
             // Find the actual fid for this flat
             let actualFid = '';
@@ -3015,16 +3031,12 @@ window._renderStructureList = () => {
               }
             }
             return `
-            <div style="background:#fff;padding:8px;border-radius:6px;border:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;font-size:11px">
-              <div style="flex:1;cursor:pointer" onclick="window._closeStructureManager(); window.oFlEdit('${actualFid}')">
-                <div style="font-weight:700;color:var(--indigo)">${f.flatId}</div>
-                <div style="color:var(--text2);font-size:10px">${f.owner || 'No resident'} • Floor ${f.floor || '—'}</div>
-              </div>
-              <div style="display:flex;gap:6px">
-                <button onclick="window._closeStructureManager(); window.oFlEdit('${actualFid}')" style="padding:2px 6px;background:transparent;border:none;color:var(--indigo);cursor:pointer;font-size:12px" title="Edit">✏️</button>
-                <button onclick="if(confirm('Delete flat ${f.flatId}?')) { window._deleteFlat('${f.flatId}', '${blockName}'); }" style="padding:2px 6px;background:transparent;border:none;color:var(--red);cursor:pointer;font-size:12px" title="Delete">🗑️</button>
-              </div>
-            </div>
+            <span style="display:inline-flex;align-items:center;gap:5px;background:#fff;border:1px solid var(--border);border-radius:20px;padding:4px 10px 4px 8px;font-size:11px;font-weight:700;cursor:pointer;"
+              onclick="window._closeStructureManager();window.oFlEdit('${actualFid}')" title="${f.owner||'No resident'} · Floor ${f.floor||'—'}">
+              <span style="color:var(--indigo)">${f.flatId}</span>
+              <button onclick="event.stopPropagation();if(confirm('Delete flat ${f.flatId}?'))window._deleteFlat('${f.flatId}','${blockName}')"
+                style="background:none;border:none;color:var(--red);cursor:pointer;font-size:11px;padding:0;line-height:1;display:flex;align-items:center;" title="Delete">✕</button>
+            </span>
           `}).join('')}
         </div>
       </div>
@@ -3178,6 +3190,46 @@ window.rVehicles = rVehicles;
 window._oPresM   = oPresM;  window._cPresM  = cPresM;  window._sPres   = sPres;
 window._oPresExp = oPresExp; window._cPresExp= cPresExp; window._sPresExp= sPresExp;
 window._delSE = delSE; window._openSEEdit = openSEEdit; window._closeSEEdit = closeSEEdit; window._saveSEEdit = saveSEEdit;
+
+// Single ⋮ menu → bottom sheet edit/delete for expense
+window._openSEModal = (id) => {
+  const e = [...(window._seCache||[])].find(x=>x.id===id);
+  if (!e) { console.warn('Expense not found', id); return; }
+  const modal = document.getElementById('seActionModal');
+  if (!modal) return;
+  document.getElementById('seam_id').value  = id;
+  document.getElementById('seam_title').value = e.title||'';
+  document.getElementById('seam_cat').value   = e.cat||'';
+  document.getElementById('seam_amt').value   = e.amt||'';
+  document.getElementById('seam_date').value  = e.rawDate||'';
+  document.getElementById('seam_note').value  = e.note||'';
+  modal.style.display = 'flex';
+};
+window._closeSEModal = () => {
+  const m = document.getElementById('seActionModal');
+  if (m) m.style.display = 'none';
+};
+window._saveSEModal = async () => {
+  const id     = document.getElementById('seam_id').value;
+  const title  = document.getElementById('seam_title').value.trim();
+  const cat    = document.getElementById('seam_cat').value.trim();
+  const amt    = parseInt(document.getElementById('seam_amt').value)||0;
+  const rawDate= document.getElementById('seam_date').value;
+  const note   = document.getElementById('seam_note').value.trim();
+  const d      = new Date(rawDate);
+  const date   = isNaN(d) ? rawDate : d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+  const month  = isNaN(d) ? '' : d.toISOString().slice(0,7);
+  sync('saving');
+  try {
+    await updateDoc(sexpRef(id), {title,cat,amt,date,rawDate,month,note});
+    sync('live'); toast('Saved ✓'); window._closeSEModal(); rPresident();
+  } catch(err) { console.error(err); sync('error'); toast('Save failed.','error'); }
+};
+window._delSEModal = async () => {
+  const id = document.getElementById('seam_id').value;
+  if (!confirm('Delete this expense?')) return;
+  window._closeSEModal(); delSE(id);
+};
 window.rPresident = rPresident;
 // issues.js / members.js
 window.fIss = fIss; window.fMem = fMem; window.rMembers = rMembers;
@@ -3986,6 +4038,7 @@ function rPresident() {
     return;
   }
 
+  window._seCache = vis;
   document.getElementById('presExpList').innerHTML = `<table style="width:100%;border-collapse:collapse;">
     <thead style="position:sticky;top:0;background:var(--surface3);z-index:1;">
       <tr>
@@ -4008,12 +4061,9 @@ function rPresident() {
           </td>
           <td style="padding:8px 10px;font-size:11px;color:var(--muted);">${e.date || '—'}</td>
           <td style="padding:8px 10px;font-size:12px;font-weight:800;color:var(--text);text-align:right;">${inr(e.amt)}</td>
-          <td style="padding:8px 6px;text-align:center;white-space:nowrap;">
-            <button onclick="window._openSEEdit('${e.id}')" style="background:var(--indigo-bg);border:1px solid var(--indigo);border-radius:5px;padding:4px;cursor:pointer;color:var(--indigo);display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;" title="Edit">
-              <i class="ti ti-pencil" style="font-size:12px;"></i>
-            </button>
-            <button onclick="window._delSE('${e.id}')" style="background:var(--red-bg);border:1px solid var(--red);border-radius:5px;padding:4px;cursor:pointer;color:var(--red);display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:3px;" title="Delete">
-              <i class="ti ti-trash" style="font-size:12px;"></i>
+          <td style="padding:8px 6px;text-align:center;">
+            <button onclick="window._openSEModal('${e.id}')" style="background:var(--surface2);border:1.5px solid var(--border2);border-radius:7px;padding:5px 8px;cursor:pointer;color:var(--text2);display:inline-flex;align-items:center;justify-content:center;">
+              <i class="ti ti-dots-vertical" style="font-size:14px;"></i>
             </button>
           </td>
         </tr>`;
@@ -4751,16 +4801,22 @@ function drawPie(canvasId, segments, tooltipId) {
   ctx.arc(cx, cy, r*0.45, 0, Math.PI*2);
   const bg = getComputedStyle(document.documentElement).getPropertyValue('--surface2').trim()||'#f8f9fa';
   ctx.fillStyle = bg; ctx.fill();
-  // center label
+  // center label — tight, no overlap
   const textColor = getComputedStyle(document.documentElement).getPropertyValue('--text').trim()||'#111';
   const mutedColor = getComputedStyle(document.documentElement).getPropertyValue('--muted').trim()||'#888';
-  ctx.textAlign='center';
-  ctx.font = `bold ${Math.max(11,Math.round(W*0.07))}px sans-serif`;
+  const holeR = r * 0.45;
+  const maxFontBig = Math.floor(holeR * 0.55);
+  const maxFontSm  = Math.floor(holeR * 0.35);
+  const fontBig = Math.min(Math.max(10, maxFontBig), 18);
+  const fontSm  = Math.min(Math.max(8,  maxFontSm),  12);
+  const lineH   = fontBig + fontSm + 3;
+  ctx.textAlign = 'center';
+  ctx.font = `bold ${fontBig}px sans-serif`;
   ctx.fillStyle = textColor;
-  ctx.fillText(segments[0]?.centerLabel||total, cx, cy+4);
-  ctx.font = `${Math.max(8,Math.round(W*0.05))}px sans-serif`;
+  ctx.fillText(segments[0]?.centerLabel || total, cx, cy - lineH/2 + fontBig);
+  ctx.font = `${fontSm}px sans-serif`;
   ctx.fillStyle = mutedColor;
-  ctx.fillText('total', cx, cy+15);
+  ctx.fillText('total', cx, cy - lineH/2 + fontBig + fontSm + 3);
 
   // Attach tooltip mouse handler — recalculate geometry from live canvas rect
   if (tooltipId) {
@@ -5415,5 +5471,48 @@ function renderAnPayTable(filterType, selMonth, selYear, selBlock) {
   </div>
 </div>
 
+<!-- EXPENSE ACTION MODAL -->
+<div id="seActionModal" style="display:none;position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,0.5);align-items:flex-end;" onclick="if(event.target===this)window._closeSEModal()">
+  <div style="background:#fff;border-radius:20px 20px 0 0;width:100%;padding:0 0 32px;max-height:90vh;overflow-y:auto;">
+    <!-- Handle -->
+    <div style="display:flex;justify-content:center;padding:10px 0 0"><div style="width:40px;height:4px;background:var(--border2);border-radius:2px;"></div></div>
+    <!-- Header -->
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 18px 12px;border-bottom:1px solid var(--border);">
+      <div style="font-size:15px;font-weight:800;color:var(--text);">Edit Expense</div>
+      <button onclick="window._closeSEModal()" style="background:var(--surface2);border:none;width:30px;height:30px;border-radius:50%;font-size:18px;cursor:pointer;color:var(--text2);display:flex;align-items:center;justify-content:center;">&times;</button>
+    </div>
+    <input type="hidden" id="seam_id"/>
+    <!-- Form -->
+    <div style="padding:16px 18px;display:flex;flex-direction:column;gap:12px;">
+      <div>
+        <label style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;display:block;margin-bottom:4px;">Title</label>
+        <input id="seam_title" type="text" placeholder="Expense title" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:var(--font);font-size:14px;box-sizing:border-box;"/>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div>
+          <label style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;display:block;margin-bottom:4px;">Category</label>
+          <input id="seam_cat" type="text" placeholder="e.g. Maintenance" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:var(--font);font-size:14px;box-sizing:border-box;"/>
+        </div>
+        <div>
+          <label style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;display:block;margin-bottom:4px;">Amount (₹)</label>
+          <input id="seam_amt" type="number" placeholder="0" min="0" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:var(--font);font-size:14px;box-sizing:border-box;"/>
+        </div>
+      </div>
+      <div>
+        <label style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;display:block;margin-bottom:4px;">Date</label>
+        <input id="seam_date" type="date" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:var(--font);font-size:14px;box-sizing:border-box;"/>
+      </div>
+      <div>
+        <label style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;display:block;margin-bottom:4px;">Note</label>
+        <input id="seam_note" type="text" placeholder="Optional note" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:var(--font);font-size:14px;box-sizing:border-box;"/>
+      </div>
+    </div>
+    <!-- Actions -->
+    <div style="display:flex;gap:10px;padding:0 18px;">
+      <button onclick="window._delSEModal()" style="flex:1;padding:13px;background:#fff;border:1.5px solid var(--red);color:var(--red);border-radius:10px;font-weight:700;font-size:13px;cursor:pointer;font-family:var(--font);">🗑️ Delete</button>
+      <button onclick="window._saveSEModal()" style="flex:2;padding:13px;background:var(--indigo);color:#fff;border:none;border-radius:10px;font-weight:700;font-size:13px;cursor:pointer;font-family:var(--font);">💾 Save Changes</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
