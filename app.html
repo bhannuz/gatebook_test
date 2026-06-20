@@ -340,7 +340,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .tab-table-wrap{
   background:#fff;
   border-radius:var(--r-lg);
-  overflow:visible;
+  overflow:hidden;
   position:relative;
   border:1px solid var(--border2);
   border-top:3px solid #6366F1;
@@ -488,7 +488,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .micon.veh{background:linear-gradient(135deg,rgba(2,132,199,.12),rgba(8,145,178,.08));color:var(--sky)}
 
 /* ── Analytics/Expenses shared panels ── */
-.exp-records-panel{background:#fff;border:1px solid var(--border2);border-top:3px solid #6366F1;border-radius:var(--r-lg);overflow:visible;position:relative}
+.exp-records-panel{background:#fff;border:1px solid var(--border2);border-top:3px solid #6366F1;border-radius:var(--r-lg);overflow:hidden;position:relative}
 .exp-pie-panel{background:#fff;border:1px solid var(--border2);border-top:3px solid #6366F1;border-radius:var(--r-lg);padding:16px;position:relative;overflow:hidden}
 
 /* ── Residents tab toolbar ── */
@@ -849,9 +849,11 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   /* ── Expense records table: compact on mobile ── */
   .exp-records-panel table th{padding:7px 8px!important;font-size:11px!important;font-weight:800!important;color:var(--text)!important;text-transform:uppercase!important;letter-spacing:.5px!important}
   .exp-records-panel table td{padding:7px 8px!important;font-size:11px!important}
-  /* Hide Title col (col 1) in expense tab only */
+  /* On mobile: hide Title(1) and Amount(4) cols - amount shown inline */
   #presExpList table th:nth-child(1),
   #presExpList table td:nth-child(1){display:none!important}
+  #presExpList table th:nth-child(4),
+  #presExpList table td:nth-child(4){display:none!important}
   /* Hide 2W/4W col (col 4) in payment table only */
   #anPayTable th:nth-child(4),
   #anPayTable td:nth-child(4){display:none!important}
@@ -3987,11 +3989,11 @@ function rPresident() {
   document.getElementById('presExpList').innerHTML = `<table style="width:100%;border-collapse:collapse;">
     <thead style="position:sticky;top:0;background:var(--surface3);z-index:1;">
       <tr>
-        <th style="padding:10px;text-align:left;font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border2);">Title</th>
-        <th style="padding:10px;text-align:left;font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border2);">Category</th>
-        <th style="padding:10px;text-align:left;font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border2);">Date</th>
-        <th style="padding:10px;text-align:right;font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border2);">Amount</th>
-        <th style="padding:10px;width:80px;text-align:center;font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border2);">Actions</th>
+        <th style="padding:10px;text-align:left;font-size:11px;font-weight:800;color:var(--text);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border2);">Title</th>
+        <th style="padding:10px;text-align:left;font-size:11px;font-weight:800;color:var(--text);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border2);">Category</th>
+        <th style="padding:10px;text-align:left;font-size:11px;font-weight:800;color:var(--text);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border2);">Date</th>
+        <th style="padding:10px;text-align:right;font-size:11px;font-weight:800;color:var(--text);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border2);">Amount</th>
+        <th style="padding:10px;text-align:center;font-size:11px;font-weight:800;color:var(--text);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border2);">Actions</th>
       </tr>
     </thead>
     <tbody>
@@ -4000,15 +4002,18 @@ function rPresident() {
         const clr = catClr(ci >= 0 ? ci : 0);
         return `<tr id="serow_${e.id}" style="border-bottom:1px solid var(--border2);hover:background:var(--surface2);">
           <td style="padding:10px;font-size:12px;font-weight:600;color:var(--text);">${e.title || '—'}</td>
-          <td style="padding:10px;font-size:11px;"><span style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:5px;background:${clr}18;color:${clr};">${e.cat || '—'}</span></td>
-          <td style="padding:10px;font-size:11px;color:var(--muted);">${e.date || '—'}</td>
-          <td style="padding:10px;font-size:12px;font-weight:800;color:var(--text);text-align:right;">${inr(e.amt)}</td>
-          <td style="padding:10px;text-align:center;">
-            <button onclick="window._openSEEdit('${e.id}')" style="background:var(--indigo-bg);border:1px solid var(--indigo);border-radius:5px;padding:5px;cursor:pointer;color:var(--indigo);font-size:11px;display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;" title="Edit">
-              <i class="ti ti-pencil" style="font-size:11px;"></i>
+          <td style="padding:8px 10px;font-size:11px;">
+            <span style="font-size:11px;font-weight:700;padding:3px 8px;border-radius:5px;background:${clr}18;color:${clr};display:inline-block;">${e.cat || '—'}</span>
+            <span style="display:block;font-size:11px;font-weight:800;color:var(--text);margin-top:2px;">${inr(e.amt)}</span>
+          </td>
+          <td style="padding:8px 10px;font-size:11px;color:var(--muted);">${e.date || '—'}</td>
+          <td style="padding:8px 10px;font-size:12px;font-weight:800;color:var(--text);text-align:right;">${inr(e.amt)}</td>
+          <td style="padding:8px 6px;text-align:center;white-space:nowrap;">
+            <button onclick="window._openSEEdit('${e.id}')" style="background:var(--indigo-bg);border:1px solid var(--indigo);border-radius:5px;padding:4px;cursor:pointer;color:var(--indigo);display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;" title="Edit">
+              <i class="ti ti-pencil" style="font-size:12px;"></i>
             </button>
-            <button onclick="window._delSE('${e.id}')" style="background:var(--red-bg);border:1px solid var(--red);border-radius:5px;padding:5px;cursor:pointer;color:var(--red);font-size:11px;display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;margin-left:4px;" title="Delete">
-              <i class="ti ti-trash" style="font-size:11px;"></i>
+            <button onclick="window._delSE('${e.id}')" style="background:var(--red-bg);border:1px solid var(--red);border-radius:5px;padding:4px;cursor:pointer;color:var(--red);display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:3px;" title="Delete">
+              <i class="ti ti-trash" style="font-size:12px;"></i>
             </button>
           </td>
         </tr>`;
