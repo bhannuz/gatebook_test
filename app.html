@@ -4738,27 +4738,13 @@ function rStructure() {
       onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 4px 12px rgba(0,0,0,.12)'"
       onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 1px 4px rgba(0,0,0,.08)'"
     >
-      <!-- Color bar -->
-      <div style="height:3px;background:${borderColor};width:100%;"></div>
-      <div style="padding:10px 10px 10px;">
-        <!-- Top: avatar + flat id + status dot -->
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;">
-          <div style="width:32px;height:32px;border-radius:50%;background:${avatarBg};color:${avatarClr};
-            font-weight:800;font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${ini}</div>
-          <div style="flex:1;min-width:0;">
-            <div style="font-weight:800;font-size:13px;color:var(--indigo);line-height:1.1;">${f.flatId}</div>
-            <div style="font-size:10px;color:var(--muted);margin-top:1px;">${typeLabel}</div>
-          </div>
-          <div style="width:8px;height:8px;border-radius:50%;background:${statusDot};flex-shrink:0;" title="${status}"></div>
+      <div style="padding:10px;display:flex;align-items:center;gap:8px;">
+        <div style="width:32px;height:32px;border-radius:50%;background:${avatarBg};color:${avatarClr};
+          font-weight:800;font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${ini}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-weight:800;font-size:13px;color:var(--indigo);line-height:1.2;">${f.flatId}</div>
+          <div style="font-size:10px;color:var(--muted);">${typeLabel}</div>
         </div>
-        <!-- Name -->
-        <div style="font-size:11px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:6px;">
-          ${f.owner||'Vacant'}
-        </div>
-        <!-- Balance -->
-        ${due>0 ? `<div style="font-size:10px;font-weight:700;color:${bal<=0?'var(--green)':bal<due?'var(--amber)':'var(--red)'};">
-          ${bal<=0?'✓ Paid':'₹'+bal.toLocaleString('en-IN')+' due'}
-        </div>` : ''}
       </div>
     </button>`;
   }
