@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head> 
+<head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>Gatebook — Dashboard</title>
@@ -2381,6 +2381,7 @@ async function saveFlat(fid) {
   const owner      = (document.getElementById('edOwner')?.value||'').trim();
   const resType    = document.getElementById('edType')?.value||'owner';
   const due        = parseInt(document.getElementById('edDue')?.value)||0;
+  const sft        = parseInt(document.getElementById('edSft')?.value)||0;
   const moveIn     = document.getElementById('edMoveIn')?.value||'';
   const moveOut    = document.getElementById('edMoveOut')?.value||'';
   const ownerName  = (document.getElementById('edOwnerName')?.value||'').trim();
@@ -2403,7 +2404,7 @@ async function saveFlat(fid) {
   
   sync('saving');
   try {
-    await updateDoc(flatRef(fid), { owner, resType, due, moveIn, moveOut, ownerName, ownerPhone, block, floor });
+    await updateDoc(flatRef(fid), { owner, resType, due, sft, moveIn, moveOut, ownerName, ownerPhone, block, floor });
     await setDoc(vehRef(fid), { flatId:fid, tw, fw, updatedAt:serverTimestamp() }, { merge:true });
     vehicles.set(fid, { ...(vehicles.get(fid)||{}), tw, fw });
     sync('live');
