@@ -1253,10 +1253,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 
 </style>
 
-    <!-- President History -->
-    <div id="presHistSection" style="display:none;margin-top:14px;">
-      <div id="presHistInner"></div>
-    </div>
 
   </div><!-- /#presView -->
 
@@ -1319,7 +1315,11 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   <div id="structureView" style="display:none;padding:8px 14px 14px">
 
     <!-- President banner (injected by rStructure) -->
-    <div id="presBanner" style="margin-bottom:10px;"></div>
+    <div id="presBanner" style="margin-bottom:6px;"></div>
+    <!-- President History Timeline (compact, below banner) -->
+    <div id="presHistSection" style="display:none;margin-bottom:10px;padding:0 2px;">
+      <div id="presHistInner"></div>
+    </div>
 
     <!-- Residents toolbar: single row -->
     <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
@@ -3372,13 +3372,12 @@ function switchView(v) {
   document.querySelectorAll('.vtab').forEach(p => p.classList.toggle('active', p.dataset.v===v));
   document.querySelectorAll('.bnav-item').forEach(p => p.classList.toggle('active', p.dataset.v===v));
   if(v==='analytics') try{ rAnalytics(); } catch(e){ console.error(e); }
-  if(v==='structure') try{ rStructure(); } catch(e){ console.error(e); }
+  if(v==='structure') try{ rStructure(); rPresHistory().catch(()=>{}); } catch(e){ console.error(e); }
   if(v==='president') {
     try{ rPresident(); } catch(e){ console.error(e); }
     rPresHistory().catch(e => console.error('rPresHistory', e));
   }
   if(v==='payments')  try{ rBTabs(); rBlock(); } catch(e){ console.error(e); }
-  if(v==='structure') try{ rStructure(); } catch(e){ console.error(e); }
   // Re-draw charts after layout settles (needed after CSS reorder on mobile)
   if(v==='analytics'||v==='president'){
     setTimeout(()=>{
@@ -4090,41 +4089,40 @@ async function rPresHistory() {
       return months < 1 ? '< 1 month' : months === 1 ? '1 month' : months < 12 ? `${months} months` : `${Math.floor(months/12)}y ${months%12}m`;
     };
     inn.innerHTML = `
-      <div class="tab-table-wrap purple">
-        <div style="padding:10px 14px;border-bottom:1px solid var(--border2);font-size:11px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.4px;display:flex;align-items:center;gap:8px">
-          <i class="ti ti-history" style="color:var(--purple);font-size:14px"></i> Past Presidents
-          <span style="font-size:10px;font-weight:600;color:var(--muted);text-transform:none;letter-spacing:0">${rows.length} record${rows.length!==1?'s':''}</span>
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
+        <i class="ti ti-history" style="color:var(--purple);font-size:13px;"></i>
+        <span style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;">Past Presidents</span>
+        <span style="font-size:10px;color:var(--muted);font-weight:500;">(${rows.length})</span>
+      </div>
+      <div style="position:relative;padding-left:20px;">
+        <!-- vertical line -->
+        <div style="position:absolute;left:7px;top:0;bottom:0;width:2px;background:var(--border2);border-radius:2px;"></div>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          ${rows.map((p,i) => {
+            const ini = (p.name||'?').charAt(0).toUpperCase();
+            const tenure = calcTenure(p.termStart, p.termEnd||p.archivedAt);
+            return `<div style="position:relative;display:flex;align-items:center;gap:10px;
+              background:#fff;border:1px solid var(--border2);border-radius:10px;padding:8px 10px;
+              box-shadow:0 1px 3px rgba(0,0,0,.05);">
+              <!-- dot on timeline -->
+              <div style="position:absolute;left:-16px;width:10px;height:10px;border-radius:50%;
+                background:var(--purple);border:2px solid #fff;box-shadow:0 0 0 2px var(--purple);"></div>
+              <!-- avatar -->
+              <div style="width:30px;height:30px;border-radius:50%;background:var(--purple-bg);color:var(--purple);
+                font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${ini}</div>
+              <!-- info -->
+              <div style="flex:1;min-width:0;">
+                <div style="font-weight:700;font-size:12px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.name||'—'}</div>
+                <div style="font-size:10px;color:var(--muted);margin-top:1px;">
+                  Flat ${p.flatId||'—'} &nbsp;·&nbsp; ${fmtD(p.termStart)} → ${fmtD(p.termEnd||p.archivedAt)}
+                </div>
+              </div>
+              <!-- tenure badge -->
+              <span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;
+                background:var(--purple-bg);color:var(--purple);white-space:nowrap;flex-shrink:0;">${tenure}</span>
+            </div>`;
+          }).join('')}
         </div>
-        <table style="width:100%;border-collapse:collapse">
-          <thead>
-            <tr style="background:var(--surface3)">
-              <th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border2)">#</th>
-              <th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border2)">Name</th>
-              <th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border2)">Flat</th>
-              <th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border2)">Term Start</th>
-              <th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border2)">Term End</th>
-              <th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border2)">Tenure</th>
-              <th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border2)">Phone</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${rows.map((p,i) => `
-              <tr onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
-                <td style="padding:11px 14px;border-bottom:1px solid var(--border);font-size:12px;color:var(--muted);font-weight:600">${rows.length-i}</td>
-                <td style="padding:11px 14px;border-bottom:1px solid var(--border);vertical-align:middle">
-                  <div style="display:flex;align-items:center;gap:8px">
-                    <div style="width:28px;height:28px;border-radius:50%;background:var(--purple-bg);color:var(--purple);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0">${(p.name||'?').charAt(0).toUpperCase()}</div>
-                    <span style="font-size:13px;font-weight:600;color:var(--text)">${p.name||'—'}</span>
-                  </div>
-                </td>
-                <td style="padding:11px 14px;border-bottom:1px solid var(--border);vertical-align:middle"><span class="tab-chip indigo">Flat ${p.flatId||'—'}</span></td>
-                <td style="padding:11px 14px;border-bottom:1px solid var(--border);font-size:12px;color:var(--text2)">${fmtD(p.termStart)}</td>
-                <td style="padding:11px 14px;border-bottom:1px solid var(--border);font-size:12px;color:var(--text2)">${fmtD(p.termEnd||p.archivedAt)}</td>
-                <td style="padding:11px 14px;border-bottom:1px solid var(--border)"><span class="tab-chip purple">${calcTenure(p.termStart,p.termEnd||p.archivedAt)}</span></td>
-                <td style="padding:11px 14px;border-bottom:1px solid var(--border);font-size:12px;color:var(--text2)">${p.phone||'—'}</td>
-              </tr>`).join('')}
-          </tbody>
-        </table>
       </div>`;
   } catch(e) { console.error('presHistory',e); sec.style.display='none'; }
 }
