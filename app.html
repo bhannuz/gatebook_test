@@ -842,7 +842,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   /* ── Structure view mobile fixes ── */
   #structureView{padding:6px 8px 12px!important}
   #strStats{gap:5px!important;margin-bottom:8px!important}
-  #strChips{gap:8px!important;padding:2px 0!important}
+  #strChips{gap:8px!important;padding:2px 0!important;grid-template-columns:1fr!important}
 
   /* ── Manage Buildings modal: bottom sheet, handled via inline styles ── */
 
@@ -4623,44 +4623,68 @@ function rStructure() {
 
   // Render based on view
   if (STRVIEW === 'floor') {
-    // Group by block and floor
-    const byBlockFloor = new Map();
+    // Group by block → floor → flats
+    const byBlock = new Map();
     rows.forEach(f => {
       const block = f.block || 'Ungrouped';
-      const floor = f.floor || '—';
-      const key = block + '|' + floor;
-      if (!byBlockFloor.has(key)) byBlockFloor.set(key, { block, floor, flats: [] });
-      byBlockFloor.get(key).flats.push(f);
+      const floor = String(f.floor || '—');
+      if (!byBlock.has(block)) byBlock.set(block, new Map());
+      const floorMap = byBlock.get(block);
+      if (!floorMap.has(floor)) floorMap.set(floor, []);
+      floorMap.get(floor).push(f);
     });
 
-    chipsEl.innerHTML = [...byBlockFloor.entries()]
-      .sort((a,b) => {
-        const bCmp = (a[1].block||'').localeCompare(b[1].block||'');
-        if (bCmp !== 0) return bCmp;
-        const aFloor = parseInt(a[1].floor)||0, bFloor = parseInt(b[1].floor)||0;
-        return aFloor - bFloor;
-      })
-      .map(([_, group]) => {
-        const { block, floor, flats: fts } = group;
-        const paidCnt = fts.filter(f => {
-          const paid = paidAM(f.flatId, AM);
-          return paid >= (f.due||0);
-        }).length;
-        
-        return `<div style="margin-bottom:6px;">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;padding:6px 10px;background:linear-gradient(135deg,var(--indigo-bg),var(--surface2));border-radius:10px;border-left:3px solid var(--indigo);">
-            <i class="ti ti-building-skyscraper" style="color:var(--indigo);font-size:15px;flex-shrink:0;"></i>
-            <div style="flex:1;min-width:0;">
-              <div style="font-weight:800;color:var(--text);font-size:12px;letter-spacing:.2px;">Block ${block} &nbsp;·&nbsp; Floor ${floor}</div>
-              <div style="font-size:10px;color:var(--muted);margin-top:1px;">${fts.length} flat${fts.length!==1?'s':''} &nbsp;·&nbsp; <span style="color:var(--green);font-weight:700;">${paidCnt} paid</span></div>
+    const blocks = [...byBlock.entries()].sort((a,b)=>(a[0]||'').localeCompare(b[0]||''));
+    const totalBlocks = blocks.length;
+
+    chipsEl.style.display = 'grid';
+    chipsEl.style.gridTemplateColumns = `repeat(${totalBlocks}, 1fr)`;
+    chipsEl.style.gap = '10px';
+    chipsEl.style.alignItems = 'start';
+
+    chipsEl.innerHTML = blocks.map(([block, floorMap]) => {
+      const allFlats = [...floorMap.values()].flat();
+      const blockPaid = allFlats.filter(f => paidAM(f.flatId, AM) >= (f.due||0)).length;
+      const floors = [...floorMap.entries()].sort((a,b)=>(parseInt(a[0])||0)-(parseInt(b[0])||0));
+
+      return `<div style="display:flex;flex-direction:column;gap:8px;">
+        <!-- Block header -->
+        <div style="padding:8px 12px;background:linear-gradient(135deg,var(--indigo-bg),var(--surface2));
+          border-radius:10px;border-left:3px solid var(--indigo);display:flex;align-items:center;gap:8px;">
+          <i class="ti ti-building" style="color:var(--indigo);font-size:15px;flex-shrink:0;"></i>
+          <div style="flex:1;min-width:0;">
+            <div style="font-weight:800;color:var(--text);font-size:13px;">Block ${block}</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:1px;">
+              ${allFlats.length} flat${allFlats.length!==1?'s':''} &nbsp;·&nbsp;
+              <span style="color:var(--green);font-weight:700;">${blockPaid} paid</span>
             </div>
-            <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:${paidCnt===fts.length?'var(--green)':paidCnt>0?'var(--amber)':'var(--red)'};color:#fff;">${paidCnt}/${fts.length}</span>
           </div>
-          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:8px;">
-            ${fts.map(f => makeChip(f)).join('')}
-          </div>
-        </div>`
-      }).join('');
+          <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;
+            background:${blockPaid===allFlats.length?'var(--green)':blockPaid>0?'var(--amber)':'var(--red)'};color:#fff;">
+            ${blockPaid}/${allFlats.length}
+          </span>
+        </div>
+        <!-- Floors stacked -->
+        ${floors.map(([floor, fts]) => {
+          const paidCnt = fts.filter(f => paidAM(f.flatId, AM) >= (f.due||0)).length;
+          return `<div>
+            <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;
+              letter-spacing:.5px;padding:4px 6px;margin-bottom:5px;display:flex;align-items:center;gap:5px;">
+              <i class="ti ti-stairs" style="font-size:11px;color:var(--indigo);"></i>
+              Floor ${floor}
+              <span style="margin-left:auto;font-size:9px;padding:1px 6px;border-radius:10px;
+                background:${paidCnt===fts.length?'#dcfce7':paidCnt>0?'#fef9c3':'#fee2e2'};
+                color:${paidCnt===fts.length?'#16a34a':paidCnt>0?'#d97706':'#dc2626'};font-weight:700;">
+                ${paidCnt}/${fts.length}
+              </span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:5px;">
+              ${fts.map(f => makeChip(f)).join('')}
+            </div>
+          </div>`;
+        }).join('')}
+      </div>`;
+    }).join('');
 
   } else if (STRVIEW === 'block') {
     // Group by block only
