@@ -1545,21 +1545,50 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
     <div class="mhead">
       <div style="display:flex;align-items:center;gap:12px">
         <div class="micon pres"><i class="ti ti-crown"></i></div>
-        <div><div class="mtitle">Elect Society President</div><div class="msub">Select a flat member as president</div></div>
+        <div><div class="mtitle">Society President</div><div class="msub">Elect or view history</div></div>
       </div>
       <button class="mclose" onclick="window._cPresM()"><i class="ti ti-x"></i></button>
     </div>
-    <div class="fg"><label>Select Flat / Member *</label><select id="presFlat"></select></div>
-    <div class="fg"><label>President Name *</label><input type="text" id="presName" placeholder="Full name"/></div>
-    <div class="fg"><label>Term Start Date</label><input type="date" id="presStart"/></div>
-    <div class="fg"><label>Term End Date (optional)</label><input type="date" id="presEnd"/></div>
-    <div class="fg"><label>Phone</label><input type="text" id="presPhone" placeholder="Contact number"/></div>
-    <div class="mactions">
-      <button class="btn btn-white" onclick="window._cPresM()">Cancel</button>
-      <button class="btn btn-indigo" id="presSaveBtn" onclick="window._sPres()">
-        <i class="ti ti-crown"></i><span id="presSaveLbl">Elect President</span>
+
+    <!-- Sub-tabs -->
+    <div style="display:flex;border-bottom:2px solid var(--border);margin:0 -20px;padding:0 20px;">
+      <button id="presTab1" onclick="window._presSwTab(1)"
+        style="flex:1;padding:9px 0;font-size:13px;font-weight:700;cursor:pointer;background:none;border:none;
+          border-bottom:2px solid var(--indigo);color:var(--indigo);font-family:var(--font);margin-bottom:-2px;">
+        👑 Elect
+      </button>
+      <button id="presTab2" onclick="window._presSwTab(2)"
+        style="flex:1;padding:9px 0;font-size:13px;font-weight:700;cursor:pointer;background:none;border:none;
+          border-bottom:2px solid transparent;color:var(--muted);font-family:var(--font);margin-bottom:-2px;">
+        🕐 History
       </button>
     </div>
+
+    <!-- Tab 1: Elect -->
+    <div id="presPanel1" style="display:flex;flex-direction:column;">
+      <div class="fg"><label>Select Flat / Member *</label><select id="presFlat"></select></div>
+      <div class="fg"><label>President Name *</label><input type="text" id="presName" placeholder="Full name"/></div>
+      <div class="fg"><label>Term Start Date</label><input type="date" id="presStart"/></div>
+      <div class="fg"><label>Term End Date (optional)</label><input type="date" id="presEnd"/></div>
+      <div class="fg"><label>Phone</label><input type="text" id="presPhone" placeholder="Contact number"/></div>
+      <div class="mactions">
+        <button class="btn btn-white" onclick="window._cPresM()">Cancel</button>
+        <button class="btn btn-indigo" id="presSaveBtn" onclick="window._sPres()">
+          <i class="ti ti-crown"></i><span id="presSaveLbl">Elect President</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Tab 2: History -->
+    <div id="presPanel2" style="display:none;flex-direction:column;max-height:420px;overflow-y:auto;padding-top:12px;">
+      <div id="presHistModalInner">
+        <div style="text-align:center;padding:30px;color:var(--muted);font-size:13px;">
+          <i class="ti ti-history" style="font-size:28px;display:block;margin-bottom:8px;opacity:.4;"></i>
+          No history yet
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -3188,6 +3217,50 @@ window._cVehM   = cVehM;   window._sVeh    = sVeh;   window._delVeh = delVeh;
 window.rVehicles = rVehicles;
 // president.js
 window._oPresM   = oPresM;  window._cPresM  = cPresM;  window._sPres   = sPres;
+
+window._presSwTab = (n) => {
+  document.getElementById('presPanel1').style.display = n===1 ? 'flex' : 'none';
+  document.getElementById('presPanel1').style.flexDirection = 'column';
+  document.getElementById('presPanel2').style.display = n===2 ? 'flex' : 'none';
+  document.getElementById('presPanel2').style.flexDirection = 'column';
+  const t1 = document.getElementById('presTab1');
+  const t2 = document.getElementById('presTab2');
+  t1.style.borderBottomColor = n===1 ? 'var(--indigo)' : 'transparent';
+  t1.style.color = n===1 ? 'var(--indigo)' : 'var(--muted)';
+  t2.style.borderBottomColor = n===2 ? 'var(--indigo)' : 'transparent';
+  t2.style.color = n===2 ? 'var(--indigo)' : 'var(--muted)';
+  if (n===2) window._loadPresHistModal();
+};
+
+window._loadPresHistModal = async () => {
+  const inn = document.getElementById('presHistModalInner');
+  if (!inn) return;
+  try {
+    const {getDocs, collection, query, orderBy} = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js').catch(()=>({}));
+    const snap = await getDocs(query(collection(db,'apartments',UID,'presidentHistory'), orderBy('archivedAt','desc')));
+    if (snap.empty) { inn.innerHTML = `<div style="text-align:center;padding:30px;color:var(--muted);font-size:13px;"><i class="ti ti-history" style="font-size:28px;display:block;margin-bottom:8px;opacity:.4;"></i>No history yet</div>`; return; }
+    const rows = []; snap.forEach(d => rows.push(d.data()));
+    const fmtD = s => { if (!s) return '—'; try { return new Date(s).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}); } catch { return s; } };
+    const calcTenure = (s,e) => { if (!s) return '—'; const start=new Date(s),end=e?new Date(e):new Date(); const months=Math.max(0,(end.getFullYear()-start.getFullYear())*12+(end.getMonth()-start.getMonth())); return months<1?'< 1 month':months===1?'1 month':months<12?`${months} months`:`${Math.floor(months/12)}y ${months%12}m`; };
+    inn.innerHTML = `<div style="position:relative;padding-left:20px;">
+      <div style="position:absolute;left:7px;top:0;bottom:0;width:2px;background:var(--border2);border-radius:2px;"></div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        ${rows.map(p => {
+          const ini=(p.name||'?').charAt(0).toUpperCase();
+          return `<div style="position:relative;display:flex;align-items:center;gap:10px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:8px 10px;">
+            <div style="position:absolute;left:-16px;width:10px;height:10px;border-radius:50%;background:var(--indigo);border:2px solid #fff;box-shadow:0 0 0 2px var(--indigo);"></div>
+            <div style="width:30px;height:30px;border-radius:50%;background:var(--purple-bg);color:var(--purple);font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${ini}</div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-weight:700;font-size:12px;color:var(--text);">${p.name||'—'}</div>
+              <div style="font-size:10px;color:var(--muted);margin-top:1px;">Flat ${p.flatId||'—'} · ${fmtD(p.termStart)} → ${fmtD(p.termEnd||p.archivedAt)}</div>
+            </div>
+            <span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;background:var(--purple-bg);color:var(--purple);white-space:nowrap;flex-shrink:0;">${calcTenure(p.termStart,p.termEnd||p.archivedAt)}</span>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  } catch(e) { console.error('presHistModal',e); }
+};
 window._oPresExp = oPresExp; window._cPresExp= cPresExp; window._sPresExp= sPresExp;
 window._delSE = delSE; window._openSEEdit = openSEEdit; window._closeSEEdit = closeSEEdit; window._saveSEEdit = saveSEEdit;
 
@@ -4129,11 +4202,27 @@ async function rPresHistory() {
 window.rPresHistory = rPresHistory;
 
 function oPresM() {
+  window._presSwTab(1);
   const pres = president;
-  document.getElementById('presFlat').innerHTML = [...flats.values()]
-    .filter(f => (f.owner || '').trim())
-    .map(f => `<option value="${f.flatId}"${pres && pres.flatId === f.flatId ? ' selected' : ''}>${f.flatId} — ${f.owner}</option>`)
-    .join('');
+  const allFlats = [...flats.values()].sort((a,b) => (a.flatId||'').localeCompare(b.flatId||''));
+  const byBlock = new Map();
+  allFlats.forEach(f => {
+    const blk = f.block || 'Other';
+    if (!byBlock.has(blk)) byBlock.set(blk, []);
+    byBlock.get(blk).push(f);
+  });
+  const blocks = [...byBlock.keys()].sort();
+  document.getElementById('presFlat').innerHTML =
+    `<option value="">— Select flat —</option>` +
+    blocks.map(blk =>
+      `<optgroup label="Block ${blk}">` +
+      byBlock.get(blk).map(f =>
+        `<option value="${f.flatId}"${pres && pres.flatId === f.flatId ? ' selected' : ''}>
+          ${f.flatId}${f.owner ? ' — ' + f.owner : ' (Vacant)'}
+        </option>`
+      ).join('') +
+      `</optgroup>`
+    ).join('');
   document.getElementById('presName').value  = pres?.name || '';
   document.getElementById('presStart').value = pres?.termStart || new Date().toISOString().split('T')[0];
   document.getElementById('presEnd').value   = pres?.termEnd || '';
