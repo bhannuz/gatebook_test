@@ -1315,11 +1315,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   <div id="structureView" style="display:none;padding:8px 14px 14px">
 
     <!-- President banner (injected by rStructure) -->
-    <div id="presBanner" style="margin-bottom:6px;"></div>
-    <!-- President History Timeline (compact, below banner) -->
-    <div id="presHistSection" style="display:none;margin-bottom:10px;padding:0 2px;">
-      <div id="presHistInner"></div>
-    </div>
+    <div id="presBanner" style="margin-bottom:10px;"></div>
 
     <!-- Residents toolbar: single row -->
     <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
@@ -3445,7 +3441,7 @@ function switchView(v) {
   document.querySelectorAll('.vtab').forEach(p => p.classList.toggle('active', p.dataset.v===v));
   document.querySelectorAll('.bnav-item').forEach(p => p.classList.toggle('active', p.dataset.v===v));
   if(v==='analytics') try{ rAnalytics(); } catch(e){ console.error(e); }
-  if(v==='structure') try{ rStructure(); rPresHistory().catch(()=>{}); } catch(e){ console.error(e); }
+  if(v==='structure') try{ rStructure(); } catch(e){ console.error(e); }
   if(v==='president') {
     try{ rPresident(); } catch(e){ console.error(e); }
     rPresHistory().catch(e => console.error('rPresHistory', e));
@@ -4736,18 +4732,20 @@ function rStructure() {
 
       return `<div style="display:flex;flex-direction:column;gap:8px;">
         <!-- Block header -->
-        <div style="padding:8px 12px;background:linear-gradient(135deg,var(--indigo-bg),var(--surface2));
-          border-radius:10px;border-left:3px solid var(--indigo);display:flex;align-items:center;gap:8px;">
-          <i class="ti ti-building" style="color:var(--indigo);font-size:15px;flex-shrink:0;"></i>
+        <div style="margin:0 -4px;padding:10px 14px;background:var(--indigo);
+          border-radius:12px;display:flex;align-items:center;gap:10px;">
+          <div style="width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,.18);
+            display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <i class="ti ti-building" style="color:#fff;font-size:16px;"></i>
+          </div>
           <div style="flex:1;min-width:0;">
-            <div style="font-weight:800;color:var(--text);font-size:13px;">Block ${block}</div>
-            <div style="font-size:10px;color:var(--muted);margin-top:1px;">
-              ${allFlats.length} flat${allFlats.length!==1?'s':''} &nbsp;·&nbsp;
-              <span style="color:var(--green);font-weight:700;">${blockPaid} paid</span>
+            <div style="font-weight:800;color:#fff;font-size:14px;letter-spacing:.2px;">Block ${block}</div>
+            <div style="font-size:10px;color:rgba(255,255,255,.75);margin-top:1px;">
+              ${allFlats.length} flat${allFlats.length!==1?'s':''} &nbsp;·&nbsp; ${blockPaid} paid
             </div>
           </div>
-          <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;
-            background:${blockPaid===allFlats.length?'var(--green)':blockPaid>0?'var(--amber)':'var(--red)'};color:#fff;">
+          <span style="font-size:11px;font-weight:800;padding:3px 10px;border-radius:20px;
+            background:rgba(255,255,255,.22);color:#fff;letter-spacing:.2px;">
             ${blockPaid}/${allFlats.length}
           </span>
         </div>
