@@ -3231,10 +3231,20 @@ window._presSwTab = (n) => {
 window._loadPresHistModal = async () => {
   const inn = document.getElementById('presHistModalInner');
   if (!inn) return;
+  inn.innerHTML = `<div style="text-align:center;padding:20px;color:var(--muted);font-size:12px;">Loading…</div>`;
   try {
-    const {getDocs, collection, query, orderBy} = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js').catch(()=>({}));
-    const snap = await getDocs(query(collection(db,'apartments',UID,'presidentHistory'), orderBy('archivedAt','desc')));
-    if (snap.empty) { inn.innerHTML = `<div style="text-align:center;padding:30px;color:var(--muted);font-size:13px;"><i class="ti ti-history" style="font-size:28px;display:block;margin-bottom:8px;opacity:.4;"></i>No history yet</div>`; return; }
+    const presHistColl = () => collection(db, 'apartments', UID, 'presidentHistory');
+    let snap;
+    try {
+      snap = await getDocs(query(presHistColl(), orderBy('archivedAt','desc')));
+    } catch(idxErr) {
+      // Firestore index may not exist — fall back to unordered fetch
+      snap = await getDocs(presHistColl());
+    }
+    if (snap.empty) {
+      inn.innerHTML = `<div style="text-align:center;padding:30px;color:var(--muted);font-size:13px;"><i class="ti ti-history" style="font-size:28px;display:block;margin-bottom:8px;opacity:.4;"></i>No history yet</div>`;
+      return;
+    }
     const rows = []; snap.forEach(d => rows.push(d.data()));
     const fmtD = s => { if (!s) return '—'; try { return new Date(s).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}); } catch { return s; } };
     const calcTenure = (s,e) => { if (!s) return '—'; const start=new Date(s),end=e?new Date(e):new Date(); const months=Math.max(0,(end.getFullYear()-start.getFullYear())*12+(end.getMonth()-start.getMonth())); return months<1?'< 1 month':months===1?'1 month':months<12?`${months} months`:`${Math.floor(months/12)}y ${months%12}m`; };
@@ -3255,7 +3265,7 @@ window._loadPresHistModal = async () => {
         }).join('')}
       </div>
     </div>`;
-  } catch(e) { console.error('presHistModal',e); }
+  } catch(e) { console.error('presHistModal',e); inn.innerHTML = `<div style="text-align:center;padding:20px;color:var(--red);font-size:12px;">Failed to load history</div>`; }
 };
 window._oPresExp = oPresExp; window._cPresExp= cPresExp; window._sPresExp= sPresExp;
 window._delSE = delSE; window._openSEEdit = openSEEdit; window._closeSEEdit = closeSEEdit; window._saveSEEdit = saveSEEdit;
@@ -4145,7 +4155,9 @@ async function rPresHistory() {
   const inn = document.getElementById('presHistInner');
   if (!sec || !inn) return;
   try {
-    const snap = await getDocs(query(collection(db,'apartments',UID,'presidentHistory'), orderBy('archivedAt','desc')));
+    let snap;
+    try { snap = await getDocs(query(collection(db,'apartments',UID,'presidentHistory'), orderBy('archivedAt','desc'))); }
+    catch { snap = await getDocs(collection(db,'apartments',UID,'presidentHistory')); }
     if (snap.empty) { sec.style.display = 'none'; return; }
     const rows = [];
     snap.forEach(d => rows.push(d.data()));
