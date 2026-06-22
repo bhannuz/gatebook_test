@@ -1146,7 +1146,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   <!-- Tab bar now at very top, card-sized, full width -->
   <div class="tab-bar-wrap" style="margin:0 0 0.5rem;position:static;border:none;padding:0;background:transparent">
     <div class="view-tabs" id="viewTabs" style="gap:8px;padding:0">
-      <button class="vtab active" data-v="analytics" onclick="switchView('analytics')"><i class="ti ti-chart-pie"></i> Analytics</button>
+      <button class="vtab active" data-v="analytics" onclick="switchView('analytics')"><i class="ti ti-credit-card"></i> Payments</button>
       <button class="vtab" data-v="president" onclick="switchView('president')"><i class="ti ti-receipt"></i> Expenses</button>
       <button class="vtab" data-v="structure" onclick="switchView('structure')"><i class="ti ti-users"></i> Residents</button>
       <button class="vtab" data-v="issues" onclick="switchView('issues')">
@@ -4829,9 +4829,9 @@ function rStructure() {
         ${floors.map(([floor, fts]) => {
           const paidCnt = fts.filter(f => paidAM(f.flatId, AM) >= (f.due||0)).length;
           return `<div>
-            <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;
+            <div style="font-size:12px;font-weight:800;color:var(--text);text-transform:uppercase;
               letter-spacing:.5px;padding:4px 6px;margin-bottom:5px;display:flex;align-items:center;gap:5px;">
-              <i class="ti ti-stairs" style="font-size:11px;color:var(--indigo);"></i>
+              <i class="ti ti-stairs" style="font-size:13px;color:var(--indigo);"></i>
               Floor ${floor}
               <span style="margin-left:auto;font-size:9px;padding:1px 6px;border-radius:10px;
                 background:${paidCnt===fts.length?'#dcfce7':paidCnt>0?'#fef9c3':'#fee2e2'};
@@ -5195,6 +5195,11 @@ function rAnalytics() {
         <button class="btn btn-indigo" onclick="window._oPresExp()"><i class="ti ti-receipt"></i> Add Expense</button>
       </div>
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <select id="payFilterBlock"
+          style="font-size:11px;height:28px;padding:0 8px;border:1px solid var(--border2);border-radius:6px;background:#fff;cursor:pointer;font-weight:600;"
+          onchange="window._anOnBlockChange()">
+          <option value="">All Blocks</option>
+        </select>
         <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;">Year</label>
         <select id="payFilterYear"
           style="font-size:11px;height:28px;padding:0 6px;border:1px solid var(--border2);border-radius:6px;background:#fff;cursor:pointer;"
@@ -5219,6 +5224,15 @@ function rAnalytics() {
   /* ── 4. Populate Month dropdown based on selected year ── */
   _anPopulateMonths(sortedMonths);
 
+  // Populate block dropdown
+  const blkSel = document.getElementById('payFilterBlock');
+  if (blkSel) {
+    const prevBlk = blkSel.value || '';
+    const blks = [...new Set([...flats.values()].map(f=>f.block||'').filter(Boolean))].sort();
+    blkSel.innerHTML = '<option value="">All Blocks</option>' +
+      blks.map(b=>`<option value="${b}"${prevBlk===b?' selected':''}>Block ${b}</option>`).join('');
+  }
+
   // Restore month selection
   const mSel = document.getElementById('payFilterMonth');
   const monthsForYear = sortedMonths.filter(m =>
@@ -5240,6 +5254,13 @@ window._anOnYearChange = function () {
 
 /* Called when month dropdown changes */
 window._anOnMonthChange = function () { _anRender(); };
+
+window._anOnBlockChange = function () {
+  const b = document.getElementById('payFilterBlock')?.value || 'all';
+  _anBlock = b;
+  ['anBlockFilter','anBlockFilter2'].forEach(id => { const el=document.getElementById(id); if(el) el.value=b; });
+  _anRender();
+};
 
 /* Block filter in phAct */
 window._anOnBlockChange = function () {
@@ -5599,7 +5620,7 @@ function renderAnPayTable(filterType, selMonth, selYear, selBlock) {
 <!-- BOTTOM NAV BAR (mobile only) -->
 <nav class="bottom-nav-bar" id="bottomNav" aria-label="Main navigation">
   <button class="bnav-item active" data-v="analytics" onclick="switchView('analytics')">
-    <i class="ti ti-chart-pie"></i>Analytics
+    <i class="ti ti-credit-card"></i>Payments
   </button>
   <button class="bnav-item" data-v="president" onclick="switchView('president')">
     <i class="ti ti-receipt"></i>Expenses
