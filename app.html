@@ -1976,87 +1976,87 @@ function oFlEdit(fid) {
   const veh = vehicles.get(fid) || { tw:0, fw:0 };
   const tw = parseInt(veh.tw)||0, fw = parseInt(veh.fw)||0;
 
-  document.getElementById('dBody').innerHTML = `
-    <div style="background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--r-lg);padding:14px;margin-bottom:14px;margin-top:4px">
-      <div style="font-size:12px;font-weight:800;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:6px">
-        <i class="ti ti-pencil" style="color:var(--indigo);font-size:13px"></i> Resident Info
+  const _inp = (id,type,val,ph,extra='') => `<input id="${id}" type="${type}" value="${val}" placeholder="${ph}" ${extra}
+    style="width:100%;box-sizing:border-box;height:38px;padding:0 11px;background:#fff;border:1.5px solid var(--border2);
+    color:var(--text);font-family:var(--font);font-size:13px;font-weight:600;border-radius:8px;outline:none;"
+    onfocus="this.style.borderColor='var(--indigo)'" onblur="this.style.borderColor='var(--border2)'"/>`;
+  const _lbl = t => `<div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px;">${t}</div>`;
+  const _fld = (lbl,inp) => `<div>${_lbl(lbl)}${inp}</div>`;
+
+  document.getElementById('dBody').innerHTML = `<div style="padding:4px 0 8px;">
+
+    <!-- ── RESIDENT SECTION ── -->
+    <div style="margin-bottom:18px;">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--indigo);">
+        <i class="ti ti-user" style="color:var(--indigo);font-size:15px;"></i>
+        <span style="font-size:13px;font-weight:800;color:var(--text);">Resident</span>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-        <div>
-          <label style="font-size:9px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Resident Name</label>
-          <input id="edOwner" type="text" value="${(f.owner||'').replace(/"/g,'&quot;')}" placeholder="Full name" style="width:100%;box-sizing:border-box;height:32px;padding:0 9px;background:#fff;border:1.5px solid var(--border2);color:var(--text);font-family:var(--font);font-size:12px;font-weight:600;border-radius:var(--r-md);outline:none" onfocus="this.style.borderColor='var(--indigo)'" onblur="this.style.borderColor='var(--border2)'"/>
-        </div>
-        <div>
-          <label style="font-size:9px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Type</label>
-          <select id="edType" style="width:100%;box-sizing:border-box;height:32px;padding:0 9px;background:#fff;border:1.5px solid var(--border2);color:var(--text);font-family:var(--font);font-size:12px;font-weight:600;border-radius:var(--r-md);outline:none" onchange="window._toggleOwnerFields(this.value)">
-            <option value="owner" ${!isTenant?'selected':''}>Owner</option>
-            <option value="tenant" ${isTenant?'selected':''}>Tenant</option>
-          </select>
-        </div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
-        <div>
-          <label style="font-size:9px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Monthly Due</label>
-          <input id="edDue" type="number" value="${f.due||''}" placeholder="5000" min="0" style="width:100%;box-sizing:border-box;height:32px;padding:0 9px;background:#fff;border:1.5px solid var(--border2);color:var(--text);font-family:var(--font);font-size:12px;font-weight:600;border-radius:var(--r-md);outline:none" onfocus="this.style.borderColor='var(--indigo)'" onblur="this.style.borderColor='var(--border2)'"/>
-        </div>
-        <div>
-          <label style="font-size:9px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Vehicles (2W/4W)</label>
-          <input id="edVehicles" type="text" value="${tw}/${fw}" placeholder="2/1" style="width:100%;box-sizing:border-box;height:32px;padding:0 9px;background:#fff;border:1.5px solid var(--border2);color:var(--text);font-family:var(--font);font-size:12px;font-weight:600;border-radius:var(--r-md);outline:none" onfocus="this.style.borderColor='var(--indigo)'" onblur="this.style.borderColor='var(--border2)'" title="Format: 2-wheelers/4-wheelers (e.g., 2/1)"/>
-        </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+        ${_fld('Name', _inp('edOwner','text',(f.owner||'').replace(/"/g,'&quot;'),'Full name'))}
+        ${_fld('Type', `<select id="edType" onchange="window._toggleOwnerFields(this.value)"
+          style="width:100%;height:38px;padding:0 11px;background:#fff;border:1.5px solid var(--border2);
+          color:var(--text);font-family:var(--font);font-size:13px;font-weight:600;border-radius:8px;outline:none;box-sizing:border-box;">
+          <option value="owner" ${!isTenant?'selected':''}>🏠 Owner</option>
+          <option value="tenant" ${isTenant?'selected':''}>🔑 Tenant</option>
+        </select>`)}
       </div>
 
-      <!-- RESIDENT STATUS TABS -->
-      <div style="display:flex;gap:6px;background:var(--surface2);padding:6px;border-radius:8px;margin-bottom:12px">
-        <button id="activeTab" type="button" onclick="window._setResidentStatus('active')" style="flex:1;padding:8px 10px;border:none;background:var(--indigo);color:#fff;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font);transition:all .15s">
-          🟢 Active
+      <!-- Owner fields (tenant only) -->
+      <div id="ownerSection" style="display:${isTenant?'grid':'none'};grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+        ${_fld('Owner Name', _inp('edOwnerName','text',(f.ownerName||'').replace(/"/g,'&quot;'),'Flat owner'))}
+        ${_fld('Owner Phone', _inp('edOwnerPhone','tel',(f.ownerPhone||'').replace(/"/g,'&quot;'),'Contact no.'))}
+      </div>
+
+      <!-- Status -->
+      <div style="display:flex;gap:8px;margin-bottom:12px;">
+        <button id="activeTab" type="button" onclick="window._setResidentStatus('active')"
+          style="flex:1;height:38px;border:none;background:var(--indigo);color:#fff;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);">
+          ✅ Active
         </button>
-        <button id="movedTab" type="button" onclick="window._setResidentStatus('moved')" style="flex:1;padding:8px 10px;border:none;background:transparent;color:var(--text2);border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font);transition:all .15s">
-          🔴 Moved Out
+        <button id="movedTab" type="button" onclick="window._setResidentStatus('moved')"
+          style="flex:1;height:38px;border:1.5px solid var(--border2);background:#fff;color:var(--text2);border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);">
+          🚪 Moved Out
         </button>
       </div>
 
-      <!-- MOVE-IN DATE (Always Visible) -->
-      <div style="margin-bottom:10px">
-        <label style="font-size:9px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Move-In Date</label>
-        <input id="edMoveIn" type="date" value="${f.moveIn||''}" style="width:100%;box-sizing:border-box;height:32px;padding:0 9px;background:#fff;border:1.5px solid var(--border2);color:var(--text);font-family:var(--font);font-size:12px;font-weight:600;border-radius:var(--r-md);outline:none" onfocus="this.style.borderColor='var(--indigo)'" onblur="this.style.borderColor='var(--border2)'"/>
-      </div>
-
-      <!-- MOVE-OUT DATE (Conditional) -->
-      <div id="moveOutSection" style="margin-bottom:10px;${f.moveOut?'display:block':'display:none'}">
-        <label style="font-size:9px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Move-Out Date</label>
-        <input id="edMoveOut" type="date" value="${f.moveOut||''}" style="width:100%;box-sizing:border-box;height:32px;padding:0 9px;background:#fff;border:1.5px solid var(--border2);color:var(--text);font-family:var(--font);font-size:12px;font-weight:600;border-radius:var(--r-md);outline:none" onfocus="this.style.borderColor='var(--indigo)'" onblur="this.style.borderColor='var(--border2)'"/>
-      </div>
-      </div>
-      <div id="ownerSection" style="display:${isTenant?'grid':'none'};grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;padding-top:10px;border-top:1px solid var(--border)">
-        <div>
-          <label style="font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Owner Name</label>
-          <input id="edOwnerName" type="text" value="${(f.ownerName||'').replace(/"/g,'&quot;')}" placeholder="Actual flat owner"
-            style="width:100%;box-sizing:border-box;height:34px;padding:0 9px;background:#fff;border:1.5px solid var(--border2);color:var(--text);font-family:var(--font);font-size:13px;font-weight:600;border-radius:var(--r-md);outline:none"
-            onfocus="this.style.borderColor='var(--indigo)'" onblur="this.style.borderColor='var(--border2)'"/>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        ${_fld('Move-In Date', _inp('edMoveIn','date',f.moveIn||'',''))}
+        <div id="moveOutSection" style="${f.moveOut?'display:block':'display:none'}">
+          ${_lbl('Move-Out Date')}${_inp('edMoveOut','date',f.moveOut||',','')}
         </div>
-        <div>
-          <label style="font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Owner Phone</label>
-          <input id="edOwnerPhone" type="tel" value="${(f.ownerPhone||'').replace(/"/g,'&quot;')}" placeholder="Owner contact"
-            style="width:100%;box-sizing:border-box;height:34px;padding:0 9px;background:#fff;border:1.5px solid var(--border2);color:var(--text);font-family:var(--font);font-size:13px;font-weight:600;border-radius:var(--r-md);outline:none"
-            onfocus="this.style.borderColor='var(--indigo)'" onblur="this.style.borderColor='var(--border2)'"/>
-        </div>
-      </div>
-      <!-- Save button -->
-      <div style="display:flex;gap:8px;justify-content:flex-end;padding-top:10px;border-top:1px solid var(--border)">
-        <button onclick="window._cD()"
-          style="padding:8px 18px;border:1.5px solid var(--border2);border-radius:var(--r-md);background:none;
-            color:var(--text2);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font)">
-          Cancel
-        </button>
-        <button id="edSaveBtn" onclick="window._saveFlat('${fid}')"
-          style="display:inline-flex;align-items:center;gap:7px;padding:8px 22px;
-            border:none;border-radius:var(--r-md);background:linear-gradient(135deg,#6366F1,#8B5CF6);
-            color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);
-            box-shadow:0 4px 14px rgba(99,102,241,0.3)">
-          <i class="ti ti-device-floppy" style="font-size:15px"></i> Save Changes
-        </button>
       </div>
     </div>
+
+    <!-- ── FLAT DETAILS SECTION ── -->
+    <div style="margin-bottom:18px;">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--purple);">
+        <i class="ti ti-building" style="color:var(--purple);font-size:15px;"></i>
+        <span style="font-size:13px;font-weight:800;color:var(--text);">Flat Details</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+        ${_fld('Monthly Due (₹)', _inp('edDue','number',f.due||'','e.g. 5000','min="0"'))}
+        ${_fld('Area (sq.ft)', _inp('edSft','number',f.sft||'','e.g. 850','min="0"'))}
+        ${_fld('Vehicles 2W/4W', _inp('edVehicles','text',tw+'/'+fw,'1/1'))}
+      </div>
+    </div>
+
+    <!-- ── SAVE / CANCEL ── -->
+    <div style="display:flex;gap:10px;">
+      <button onclick="window._cD()"
+        style="flex:1;height:44px;border:1.5px solid var(--border2);border-radius:10px;background:#fff;
+          color:var(--text2);font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);">
+        Cancel
+      </button>
+      <button id="edSaveBtn" onclick="window._saveFlat('${fid}')"
+        style="flex:2;height:44px;border:none;border-radius:10px;background:var(--indigo);
+          color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);
+          display:flex;align-items:center;justify-content:center;gap:6px;">
+        <i class="ti ti-device-floppy" style="font-size:15px;"></i> Save
+      </button>
+    </div>
+
+  </div>
+
 
     <!-- HISTORY TOGGLE -->
     <div style="display:flex;gap:6px;background:var(--surface2);padding:6px;border-radius:8px;margin-bottom:14px">
