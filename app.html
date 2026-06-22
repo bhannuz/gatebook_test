@@ -5241,6 +5241,17 @@ window._anOnYearChange = function () {
 /* Called when month dropdown changes */
 window._anOnMonthChange = function () { _anRender(); };
 
+/* Block filter in phAct */
+window._anOnBlockChange = function () {
+  const b = document.getElementById('payFilterBlock')?.value || 'all';
+  _anBlock = b;
+  // Sync the internal block selects
+  ['anBlockFilter','anBlockFilter2'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = b;
+  });
+  _anRender();
+};
+
 /* Repopulate month <select> filtered by chosen year */
 function _anPopulateMonths(sortedMonths) {
   const ySel = document.getElementById('payFilterYear');
