@@ -5256,20 +5256,9 @@ window._anOnYearChange = function () {
 window._anOnMonthChange = function () { _anRender(); };
 
 window._anOnBlockChange = function () {
-  const b = document.getElementById('payFilterBlock')?.value || 'all';
-  _anBlock = b;
-  ['anBlockFilter','anBlockFilter2'].forEach(id => { const el=document.getElementById(id); if(el) el.value=b; });
-  _anRender();
-};
-
-/* Block filter in phAct */
-window._anOnBlockChange = function () {
-  const b = document.getElementById('payFilterBlock')?.value || 'all';
-  _anBlock = b;
-  // Sync the internal block selects
-  ['anBlockFilter','anBlockFilter2'].forEach(id => {
-    const el = document.getElementById(id); if (el) el.value = b;
-  });
+  const b = document.getElementById('payFilterBlock')?.value || '';
+  _anBlock = b || 'all';
+  ['anBlockFilter','anBlockFilter2'].forEach(id => { const el=document.getElementById(id); if(el) el.value=_anBlock; });
   _anRender();
 };
 
@@ -5317,10 +5306,12 @@ function _anRender() {
   }
 
   /* ── aggregate per flat ── */
+  const selBlock = document.getElementById('payFilterBlock')?.value || '';
   let totalCollected = 0, totalDue = 0;
   let paid = 0, partial = 0, pending = 0, vacant = 0;
 
   flats.forEach((f, fid) => {
+    if (selBlock && f.block !== selBlock) return;
     const isVacant = !(f.owner || '').trim();
     if (isVacant) { vacant++; return; }
 
@@ -5397,7 +5388,7 @@ function _anRender() {
     </div>`;
 
   /* ── Payment records table ── */
-  renderAnPayTable('month', selectedMonth || AM, selectedYear, 'all');
+  renderAnPayTable('month', selectedMonth || AM, selectedYear, selBlock || 'all');
 }
 window.rAnalytics = rAnalytics;
 
