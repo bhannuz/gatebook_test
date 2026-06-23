@@ -252,7 +252,12 @@ window.loadUsers = async function() {
         const fSnap = await getDocs(collection(db,'apartments',d.id,'flats'));
         flatCount = fSnap.size;
       } catch(e) { flatCount = data.totalFlats || 0; }
-      return { uid: d.id, flatCount, ...data };
+      // Normalise key fields across different registration flows
+      const norm = { uid: d.id, flatCount, ...data };
+      norm.name       = data.name || data.aptName || data.apartmentName || '';
+      norm.adminName  = data.adminName || data.ownerName || data.displayName || '';
+      norm.adminEmail = data.adminEmail || data.email || data.ownerEmail || '';
+      return norm;
     });
     allUsers = await Promise.all(userPromises);
     allUsers.sort((a,b) => (b.createdAt||'').localeCompare(a.createdAt||''));
@@ -366,12 +371,12 @@ window.renderTable = function() {
             return `<tr>
               <td style="color:var(--muted);font-size:11px">${i+1}</td>
               <td>
-                <div style="font-weight:800;font-size:13px;color:var(--text)">${u.name||'—'}</div>
+                <div style="font-weight:800;font-size:13px;color:var(--text)">${u.name||u.aptName||u.apartmentName||'—'}</div>
                 <div style="font-size:10px;color:var(--muted)">${u.uid.slice(0,8)}…</div>
               </td>
               <td>
-                <div style="font-weight:700">${u.adminName||'—'}</div>
-                <div style="font-size:10px;color:var(--text2)">${u.adminEmail||'—'}</div>
+                <div style="font-weight:700">${u.adminName||u.ownerName||u.displayName||'—'}</div>
+                <div style="font-size:10px;color:var(--text2)">${u.adminEmail||u.email||u.ownerEmail||'—'}</div>
               </td>
               <td>
                 <span style="font-family:monospace;font-size:12px;font-weight:700;
@@ -403,14 +408,14 @@ window.openUser = function(uid) {
   const days = daysLeft(u.expiryDate);
   const loginId = (u.adminEmail||'').split('@')[0] || '—';
 
-  document.getElementById('modalTitle').textContent = u.name || 'Unknown';
-  document.getElementById('modalSub').textContent   = u.adminEmail || '';
+  document.getElementById('modalTitle').textContent = u.name || u.aptName || u.apartmentName || 'Unknown';
+  document.getElementById('modalSub').textContent   = u.adminEmail || u.email || u.ownerEmail || '';
 
   document.getElementById('modalBody').innerHTML = `
 
     <!-- User Info Grid -->
     <div class="detail-grid">
-      <div class="detail-item"><label>Admin Name</label><div class="val">${u.adminName||'—'}</div></div>
+      <div class="detail-item"><label>Admin Name</label><div class="val">${u.adminName||u.ownerName||u.displayName||'—'}</div></div>
       <div class="detail-item"><label>Login ID</label>
         <div class="val" style="display:flex;align-items:center;gap:6px;">
           <span style="font-family:monospace;font-size:13px;background:var(--indigo-bg);color:var(--indigo);padding:2px 8px;border-radius:6px;">${loginId}</span>
