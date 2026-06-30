@@ -19,6 +19,12 @@ const fsSet  = (...a) => APP().setDoc(...a);
 const fsUpd  = (...a) => APP().updateDoc(...a);
 const fsDel  = (...a) => APP().deleteDoc(...a);
 
+/* trigger full app refresh (re-renders all tabs via Firestore listener) */
+const rAll   = () => { try { APP().rAll(); } catch(e) { console.error(e); } };
+
+/* track which block edit panel is currently open — survives re-renders */
+let _openEditBlock = null;
+
 /* ── CSS helpers ── */
 const inp = (extra='') =>
   `style="box-sizing:border-box;height:28px;padding:0 7px;border:1.5px solid var(--border2);
@@ -30,30 +36,53 @@ const inp = (extra='') =>
 /* ══════════════════════════════════════════
    TOGGLE EDIT PANEL
 ══════════════════════════════════════════ */
+/* toggle block flat list collapsed/expanded */
+let _collapsedBlocks = new Set();
+window._toggleStrBlock = function(bl) {
+  const body = document.getElementById('str-body-' + bl);
+  const icon = document.getElementById('str-toggle-icon-' + bl);
+  if (!body) return;
+  const isCollapsed = _collapsedBlocks.has(bl);
+  if (isCollapsed) {
+    _collapsedBlocks.delete(bl);
+    body.style.display = '';
+    if (icon) { icon.className = 'ti ti-chevron-up'; }
+  } else {
+    _collapsedBlocks.add(bl);
+    body.style.display = 'none';
+    if (icon) { icon.className = 'ti ti-chevron-down'; }
+  }
+};
+
 window._openStrEdit = function(bl) {
   document.querySelectorAll('[id^="str-edit-"]').forEach(el => {
     if (el.id !== 'str-edit-' + bl) el.style.display = 'none';
   });
   const el = document.getElementById('str-edit-' + bl);
   if (!el) return;
-  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+  const opening = el.style.display === 'none';
+  el.style.display = opening ? 'block' : 'none';
+  _openEditBlock = opening ? bl : null;
 };
 
 /* ══════════════════════════════════════════
    RENAME BLOCK
 ══════════════════════════════════════════ */
 window._renameBlock = async function(oldName) {
-  const inp   = document.getElementById('str-bname-' + oldName);
+  const inp     = document.getElementById('str-bname-' + oldName);
   const newName = (inp?.value || '').trim().toUpperCase();
-  if (!newName)              { toast('Enter a block name.', 'error'); return; }
-  if (newName === oldName)   { toast('No change.'); return; }
+  if (!newName)            { toast('Enter a block name.', 'error'); return; }
+  if (newName === oldName) { toast('No change.'); return; }
   const affected = [...flats().values()].filter(f => f.block === oldName);
-  if (!affected.length)      { toast('No flats in this block.', 'error'); return; }
+  if (!affected.length)    { toast('No flats in this block.', 'error'); return; }
   if (!confirm(`Rename Block ${oldName} → ${newName}?\nThis updates all ${affected.length} flat records.`)) return;
   sync('saving');
   try {
     await Promise.all(affected.map(f => fsUpd(flatRef(f.flatId), { block: newName })));
+    /* track new name so panel stays open after re-render */
+    _openEditBlock = newName;
     sync('live'); toast(`Block renamed to ${newName} ✓`);
+    /* onSnapshot fires rAll() automatically */
   } catch(e) { console.error(e); sync('error'); toast('Rename failed.', 'error'); }
 };
 
@@ -186,12 +215,13 @@ window._deleteBlock = async function(bl) {
   const hasPaid = victims.some(f => (f.paid || 0) > 0);
   if (!confirm(`⚠️ DELETE entire Block ${bl} (${victims.length} flats)?` +
     (hasPaid ? '\n⚠️ Some flats have payment records!' : '') +
-    '\nThis CANNOT be undone. Type block name to confirm.')) return;
+    '\nThis CANNOT be undone.')) return;
   const conf = prompt(`Type "${bl}" to permanently delete Block ${bl}:`);
   if ((conf || '').trim().toUpperCase() !== bl) { toast('Cancelled — name did not match.'); return; }
   sync('saving');
   try {
     await Promise.all(victims.map(f => fsDel(flatRef(f.flatId))));
+    _openEditBlock = null; /* panel gone after delete */
     sync('live'); toast(`Block ${bl} deleted ✓`);
   } catch(e) { console.error(e); sync('error'); toast('Delete failed.', 'error'); }
 };
@@ -228,7 +258,8 @@ window._addNewBlock = async function() {
    MAIN RENDER
 ══════════════════════════════════════════ */
 function rStructure() {
-  const all    = [...flats().values()].filter(f => f.month === AM());
+  /* Structure shows ALL flats — it's a physical view, not month-scoped */
+  const all    = [...flats().values()];
   const blocks = [...new Set(all.map(f => f.block).filter(Boolean))].sort();
   const q      = (document.getElementById('strSearch')?.value || '').toLowerCase().trim();
   const bf     = document.getElementById('strBlockFilter')?.value || 'all';
@@ -271,32 +302,42 @@ function rStructure() {
     blockMap.get(bl).get(fl).push(f);
   });
 
-  const sc = f => { const s = st(f); return s === 'paid' ? 'var(--green)' : s === 'partial' ? 'var(--amber)' : 'var(--red)'; };
-  const si = f => { const s = st(f); return s === 'paid' ? 'ti-circle-check' : s === 'partial' ? 'ti-clock' : 'ti-alert-circle'; };
-
-  /* ── flat card view ── */
-  const flatCards = (fls) => fls.sort((a, b) => (a.flatId || '').localeCompare(b.flatId || '')).map(f => {
-    const sColor = sc(f), sIcon = si(f), isVacant = !(f.owner || '').trim();
-    return `<div onclick="window._oFl('${f.flatId}')"
-      style="background:var(--surface2);border:1px solid var(--border);border-left:3px solid ${sColor};
-        border-radius:8px;padding:8px 10px;cursor:pointer;transition:box-shadow .15s"
-      onmouseover="this.style.boxShadow='var(--shadow)'" onmouseout="this.style.boxShadow='none'">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:3px">
-        <span style="font-size:12px;font-weight:800;color:var(--text)">${f.flatId}</span>
-        <i class="ti ${sIcon}" style="font-size:12px;color:${sColor}"></i>
-      </div>
-      <div style="font-size:10px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
-        ${isVacant ? '<em style="color:var(--muted)">Vacant</em>' : f.owner}
-      </div>
-      <div style="font-size:9px;font-weight:700;margin-top:3px;color:${sColor}">
-        ${isVacant ? '' : inr(f.paid) + ' / ' + inr(f.due)}
-      </div>
-    </div>`;
-  }).join('');
+  /* ── flat list view (structure — master data, no payment status) ── */
+  const flatCards = (fls) => {
+    const sorted = fls.sort((a, b) => (a.flatId || '').localeCompare(b.flatId || ''));
+    return sorted.map(f => {
+      const isVacant  = !(f.owner || '').trim();
+      const isTenant  = f.resType === 'tenant';
+      const typeColor = isVacant ? 'var(--muted)'   : isTenant ? 'var(--amber)'   : 'var(--indigo)';
+      const typeBg    = isVacant ? 'var(--surface3)' : isTenant ? 'var(--amber-bg)': 'var(--indigo-bg)';
+      const typeLabel = isVacant ? 'Vacant'          : isTenant ? '🔑 Tenant'      : '🏠 Owner';
+      return `<div onclick="window._oFlEdit('${f.flatId}')"
+        style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:7px;
+          cursor:pointer;transition:background .12s;border:1px solid transparent"
+        onmouseover="this.style.background='var(--surface2)';this.style.borderColor='var(--border)'"
+        onmouseout="this.style.background='';this.style.borderColor='transparent'">
+        <span style="width:7px;height:7px;border-radius:50%;background:${typeColor};flex-shrink:0"></span>
+        <span style="font-size:11px;font-weight:800;color:var(--indigo);flex-shrink:0;min-width:52px">${f.flatId}</span>
+        <span style="font-size:11px;color:${isVacant ? 'var(--muted)' : 'var(--text)'};
+          font-style:${isVacant ? 'italic' : 'normal'};flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+          ${isVacant ? 'Vacant' : f.owner}
+        </span>
+        <span style="font-size:9px;font-weight:700;padding:1px 7px;border-radius:99px;
+          background:${typeBg};color:${typeColor};flex-shrink:0;white-space:nowrap">
+          ${typeLabel}
+        </span>
+        <i class="ti ti-chevron-right" style="font-size:11px;color:var(--muted);flex-shrink:0"></i>
+      </div>`;
+    }).join('');
+  };
 
   /* ── editable flat table row ── */
   const flatEditRow = (f, fl) => {
-    const sColor = sc(f), sIcon = si(f), isVacant = !(f.owner || '').trim();
+    const isVacant = !(f.owner || '').trim();
+    const isTenant = f.resType === 'tenant';
+    const typeLabel = isVacant ? 'Vacant' : isTenant ? '🔑 Tenant' : '🏠 Owner';
+    const typeColor = isVacant ? 'var(--muted)' : isTenant ? 'var(--amber)' : 'var(--indigo)';
+    const typeBg    = isVacant ? 'var(--surface3)' : isTenant ? 'var(--amber-bg)' : 'var(--indigo-bg)';
     return `
     <tr style="border-bottom:1px solid var(--border)"
       onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
@@ -311,7 +352,6 @@ function rStructure() {
       <td style="padding:6px 8px">
         <div style="font-size:12px;font-weight:600;color:${isVacant ? 'var(--muted)' : 'var(--text)'};
           font-style:${isVacant ? 'italic' : 'normal'}">${isVacant ? 'Vacant' : f.owner}</div>
-        ${!isVacant ? `<div style="font-size:9px;color:var(--muted)">${f.resType === 'tenant' ? '🔑 Tenant' : '🏠 Owner'}</div>` : ''}
       </td>
       <td style="padding:6px 8px;text-align:center">
         <input id="str-fl-${f.flatId}" type="number" value="${f.floor ?? fl}" min="1" max="99"
@@ -328,7 +368,8 @@ function rStructure() {
           onfocus="this.style.borderColor='var(--indigo)'" onblur="this.style.borderColor='var(--border2)'"/>
       </td>
       <td style="padding:6px 8px;text-align:center">
-        <i class="ti ${sIcon}" style="font-size:14px;color:${sColor}" title="${st(f)}"></i>
+        <span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:99px;
+          background:${typeBg};color:${typeColor}">${typeLabel}</span>
       </td>
       <td style="padding:6px 6px;text-align:center">
         <div style="display:flex;gap:3px;justify-content:center">
@@ -353,9 +394,12 @@ function rStructure() {
   let html = '';
   [...blockMap.entries()].sort((a, b) => a[0].localeCompare(b[0])).forEach(([bl, floorMap]) => {
     const blFlats  = [...floorMap.values()].flat();
-    const blPaid   = blFlats.filter(f => st(f) === 'paid').length;
     const floors   = [...floorMap.keys()].sort((a, b) => Number(a) - Number(b));
     const maxFloor = Math.max(...floors.map(Number).filter(n => !isNaN(n)), 0);
+
+    const isCollapsed = _collapsedBlocks.has(bl);
+    const occupied = blFlats.filter(f => (f.owner||'').trim()).length;
+    const vacant   = blFlats.length - occupied;
 
     html += `
     <div style="background:#fff;border:1px solid var(--border2);border-radius:var(--r-lg);
@@ -364,29 +408,40 @@ function rStructure() {
       <!-- ═ BLOCK HEADER ═ -->
       <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;
         background:linear-gradient(135deg,rgba(99,102,241,.07),rgba(139,92,246,.04));
-        border-bottom:1px solid var(--border2);flex-wrap:wrap;gap:8px">
+        flex-wrap:wrap;gap:8px;cursor:pointer" onclick="window._toggleStrBlock('${bl}')">
         <div style="display:flex;align-items:center;gap:10px">
           <div style="width:38px;height:38px;border-radius:10px;background:var(--indigo);color:#fff;
             display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;flex-shrink:0">${bl}</div>
           <div>
             <div style="font-size:14px;font-weight:800;color:var(--text)">Block ${bl}</div>
-            <div style="font-size:11px;color:var(--muted)">${blFlats.length} flats · ${floorMap.size} floor${floorMap.size !== 1 ? 's' : ''}</div>
+            <div style="font-size:11px;color:var(--muted)">
+              ${blFlats.length} flats · ${floorMap.size} floor${floorMap.size !== 1 ? 's' : ''}
+              · <span style="color:var(--green)">${occupied} occupied</span>
+              ${vacant > 0 ? ` · <span style="color:var(--amber)">${vacant} vacant</span>` : ''}
+            </div>
           </div>
         </div>
-        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-          <span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px;
-            background:var(--green-bg);color:var(--green-txt);border:1px solid var(--green-border)">
-            ✅ ${blPaid}/${blFlats.length} paid
-          </span>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap" onclick="event.stopPropagation()">
           <button onclick="window._openStrEdit('${bl}')"
             id="str-editbtn-${bl}"
             style="display:inline-flex;align-items:center;gap:5px;padding:6px 13px;
               border:1.5px solid var(--indigo);border-radius:8px;background:var(--indigo-bg);
               color:var(--indigo);font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font)">
-            <i class="ti ti-settings" style="font-size:12px"></i> Edit Structure
+            <i class="ti ti-settings" style="font-size:12px"></i> Edit
+          </button>
+          <button onclick="window._toggleStrBlock('${bl}')"
+            style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;
+              border:1.5px solid var(--border2);border-radius:8px;background:#fff;
+              color:var(--text2);cursor:pointer;transition:all .15s"
+            onmouseover="this.style.borderColor='var(--indigo)';this.style.color='var(--indigo)'"
+            onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text2)'">
+            <i id="str-toggle-icon-${bl}" class="ti ${isCollapsed ? 'ti-chevron-down' : 'ti-chevron-up'}" style="font-size:14px"></i>
           </button>
         </div>
       </div>
+
+      <!-- ═ COLLAPSIBLE BODY ═ -->
+      <div id="str-body-${bl}" style="${isCollapsed ? 'display:none' : ''}">
 
       <!-- ═ EDIT PANEL ═ -->
       <div id="str-edit-${bl}" style="display:none;border-bottom:2px solid var(--indigo)">
@@ -475,7 +530,7 @@ function rStructure() {
                     <th style="padding:6px 8px;text-align:left;font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border2)">Resident</th>
                     <th style="padding:6px 8px;text-align:center;font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border2)">Floor</th>
                     <th style="padding:6px 8px;text-align:right;font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border2)">Monthly Due</th>
-                    <th style="padding:6px 8px;text-align:center;font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border2)">Status</th>
+                    <th style="padding:6px 8px;text-align:center;font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border2)">Type</th>
                     <th style="padding:6px 6px;border-bottom:1px solid var(--border2);width:90px"></th>
                   </tr>
                 </thead>
@@ -537,19 +592,32 @@ function rStructure() {
         </div>
       </div><!-- /edit panel -->
 
-      <!-- ═ FLAT CARDS VIEW ═ -->
-      <div style="padding:12px 14px;display:flex;flex-direction:column;gap:12px">
-        ${[...floorMap.entries()].sort((a, b) => Number(b[0]) - Number(a[0])).map(([fl, fls]) => `
+      <!-- ═ FLAT LIST VIEW ═ -->
+      <div style="padding:10px 12px;display:flex;flex-direction:column;gap:10px">
+        ${[...floorMap.entries()].sort((a, b) => Number(b[0]) - Number(a[0])).map(([fl, fls]) => {
+          const occ = fls.filter(f => (f.owner||'').trim()).length;
+          const vac = fls.length - occ;
+          return `
           <div>
-            <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;
-              letter-spacing:.8px;margin-bottom:6px">
-              Floor ${fl} <span style="font-weight:400;opacity:.4">·</span> ${fls.length} flat${fls.length !== 1 ? 's' : ''}
+            <div style="display:flex;align-items:center;justify-content:space-between;
+              padding:4px 10px 6px;margin-bottom:2px">
+              <span style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px">
+                Floor ${fl}
+              </span>
+              <span style="font-size:10px;color:var(--muted)">
+                ${fls.length} flat${fls.length !== 1 ? 's' : ''}
+                · <span style="color:var(--green);font-weight:700">${occ} occupied</span>
+                ${vac > 0 ? ` · <span style="color:var(--amber);font-weight:700">${vac} vacant</span>` : ''}
+              </span>
             </div>
-            <div class="str-floor-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:6px">
+            <div style="background:var(--surface2);border-radius:var(--r-md);overflow:hidden;border:1px solid var(--border)">
               ${flatCards(fls)}
             </div>
-          </div>`).join('')}
+          </div>`;
+        }).join('')}
       </div>
+
+      </div><!-- /str-body collapsible -->
 
     </div>`;
   });
@@ -597,6 +665,17 @@ function rStructure() {
   </div>`;
 
   document.getElementById('strBlocks').innerHTML = html;
+
+  /* restore open edit panel after re-render */
+  if (_openEditBlock) {
+    const el = document.getElementById('str-edit-' + _openEditBlock);
+    if (el) {
+      el.style.display = 'block';
+      requestAnimationFrame(() => el.scrollIntoView({ behavior: 'smooth', block: 'nearest' }));
+    } else {
+      _openEditBlock = null; /* block was deleted */
+    }
+  }
 }
 
 window.rStructure = rStructure;
