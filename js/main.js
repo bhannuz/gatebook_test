@@ -2479,7 +2479,6 @@ function rPresident() {
       <div style="display:flex;gap:8px;align-items:center;flex-shrink:0;">
         <button class="btn btn-indigo" onclick="window._oA()"><i class="ti ti-plus"></i> Add Payment</button>
         <button class="btn btn-indigo" onclick="window._oPresExp()"><i class="ti ti-receipt"></i> Add Expense</button>
-        <button class="btn btn-white" onclick="window._oMonthlySummary()" style="border:1.5px solid var(--border2)"><i class="ti ti-file-text"></i> Monthly Report</button>
       </div>
       <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
         <select id="histYearFilter"
@@ -4784,24 +4783,27 @@ window._delContact = async function() {
 window._issSubTab = function(which) {
   const issuesBtn    = document.getElementById('issSubTabIssues');
   const contactsBtn  = document.getElementById('issSubTabContacts');
+  const reportsBtn   = document.getElementById('issSubTabReports');
   const issuesPanel  = document.getElementById('issSubPanelIssues');
   const contactsPanel= document.getElementById('issSubPanelContacts');
-  if (!issuesBtn || !contactsBtn || !issuesPanel || !contactsPanel) return;
+  const reportsPanel = document.getElementById('issSubPanelReports');
+  if (!issuesBtn || !contactsBtn || !reportsBtn || !issuesPanel || !contactsPanel || !reportsPanel) return;
 
   const active = { border:'var(--indigo)', bg:'var(--indigo)', color:'#fff' };
   const inactive = { border:'var(--border2)', bg:'#fff', color:'var(--text2)' };
 
-  if (which === 'issues') {
-    issuesPanel.style.display = '';
-    contactsPanel.style.display = 'none';
-    Object.assign(issuesBtn.style, { borderColor: active.border, background: active.bg, color: active.color });
-    Object.assign(contactsBtn.style, { borderColor: inactive.border, background: inactive.bg, color: inactive.color });
-    try { rIssues(); } catch(e) { console.error(e); }
-  } else {
-    issuesPanel.style.display = 'none';
-    contactsPanel.style.display = '';
-    Object.assign(contactsBtn.style, { borderColor: active.border, background: active.bg, color: active.color });
-    Object.assign(issuesBtn.style, { borderColor: inactive.border, background: inactive.bg, color: inactive.color });
-    try { window._rContacts(); } catch(e) { console.error(e); }
-  }
+  const panels = { issues: issuesPanel, contacts: contactsPanel, reports: reportsPanel };
+  const btns   = { issues: issuesBtn,   contacts: contactsBtn,   reports: reportsBtn };
+
+  Object.keys(panels).forEach(key => {
+    const isActive = key === which;
+    panels[key].style.display = isActive ? '' : 'none';
+    Object.assign(btns[key].style, isActive ? active : inactive);
+  });
+
+  try {
+    if (which === 'issues') rIssues();
+    else if (which === 'contacts') window._rContacts();
+    // 'reports' panel is static — nothing to render
+  } catch(e) { console.error(e); }
 };
