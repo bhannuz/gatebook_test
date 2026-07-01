@@ -4787,13 +4787,14 @@ window._issSubTab = function(which) {
   const issuesPanel  = document.getElementById('issSubPanelIssues');
   const contactsPanel= document.getElementById('issSubPanelContacts');
   const reportsPanel = document.getElementById('issSubPanelReports');
-  if (!issuesBtn || !contactsBtn || !reportsBtn || !issuesPanel || !contactsPanel || !reportsPanel) return;
+  if (!issuesBtn || !contactsBtn || !issuesPanel || !contactsPanel) return;
 
-  const active = { border:'var(--indigo)', bg:'var(--indigo)', color:'#fff' };
-  const inactive = { border:'var(--border2)', bg:'#fff', color:'var(--text2)' };
+  const active   = { borderColor:'var(--indigo)', background:'var(--indigo)', color:'#fff' };
+  const inactive = { borderColor:'var(--border2)', background:'#fff', color:'var(--text2)' };
 
-  const panels = { issues: issuesPanel, contacts: contactsPanel, reports: reportsPanel };
-  const btns   = { issues: issuesBtn,   contacts: contactsBtn,   reports: reportsBtn };
+  const panels = { issues: issuesPanel, contacts: contactsPanel };
+  const btns   = { issues: issuesBtn,   contacts: contactsBtn   };
+  if (reportsBtn  && reportsPanel) { panels.reports = reportsPanel; btns.reports = reportsBtn; }
 
   Object.keys(panels).forEach(key => {
     const isActive = key === which;
@@ -4802,8 +4803,7 @@ window._issSubTab = function(which) {
   });
 
   try {
-    if (which === 'issues') rIssues();
+    if (which === 'issues')   rIssues();
     else if (which === 'contacts') window._rContacts();
-    // 'reports' panel is static — nothing to render
   } catch(e) { console.error(e); }
 };
