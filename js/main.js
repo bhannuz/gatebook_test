@@ -3560,7 +3560,6 @@ function _getCanvasSize(canvas) {
 function drawPie(canvasId, segments, tooltipId) {
   const canvas = document.getElementById(canvasId);
   if (!canvas) return;
-  // Responsive: set canvas pixel size to display size
   const rect = canvas.getBoundingClientRect();
   const dpr  = window.devicePixelRatio||1;
   const W = rect.width||200, H = rect.height||200;
