@@ -502,10 +502,10 @@ function oFlEdit(fid) {
       </div>
     </div>
 
-  </div>
-    
-    // Populate payment history after dBody is set
-    setTimeout(() => {
+  </div>`;
+
+  // Populate payment history after dBody is set
+  setTimeout(() => {
     const ex = fex(fid);
     const historyList = document.getElementById('paymentHistoryList');
     if (historyList) {
