@@ -4227,7 +4227,14 @@ function renderAnPayTable(filterType, selMonth, selYear, selBlock) {
     const s        = f._status || 'pending';
     const bal      = (f.due||0) - (f.paid||0);
     const balColor = bal > 0 ? 'var(--red)' : 'var(--green)';
-    const v        = vehicles.get(f.flatId) || {};
+    // Normalize flatId: capitalize block prefix, ensure block-number format
+    const rawFid   = f.flatId || '';
+    const normFid  = rawFid.includes('-')
+      ? rawFid.replace(/^([a-z]+)-/, m => m.toUpperCase()) // a-103 → A-103
+      : (f.block ? f.block.toUpperCase() + '-' + rawFid : rawFid); // 402 → A-402
+    const displayFid = normFid;
+    // Vehicle lookup tries both normalized and raw
+    const v        = vehicles.get(rawFid) || vehicles.get(normFid) || {};
     const tw       = parseInt(v.tw) || 0;
     const fw       = parseInt(v.fw) || 0;
     const vehCell  = (tw === 0 && fw === 0)
@@ -4241,11 +4248,11 @@ function renderAnPayTable(filterType, selMonth, selYear, selBlock) {
         ? `<span style="font-size:9px;font-weight:700;color:var(--amber)">🔑 Tenant</span>`
         : `<span style="font-size:9px;font-weight:700;color:var(--indigo)">🏠 Owner</span>`;
     return `<tr
-      onclick="window._openPayHistory('${f.flatId}')"
+      onclick="window._openPayHistory('${rawFid}')"
       style="cursor:pointer;transition:background .12s"
       onmouseover="this.style.background='var(--indigo-bg)'"
       onmouseout="this.style.background=''">
-      <td style="padding:8px 6px;font-weight:800;color:var(--indigo);font-size:12px;border-bottom:1px solid var(--border);vertical-align:middle;white-space:nowrap">${f.flatId}</td>
+      <td style="padding:8px 6px;font-weight:800;color:var(--indigo);font-size:12px;border-bottom:1px solid var(--border);vertical-align:middle;white-space:nowrap">${displayFid}</td>
       <td style="padding:8px 6px;border-bottom:1px solid var(--border);overflow:hidden;vertical-align:middle">
         <div style="font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${f.owner||'<em style="color:var(--muted);font-weight:400">Vacant</em>'}</div>
         <div style="margin-top:2px">${typeBadge}</div>
