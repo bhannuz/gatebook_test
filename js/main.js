@@ -323,210 +323,186 @@ function oFlEdit(fid) {
 
   document.getElementById('dBody').innerHTML = `<div style="padding:4px 0 8px;">
 
-    <!-- ── RESIDENT SECTION ── -->
-    <div style="margin-bottom:18px;">
-      <div style="display:flex;align-items:center;gap:6px;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--indigo);">
-        <i class="ti ti-user" style="color:var(--indigo);font-size:15px;"></i>
-        <span style="font-size:13px;font-weight:800;color:var(--text);">Resident</span>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
-        ${_fld('Name', _inp('edOwner','text',(f.owner||'').replace(/"/g,'&quot;'),'Full name'))}
-        ${_fld('Type', `<select id="edType" onchange="window._toggleOwnerFields(this.value)"
-          style="width:100%;height:38px;padding:0 11px;background:#fff;border:1.5px solid var(--border2);
-          color:var(--text);font-family:var(--font);font-size:13px;font-weight:600;border-radius:8px;outline:none;box-sizing:border-box;">
-          <option value="owner" ${!isTenant?'selected':''}>🏠 Owner</option>
-          <option value="tenant" ${isTenant?'selected':''}>🔑 Tenant</option>
-        </select>`)}
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
-        ${_fld('📱 Mobile Number', _inp('edPhone','tel',(f.phone||f.ownerPhone||'').replace(/"/g,'&quot;'),'10-digit mobile no.'))}
-        ${_fld('WhatsApp', `<div style="display:flex;align-items:center;height:38px;gap:8px;">
-          <input type="checkbox" id="edWA" ${f.waEnabled!==false?'checked':''}
-            style="width:18px;height:18px;accent-color:var(--indigo);cursor:pointer;"/>
-          <label for="edWA" style="font-size:12px;font-weight:600;color:var(--text);cursor:pointer;">WhatsApp enabled</label>
-        </div>`)}
-      </div>
+    <style>
+      .sec-hd{display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:10px;
+        cursor:pointer;user-select:none;margin-bottom:4px;transition:background .12s;}
+      .sec-hd:hover{background:var(--surface3)}
+      .sec-body{padding:4px 2px 12px;}
+    </style>
 
-      <!-- Owner fields (tenant only) -->
-      <div id="ownerSection" style="display:${isTenant?'grid':'none'};grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
-        ${_fld('Owner Name', _inp('edOwnerName','text',(f.ownerName||'').replace(/"/g,'&quot;'),'Flat owner'))}
-        ${_fld('Owner Phone', _inp('edOwnerPhone','tel',(f.ownerPhone||'').replace(/"/g,'&quot;'),'Contact no.'))}
+    <!-- ── RESIDENT SECTION (collapsible) ── -->
+    <div style="border:1.5px solid var(--border2);border-radius:12px;margin-bottom:10px;overflow:hidden;">
+      <div class="sec-hd" onclick="(function(h){const b=h.nextElementSibling;const ic=h.querySelector('.sec-ic');const open=b.style.display!=='none';b.style.display=open?'none':'';ic.style.transform=open?'rotate(-90deg)':'rotate(0)'})(this)">
+        <div style="width:28px;height:28px;border-radius:8px;background:var(--indigo-bg);color:var(--indigo);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <i class="ti ti-user" style="font-size:14px;"></i>
+        </div>
+        <span style="font-size:13px;font-weight:800;color:var(--text);flex:1;">Resident</span>
+        <i class="ti ti-chevron-down sec-ic" style="color:var(--muted);font-size:14px;transition:transform .2s;"></i>
       </div>
-
-      <!-- Status -->
-      <div style="display:flex;gap:8px;margin-bottom:12px;">
-        <button id="activeTab" type="button" onclick="window._setResidentStatus('active')"
-          style="flex:1;height:38px;border:none;background:var(--indigo);color:#fff;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);">
-          ✅ Active
-        </button>
-        <button id="movedTab" type="button" onclick="window._setResidentStatus('moved')"
-          style="flex:1;height:38px;border:1.5px solid var(--border2);background:#fff;color:var(--text2);border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);">
-          🚪 Moved Out
-        </button>
-      </div>
-
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-        ${_fld('Move-In Date', _inp('edMoveIn','date',f.moveIn||'',''))}
-        <div id="moveOutSection" style="${f.moveOut?'display:block':'display:none'}">
-          ${_lbl('Move-Out Date')}${_inp('edMoveOut','date',f.moveOut||',','')}
+      <div class="sec-body" style="padding:0 12px 14px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+          ${_fld('Name', _inp('edOwner','text',(f.owner||'').replace(/"/g,'&quot;'),'Full name'))}
+          ${_fld('Type', `<select id="edType" onchange="window._toggleOwnerFields(this.value)"
+            style="width:100%;height:38px;padding:0 11px;background:#fff;border:1.5px solid var(--border2);
+            color:var(--text);font-family:var(--font);font-size:13px;font-weight:600;border-radius:8px;outline:none;box-sizing:border-box;">
+            <option value="owner" ${!isTenant?'selected':''}>🏠 Owner</option>
+            <option value="tenant" ${isTenant?'selected':''}>🔑 Tenant</option>
+          </select>`)}
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+          ${_fld('📱 Mobile Number', _inp('edPhone','tel',(f.phone||f.ownerPhone||'').replace(/"/g,'&quot;'),'10-digit mobile no.'))}
+          ${_fld('WhatsApp', `<div style="display:flex;align-items:center;height:38px;gap:8px;">
+            <input type="checkbox" id="edWA" ${f.waEnabled!==false?'checked':''}
+              style="width:18px;height:18px;accent-color:var(--indigo);cursor:pointer;"/>
+            <label for="edWA" style="font-size:12px;font-weight:600;color:var(--text);cursor:pointer;">WhatsApp enabled</label>
+          </div>`)}
+        </div>
+        <div id="ownerSection" style="display:${isTenant?'grid':'none'};grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+          ${_fld('Owner Name', _inp('edOwnerName','text',(f.ownerName||'').replace(/"/g,'&quot;'),'Flat owner'))}
+          ${_fld('Owner Phone', _inp('edOwnerPhone','tel',(f.ownerPhone||'').replace(/"/g,'&quot;'),'Contact no.'))}
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:10px;">
+          <button id="activeTab" type="button" onclick="window._setResidentStatus('active')"
+            style="flex:1;height:36px;border:none;background:var(--indigo);color:#fff;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);">✅ Active</button>
+          <button id="movedTab" type="button" onclick="window._setResidentStatus('moved')"
+            style="flex:1;height:36px;border:1.5px solid var(--border2);background:#fff;color:var(--text2);border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);">🚪 Moved Out</button>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          ${_fld('Move-In Date', _inp('edMoveIn','date',f.moveIn||'',''))}
+          <div id="moveOutSection" style="${f.moveOut?'display:block':'display:none'}">
+            ${_lbl('Move-Out Date')}${_inp('edMoveOut','date',f.moveOut||'','')}
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- ── FLAT DETAILS SECTION ── -->
-    <div style="margin-bottom:18px;">
-      <div style="display:flex;align-items:center;gap:6px;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--purple);">
-        <i class="ti ti-building" style="color:var(--purple);font-size:15px;"></i>
-        <span style="font-size:13px;font-weight:800;color:var(--text);">Flat Details</span>
+    <!-- ── FLAT DETAILS SECTION (collapsible, collapsed by default) ── -->
+    <div style="border:1.5px solid var(--border2);border-radius:12px;margin-bottom:10px;overflow:hidden;">
+      <div class="sec-hd" onclick="(function(h){const b=h.nextElementSibling;const ic=h.querySelector('.sec-ic');const open=b.style.display!=='none';b.style.display=open?'none':'';ic.style.transform=open?'rotate(-90deg)':'rotate(0)'})(this)">
+        <div style="width:28px;height:28px;border-radius:8px;background:#f3f0ff;color:var(--purple);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <i class="ti ti-building" style="font-size:14px;"></i>
+        </div>
+        <span style="font-size:13px;font-weight:800;color:var(--text);flex:1;">Flat Details</span>
+        <i class="ti ti-chevron-down sec-ic" style="color:var(--muted);font-size:14px;transition:transform .2s;transform:rotate(-90deg);"></i>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
-        ${_fld('Monthly Due (₹)', _inp('edDue','number',f.due||'','e.g. 5000','min="0"'))}
-        ${_fld('Area (sq.ft)', _inp('edSft','number',f.sft||'','e.g. 850','min="0"'))}
-        ${_fld('Vehicles 2W/4W', _inp('edVehicles','text',tw+'/'+fw,'1/1'))}
+      <div class="sec-body" style="display:none;padding:0 12px 14px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+          ${_fld('Monthly Due (₹)', _inp('edDue','number',f.due||'','e.g. 5000','min="0"'))}
+          ${_fld('Area (sq.ft)', _inp('edSft','number',f.sft||'','e.g. 850','min="0"'))}
+          ${_fld('Vehicles 2W/4W', _inp('edVehicles','text',tw+'/'+fw,'1/1'))}
+        </div>
       </div>
     </div>
 
     <!-- ── SAVE / CANCEL ── -->
-    <div style="display:flex;gap:10px;">
+    <div style="display:flex;gap:10px;margin-bottom:14px;">
       <button onclick="window._cD()"
         style="padding:0 20px;height:44px;border:1.5px solid var(--border2);border-radius:10px;background:#fff;
           color:var(--text2);font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);white-space:nowrap;">
         Cancel
       </button>
       <button id="edSaveBtn" onclick="window._saveFlat('${fid}')"
-        style="padding:0 28px;height:44px;border:none;border-radius:10px;background:var(--indigo);
+        style="flex:1;height:44px;border:none;border-radius:10px;background:var(--indigo);
           color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);
           display:flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap;">
         <i class="ti ti-device-floppy" style="font-size:15px;"></i> Save
       </button>
     </div>
 
-  </div>
-
-
-    <!-- HISTORY TOGGLE -->
-    <div style="display:flex;gap:6px;background:var(--surface2);padding:6px;border-radius:8px;margin-bottom:14px">
-      <button id="payHistToggle" data-history="payment" onclick="window._toggleHistory('payment')" 
-        style="flex:1;padding:8px 12px;border:none;background:var(--indigo);color:#fff;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font);transition:all .15s">
-        <i class="ti ti-receipt" style="margin-right:4px;font-size:12px"></i>Payment History
-      </button>
-      <button id="stayHistToggle" data-history="staying" onclick="window._toggleHistory('staying')" 
-        style="flex:1;padding:8px 12px;border:none;background:transparent;color:var(--text2);border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font);transition:all .15s">
-        <i class="ti ti-calendar" style="margin-right:4px;font-size:12px"></i>Staying History
-      </button>
-    </div>
-
-    <!-- PAYMENT HISTORY -->
-    <div id="paymentHistSection" style="background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--r-lg);padding:14px;margin-bottom:14px;display:block">
-      <div style="font-size:12px;font-weight:800;color:var(--text);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;gap:6px">
-        <div style="display:flex;align-items:center;gap:6px">
-          <i class="ti ti-receipt" style="color:var(--amber);font-size:13px"></i> Payment History
+    <!-- ── HISTORY SECTION (collapsible) ── -->
+    <div style="border:1.5px solid var(--border2);border-radius:12px;overflow:hidden;">
+      <div class="sec-hd" onclick="(function(h){const b=h.nextElementSibling;const ic=h.querySelector('.sec-ic');const open=b.style.display!=='none';b.style.display=open?'none':'';ic.style.transform=open?'rotate(-90deg)':'rotate(0)'})(this)">
+        <div style="width:28px;height:28px;border-radius:8px;background:#fff7ed;color:var(--amber);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <i class="ti ti-history" style="font-size:14px;"></i>
         </div>
-        <button type="button" onclick="window._togglePaymentEdit()" style="padding:4px 8px;background:transparent;border:1.5px solid var(--border);color:var(--text2);font-size:10px;font-weight:700;border-radius:4px;cursor:pointer;font-family:var(--font);">
-          <i class="ti ti-edit" style="font-size:11px;margin-right:2px"></i>Edit
-        </button>
+        <span style="font-size:13px;font-weight:800;color:var(--text);flex:1;">History</span>
+        <i class="ti ti-chevron-down sec-ic" style="color:var(--muted);font-size:14px;transition:transform .2s;transform:rotate(-90deg);"></i>
       </div>
-      <div id="paymentHistoryList" style="max-height:300px;overflow-y:auto;border-radius:8px"></div>
-      <div id="paymentEditSection" style="display:none;margin-top:10px;padding-top:10px;border-top:1.5px solid var(--border)">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-          <input id="newPaymentDate" type="date" placeholder="Date" style="padding:8px;border:1.5px solid var(--border);border-radius:6px;font-family:var(--font);font-size:11px"/>
-          <input id="newPaymentAmt" type="number" placeholder="Amount" style="padding:8px;border:1.5px solid var(--border);border-radius:6px;font-family:var(--font);font-size:11px"/>
-        </div>
-        <button id="paymentBtn" type="button" onclick="window._addPayment('${fid}')" style="width:100%;padding:8px;background:var(--indigo);color:#fff;border:none;border-radius:6px;font-weight:700;font-size:11px;cursor:pointer;font-family:var(--font);">
-          + Add Payment
-        </button>
-      </div>
-    </div>
+      <div style="display:none;padding:0 12px 14px;">
 
-    <!-- STAYING HISTORY -->
-    <div id="stayingHistSection" style="background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--r-lg);padding:14px;margin-bottom:14px;display:none">
-      <div style="font-size:12px;font-weight:800;color:var(--text);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;gap:6px">
-        <div style="display:flex;align-items:center;gap:6px">
-          <i class="ti ti-calendar" style="color:var(--green);font-size:13px"></i> Staying History
+        <!-- Sub-tabs: Payment | Staying -->
+        <div style="display:flex;gap:6px;background:var(--surface2);padding:5px;border-radius:8px;margin-bottom:12px;">
+          <button id="payHistToggle" onclick="window._toggleHistory('payment')"
+            style="flex:1;padding:7px 10px;border:none;background:var(--indigo);color:#fff;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font);transition:all .15s">
+            <i class="ti ti-receipt" style="margin-right:4px;font-size:11px"></i>Payment History
+          </button>
+          <button id="stayHistToggle" onclick="window._toggleHistory('staying')"
+            style="flex:1;padding:7px 10px;border:none;background:transparent;color:var(--text2);border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font);transition:all .15s">
+            <i class="ti ti-calendar" style="margin-right:4px;font-size:11px"></i>Staying History
+          </button>
         </div>
-        <button type="button" onclick="window._toggleStayingEdit()" style="padding:4px 8px;background:transparent;border:1.5px solid var(--border);color:var(--text2);font-size:10px;font-weight:700;border-radius:4px;cursor:pointer;font-family:var(--font);">
-          <i class="ti ti-edit" style="font-size:11px;margin-right:2px"></i>Edit
-        </button>
-      </div>
-      <div style="display:grid;gap:8px">
-        <!-- All Stay Periods - Chronological -->
-        ${(() => {
-          // Combine current resident with all stay periods
-          const allPeriods = [];
-          
-          // Add current resident if exists
-          if (f.moveIn) {
-            allPeriods.push({
-              owner: f.owner || 'Resident',
-              moveIn: f.moveIn,
-              moveOut: f.moveOut || '',
-              isCurrent: !f.moveOut
-            });
-          }
-          
-          // Add historical periods
-          if (f.stayPeriods && f.stayPeriods.length > 0) {
-            f.stayPeriods.forEach(p => {
-              allPeriods.push({
-                owner: p.owner || 'Resident',
-                moveIn: p.moveIn,
-                moveOut: p.moveOut || '',
-                isCurrent: false
-              });
-            });
-          }
-          
-          // Sort by moveIn date (newest first)
-          allPeriods.sort((a, b) => new Date(b.moveIn || 0) - new Date(a.moveIn || 0));
-          
-          if (allPeriods.length === 0) {
-            return '<div style="padding:12px;text-align:center;color:var(--muted);font-size:11px">No stay records yet</div>';
-          }
-          
-          return allPeriods.map((p, idx) => `
-            <div style="background:#fff;border:1.5px solid var(--border);border-radius:8px;padding:12px;font-size:12px">
-              <div style="display:flex;justify-content:space-between;align-items:flex-start">
-                <div style="flex:1">
+
+        <!-- Payment History Panel -->
+        <div id="paymentHistSection" style="display:block">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+            <span style="font-size:11px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:6px;">
+              <i class="ti ti-receipt" style="color:var(--amber);font-size:12px"></i> Payment History
+            </span>
+            <button type="button" onclick="window._togglePaymentEdit()" style="padding:3px 8px;background:transparent;border:1.5px solid var(--border);color:var(--text2);font-size:10px;font-weight:700;border-radius:4px;cursor:pointer;font-family:var(--font);">
+              <i class="ti ti-edit" style="font-size:10px;margin-right:2px"></i>Edit
+            </button>
+          </div>
+          <div id="paymentHistoryList" style="max-height:280px;overflow-y:auto;border-radius:8px;background:var(--surface2);border:1px solid var(--border)"></div>
+          <div id="paymentEditSection" style="display:none;margin-top:10px;padding-top:10px;border-top:1.5px solid var(--border)">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+              <input id="newPaymentDate" type="date" style="padding:8px;border:1.5px solid var(--border);border-radius:6px;font-family:var(--font);font-size:11px"/>
+              <input id="newPaymentAmt" type="number" placeholder="Amount" style="padding:8px;border:1.5px solid var(--border);border-radius:6px;font-family:var(--font);font-size:11px"/>
+            </div>
+            <button id="paymentBtn" type="button" onclick="window._addPayment('${fid}')" style="width:100%;padding:8px;background:var(--indigo);color:#fff;border:none;border-radius:6px;font-weight:700;font-size:11px;cursor:pointer;font-family:var(--font);">+ Add Payment</button>
+          </div>
+        </div>
+
+        <!-- Staying History Panel -->
+        <div id="stayingHistSection" style="display:none">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+            <span style="font-size:11px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:6px;">
+              <i class="ti ti-calendar" style="color:var(--green);font-size:12px"></i> Staying History
+            </span>
+            <button type="button" onclick="window._toggleStayingEdit()" style="padding:3px 8px;background:transparent;border:1.5px solid var(--border);color:var(--text2);font-size:10px;font-weight:700;border-radius:4px;cursor:pointer;font-family:var(--font);">
+              <i class="ti ti-edit" style="font-size:10px;margin-right:2px"></i>Edit
+            </button>
+          </div>
+          <div style="display:grid;gap:8px">
+            ${(() => {
+              const allPeriods = [];
+              if (f.moveIn) allPeriods.push({ owner: f.owner||'Resident', moveIn: f.moveIn, moveOut: f.moveOut||'', isCurrent: !f.moveOut });
+              if (f.stayPeriods && f.stayPeriods.length > 0) f.stayPeriods.forEach(p => allPeriods.push({ owner: p.owner||'Resident', moveIn: p.moveIn, moveOut: p.moveOut||'', isCurrent: false }));
+              allPeriods.sort((a,b) => new Date(b.moveIn||0) - new Date(a.moveIn||0));
+              if (!allPeriods.length) return '<div style="padding:12px;text-align:center;color:var(--muted);font-size:11px">No stay records yet</div>';
+              return allPeriods.map(p => `
+                <div style="background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;padding:10px;font-size:12px">
                   <div style="font-weight:700;color:var(--text)">${p.owner}</div>
-                  <div style="color:var(--text2);margin-top:4px;font-size:11px">
-                    ${p.moveIn ? new Date(p.moveIn).toLocaleDateString('en-IN',{day:'2-digit',month:'2-digit',year:'numeric'}) : '—'} 
-                    → 
-                    ${p.moveOut ? new Date(p.moveOut).toLocaleDateString('en-IN',{day:'2-digit',month:'2-digit',year:'numeric'}) : 'Present'}
+                  <div style="color:var(--text2);margin-top:3px;font-size:11px">
+                    ${p.moveIn ? new Date(p.moveIn).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) : '—'} →
+                    ${p.moveOut ? new Date(p.moveOut).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) : 'Present'}
                   </div>
-                  ${p.isCurrent ? '<div style="margin-top:6px;padding:4px 8px;background:var(--green);color:#fff;border-radius:4px;font-size:10px;font-weight:700;width:fit-content">Current</div>' : ''}
-                </div>
+                  ${p.isCurrent ? '<span style="margin-top:5px;display:inline-block;padding:2px 8px;background:var(--green);color:#fff;border-radius:4px;font-size:9px;font-weight:700;">Current</span>' : ''}
+                </div>`).join('');
+            })()}
+          </div>
+          <div id="stayingEditSection" style="display:none;margin-top:10px;padding-top:10px;border-top:1.5px solid var(--border)">
+            <div style="display:grid;gap:8px;margin-bottom:8px">
+              <div>
+                <label style="font-size:10px;font-weight:700;color:var(--text2);margin-bottom:4px;display:block">Move-In Date</label>
+                <input id="editMoveIn" type="date" value="${f.moveIn||''}" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:6px;font-family:var(--font);font-size:11px;box-sizing:border-box"/>
+              </div>
+              <div>
+                <label style="font-size:10px;font-weight:700;color:var(--text2);margin-bottom:4px;display:block">Move-Out Date</label>
+                <input id="editMoveOut" type="date" value="${f.moveOut||''}" placeholder="Leave empty if still staying" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:6px;font-family:var(--font);font-size:11px;box-sizing:border-box"/>
               </div>
             </div>
-          `).join('');
-        })()}
-      </div>
-      <div id="stayingEditSection" style="display:none;margin-top:10px;padding-top:10px;border-top:1.5px solid var(--border)">
-        <div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:10px;padding:8px;background:var(--surface2);border-radius:6px">
-          ℹ️ Edit current resident's dates or add historical stay periods
-        </div>
-        <div style="display:grid;gap:8px;margin-bottom:8px">
-          <div>
-            <label style="font-size:10px;font-weight:700;color:var(--text2);margin-bottom:4px;display:block">CURRENT RESIDENT - Move-In Date</label>
-            <input id="editMoveIn" type="date" value="${f.moveIn||''}" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:6px;font-family:var(--font);font-size:11px;box-sizing:border-box"/>
-          </div>
-          <div>
-            <label style="font-size:10px;font-weight:700;color:var(--text2);margin-bottom:4px;display:block">CURRENT RESIDENT - Move-Out Date</label>
-            <input id="editMoveOut" type="date" value="${f.moveOut||''}" placeholder="Leave empty if still staying" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:6px;font-family:var(--font);font-size:11px;box-sizing:border-box"/>
+            <div style="display:flex;gap:8px">
+              <button type="button" onclick="window._updateStayingDates('${fid}')" style="flex:1;padding:8px;background:var(--indigo);color:#fff;border:none;border-radius:6px;font-weight:700;font-size:11px;cursor:pointer;font-family:var(--font);">Save Dates</button>
+              <button type="button" onclick="window._addStayPeriod('${fid}')" style="flex:1;padding:8px;background:var(--green);color:#fff;border:none;border-radius:6px;font-weight:700;font-size:11px;cursor:pointer;font-family:var(--font);">+ Add Period</button>
+            </div>
+            <div id="stayPeriodsContainer" style="margin-top:10px;display:grid;gap:8px"></div>
           </div>
         </div>
-        <div style="display:flex;gap:8px">
-          <button type="button" onclick="window._updateStayingDates('${fid}')" style="flex:1;padding:8px;background:var(--indigo);color:#fff;border:none;border-radius:6px;font-weight:700;font-size:11px;cursor:pointer;font-family:var(--font);">
-            Save Current Resident
-          </button>
-          <button type="button" onclick="window._addStayPeriod('${fid}')" style="flex:1;padding:8px;background:var(--green);color:#fff;border:none;border-radius:6px;font-weight:700;font-size:11px;cursor:pointer;font-family:var(--font);">
-            + Add Historical Period
-          </button>
-        </div>
-        <div id="stayPeriodsContainer" style="margin-top:10px;display:grid;gap:8px">
-          <!-- Additional stay periods will be rendered here -->
-        </div>
+
       </div>
-    </div>`;
+    </div>
+
+  </div>
     
     // Populate payment history after dBody is set
     setTimeout(() => {
@@ -769,10 +745,23 @@ async function saveFlat(fid) {
     await updateDoc(flatRef(fid), updatePayload);
     await setDoc(vehRef(fid), { flatId:fid, tw, fw, updatedAt:serverTimestamp() }, { merge:true });
     vehicles.set(fid, { ...(vehicles.get(fid)||{}), tw, fw });
+
+    // If flatId changed, cascade to expenses and issues
+    const oldFlatId = existingFlat.flatId || '';
+    const newFlatId = updatePayload.flatId || oldFlatId;
+    if (newFlatId && newFlatId !== oldFlatId) {
+      const cascadeWrites = [];
+      const expSnap = await getDocs(expColl());
+      expSnap.forEach(d => { if (d.data().flatId === oldFlatId) cascadeWrites.push(updateDoc(d.ref, { flatId: newFlatId })); });
+      const issSnap = await getDocs(issuesColl());
+      issSnap.forEach(d => { if (d.data().flatId === oldFlatId) cascadeWrites.push(updateDoc(d.ref, { flatId: newFlatId })); });
+      if (cascadeWrites.length) await Promise.all(cascadeWrites);
+    }
+
     sync('live');
     toast('Saved ✓');
-    cD(); // close drawer
-    rAll(); // refresh data
+    cD();
+    rAll();
   } catch(e) {
     console.error(e); sync('error'); toast('Save failed.', 'error');
     if (btn) { btn.disabled = false; btn.innerHTML = '<i class="ti ti-device-floppy" style="font-size:15px"></i> Save Changes'; }
@@ -858,18 +847,21 @@ function cA(){document.getElementById('addM').classList.remove('open');}
 document.getElementById('fB').addEventListener('change',fFS);
 
 async function sE(){
-  const block=document.getElementById('fB').value,fid=document.getElementById('fF').value;
+  const block=document.getElementById('fB').value,flatIdVal=document.getElementById('fF').value;
   const cat=document.getElementById('fC').value,amt=parseInt(document.getElementById('fA').value)||0;
   const dv=document.getElementById('fD').value,s=document.getElementById('fS').value;
   const note=document.getElementById('fN').value.trim();
   if(!amt||amt<=0){toast('Please enter a valid amount.','error');return;}
-  const f=flats.get(fid);if(!f){toast('Flat not found.','error');return;}
+  // Find flat entry by flatId value (map key may differ from flatId)
+  const flatEntry = [...flats.entries()].find(([,flat]) => flat.flatId === flatIdVal || flat.flatId === flatIdVal.toUpperCase());
+  if(!flatEntry){toast('Flat not found.','error');return;}
+  const [fid, f] = flatEntry;
   sync('saving');
   const btn=document.getElementById('svBtn');btn.disabled=true;
   document.getElementById('svLbl').textContent='Saving…';
   try{
     const payMonth = dv ? dv.slice(0,7) : AM;
-    await addDoc(expColl(),{flatId:fid,block,cat,amt,date:dv?fd(dv):fd(new Date().toISOString()),rawDate:dv||new Date().toISOString().split('T')[0],note,status:s,month:payMonth,createdAt:serverTimestamp()});
+    await addDoc(expColl(),{flatId:flatIdVal,block,cat,amt,date:dv?fd(dv):fd(new Date().toISOString()),rawDate:dv||new Date().toISOString().split('T')[0],note,status:s,month:payMonth,createdAt:serverTimestamp()});
     let np=f.paid;
     if(s==='paid')np=f.due;else if(s==='partial')np=Math.min(f.paid+amt,f.due-1);
     await updateDoc(flatRef(fid),{paid:np});
@@ -1395,11 +1387,67 @@ window._renameBlockPrompt = async (oldName) => {
   const toUpdate = [...flats.entries()].filter(([,f]) => f.block === oldName);
   sync('saving');
   try {
-    await Promise.all(toUpdate.map(([fid]) => updateDoc(doc(db,'apartments',UID,'flats',fid), {block: nn})));
-    toUpdate.forEach(([fid, f]) => { f.block = nn; flats.set(fid, f); });
-    sync('live'); toast('Block renamed ✓');
-    window._renderStructureList(); rStructure();
-  } catch(e) { sync('error'); toast('Rename failed','error'); }
+    // Build old→new flatId map
+    const flatIdMap = {};
+    toUpdate.forEach(([fid, f]) => {
+      const oldFlatId = f.flatId || '';
+      let suffix = oldFlatId;
+      if (oldFlatId.startsWith(oldName + '-')) suffix = oldFlatId.slice(oldName.length + 1);
+      flatIdMap[oldFlatId] = nn + '-' + suffix;
+    });
+
+    const writes = [];
+
+    // 1. Update flats
+    toUpdate.forEach(([fid]) => {
+      const f = flats.get(fid);
+      const newFlatId = flatIdMap[f.flatId || ''] || (nn + '-' + (f.flatId || ''));
+      writes.push(updateDoc(doc(db,'apartments',UID,'flats',fid), { block: nn, flatId: newFlatId }));
+    });
+
+    // 2. Update vehicles
+    const vehSnap = await getDocs(collection(db,'apartments',UID,'vehicles'));
+    vehSnap.forEach(d => {
+      const oldFid = d.data().flatId;
+      if (flatIdMap[oldFid]) writes.push(updateDoc(d.ref, { flatId: flatIdMap[oldFid] }));
+    });
+
+    // 3. Update expenses/payments
+    const expSnap = await getDocs(expColl());
+    expSnap.forEach(d => {
+      const oldFid = d.data().flatId;
+      if (flatIdMap[oldFid]) writes.push(updateDoc(d.ref, { flatId: flatIdMap[oldFid], block: nn }));
+    });
+
+    // 4. Update issues
+    const issSnap = await getDocs(issuesColl());
+    issSnap.forEach(d => {
+      const oldFid = d.data().flatId;
+      if (flatIdMap[oldFid]) writes.push(updateDoc(d.ref, { flatId: flatIdMap[oldFid] }));
+    });
+
+    await Promise.all(writes);
+
+    // Update in-memory maps
+    toUpdate.forEach(([fid, f]) => {
+      const newFlatId = flatIdMap[f.flatId || ''] || f.flatId;
+      f.block  = nn;
+      f.flatId = newFlatId;
+      flats.set(fid, f);
+    });
+    // Re-key vehicles map
+    [...vehicles.entries()].forEach(([k, v]) => {
+      if (flatIdMap[k]) { vehicles.set(flatIdMap[k], v); vehicles.delete(k); }
+    });
+
+    sync('live');
+    toast('Block renamed — all records updated ✓');
+    rAll();
+    window._renderStructureList();
+    rStructure();
+  } catch(e) {
+    console.error(e); sync('error'); toast('Rename failed','error');
+  }
 };
 window._closeStructureManager = () => {
   document.getElementById('structureModal').style.display = 'none';
@@ -1554,7 +1602,7 @@ window._saveNewStructure = async () => {
     for (const f of newFlats) {
       const fid = (blockName + '-' + f.flatNum).replace(/[^a-z0-9-]/gi, '_').toLowerCase();
       const flatDoc = {
-        flatId: f.flatNum,
+        flatId: blockName + '-' + f.flatNum,
         block: blockName,
         floor: f.floor,
         owner: f.resName,
@@ -2479,6 +2527,7 @@ function rPresident() {
       <div style="display:flex;gap:8px;align-items:center;flex-shrink:0;">
         <button class="btn btn-indigo" onclick="window._oA()"><i class="ti ti-plus"></i> Add Payment</button>
         <button class="btn btn-indigo" onclick="window._oPresExp()"><i class="ti ti-receipt"></i> Add Expense</button>
+        <button class="btn btn-white" onclick="window._oMonthlySummary()" style="border:1.5px solid var(--border2)"><i class="ti ti-file-text"></i> Monthly Report</button>
       </div>
       <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
         <select id="histYearFilter"
@@ -3491,7 +3540,7 @@ function rStructure() {
             <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:${paidCnt===fts.length?'var(--green)':paidCnt>0?'var(--amber)':'var(--red)'};color:#fff;">${paidCnt}/${fts.length}</span>
             <i class="ti ti-chevron-down blk-toggle-icon" style="color:var(--indigo);font-size:13px;transition:transform .2s;"></i>
           </div>
-          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;">
             ${fts.map(f => makeChip(f)).join('')}
           </div>
         </div>`
@@ -3499,7 +3548,7 @@ function rStructure() {
 
   } else {
     // All flats in one grid
-    chipsEl.innerHTML = `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
+    chipsEl.innerHTML = `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;">
       ${rows.map(f => makeChip(f)).join('')}
     </div>`;
   }
@@ -3516,30 +3565,37 @@ function rStructure() {
       if (flat.flatId === f.flatId && flat.block === f.block) { fid = key; break; }
     }
 
-    // Option 4 — Icon chip: status dot + flat ID + type (3-col grid)
-    const dotClr  = {paid:'#22c55e', partial:'#f59e0b', pending:'#ef4444', vacant:'#d1d5db'}[status];
+    const barClr  = {paid:'#22c55e', partial:'#f59e0b', pending:'#ef4444', vacant:'#e5e7eb'}[status];
     const typeLbl = isVacant ? 'Vacant' : rType==='tenant' ? 'Tenant' : 'Owner';
     const typeClr = isVacant ? '#9ca3af' : rType==='tenant' ? '#d97706' : '#6366f1';
-    const borderClr = {paid:'#bbf7d0', partial:'#fde68a', pending:'#fecaca', vacant:'#e5e7eb'}[status];
-    const bgClr   = {paid:'#f0fdf4', partial:'#fffbeb', pending:'#fff1f2', vacant:'#fafafa'}[status];
+    const ini     = isVacant ? '?' : (f.owner||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    const iniClr  = {paid:'#16a34a', partial:'#d97706', pending:'#dc2626', vacant:'#9ca3af'}[status];
+    const iniTxt  = {paid:'#dcfce7', partial:'#fef9c3', pending:'#fee2e2', vacant:'#f3f4f6'}[status];
 
     return `<button onclick="window.oFlEdit('${fid}')"
-      style="background:${bgClr};border:1px solid ${borderClr};border-radius:8px;
-        padding:7px 8px;cursor:pointer;font-family:var(--font);text-align:left;
-        display:flex;align-items:center;gap:7px;width:100%;
-        transition:box-shadow .12s,border-color .12s;box-shadow:0 1px 2px rgba(0,0,0,.04);"
-      onmouseover="this.style.boxShadow='0 3px 8px rgba(0,0,0,.1)';this.style.borderColor='${dotClr}'"
-      onmouseout="this.style.boxShadow='0 1px 2px rgba(0,0,0,.04)';this.style.borderColor='${borderClr}'">
-      <span style="width:8px;height:8px;border-radius:50%;background:${dotClr};flex-shrink:0;display:inline-block;"></span>
-      <div style="min-width:0;overflow:hidden;">
-        <div style="font-size:11px;font-weight:700;color:#111827;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2">${f.flatId}</div>
-        <div style="font-size:9px;font-weight:600;color:${typeClr};margin-top:1px;white-space:nowrap">${typeLbl}</div>
+      style="background:#fff;border:1.5px solid #f0f0f0;border-radius:10px;padding:0;
+        cursor:pointer;font-family:var(--font);text-align:left;width:100%;
+        overflow:hidden;transition:box-shadow .12s,border-color .12s;
+        box-shadow:0 1px 3px rgba(0,0,0,.05);"
+      onmouseover="this.style.boxShadow='0 4px 10px rgba(0,0,0,.08)';this.style.borderColor='${barClr}'"
+      onmouseout="this.style.boxShadow='0 1px 3px rgba(0,0,0,.05)';this.style.borderColor='#f0f0f0'">
+      <div style="height:3px;background:${barClr};width:100%"></div>
+      <div style="padding:7px 8px;display:flex;align-items:center;gap:7px;background:#fff">
+        <div style="width:26px;height:26px;border-radius:7px;background:${iniTxt};color:${iniClr};
+          font-size:9px;font-weight:800;display:flex;align-items:center;justify-content:center;
+          flex-shrink:0;letter-spacing:-.3px;">${ini}</div>
+        <div style="flex:1;min-width:0;overflow:hidden;">
+          <div style="font-size:11px;font-weight:800;color:#1e293b;white-space:nowrap;
+            overflow:hidden;text-overflow:ellipsis;line-height:1.3;">${f.flatId}</div>
+          <div style="font-size:9px;font-weight:600;color:${typeClr};margin-top:1px;">${typeLbl}</div>
+        </div>
       </div>
     </button>`;
   }
 }
 
 window.rStructure = rStructure;
+
 window._setStrView = v => {
   STRVIEW = v;
   document.querySelectorAll('[data-view]').forEach(btn => {
@@ -3560,6 +3616,7 @@ function _getCanvasSize(canvas) {
 function drawPie(canvasId, segments, tooltipId) {
   const canvas = document.getElementById(canvasId);
   if (!canvas) return;
+  // Responsive: set canvas pixel size to display size
   const rect = canvas.getBoundingClientRect();
   const dpr  = window.devicePixelRatio||1;
   const W = rect.width||200, H = rect.height||200;
@@ -4175,11 +4232,7 @@ function renderAnPayTable(filterType, selMonth, selYear, selBlock) {
     const fw       = parseInt(v.fw) || 0;
     const vehCell  = (tw === 0 && fw === 0)
       ? `<span style="font-size:11px;color:var(--muted)">—</span>`
-      : `<span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700">
-           ${tw > 0 ? `<span style="color:var(--indigo)">🏍 ${tw}</span>` : ''}
-           ${tw > 0 && fw > 0 ? `<span style="color:var(--border3)">·</span>` : ''}
-           ${fw > 0 ? `<span style="color:var(--green-txt)">🚗 ${fw}</span>` : ''}
-         </span>`;
+      : `<span style="font-size:12px;font-weight:700;color:var(--text)">${tw}/${fw}</span>`;
     const isVacant = !(f.owner||'').trim();
     const resType  = isVacant ? 'vacant' : (f.resType||'owner');
     const typeBadge = isVacant
@@ -4192,24 +4245,29 @@ function renderAnPayTable(filterType, selMonth, selYear, selBlock) {
       style="cursor:pointer;transition:background .12s"
       onmouseover="this.style.background='var(--indigo-bg)'"
       onmouseout="this.style.background=''">
-      <td style="padding:10px 12px;font-weight:800;color:var(--indigo);font-size:12px;border-bottom:1px solid var(--border);vertical-align:middle;white-space:nowrap">${f.flatId}</td>
-      <td style="padding:10px 12px;border-bottom:1px solid var(--border);overflow:hidden;vertical-align:middle">
+      <td style="padding:8px 6px;font-weight:800;color:var(--indigo);font-size:12px;border-bottom:1px solid var(--border);vertical-align:middle;white-space:nowrap">${f.flatId}</td>
+      <td style="padding:8px 6px;border-bottom:1px solid var(--border);overflow:hidden;vertical-align:middle">
         <div style="font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${f.owner||'<em style="color:var(--muted);font-weight:400">Vacant</em>'}</div>
         <div style="margin-top:2px">${typeBadge}</div>
       </td>
-      <td style="padding:10px 12px;text-align:center;border-bottom:1px solid var(--border);vertical-align:middle">${statusIcon[s]||statusIcon.pending}</td>
-      <td style="padding:10px 12px;text-align:right;font-weight:800;color:${balColor};font-size:13px;border-bottom:1px solid var(--border);white-space:nowrap;vertical-align:middle">${f.due?inr(Math.abs(bal)):'—'}</td>
+      <td style="padding:8px 4px;text-align:center;border-bottom:1px solid var(--border);vertical-align:middle">${vehCell}</td>
+      <td style="padding:8px 6px;text-align:right;font-weight:800;color:${balColor};font-size:13px;border-bottom:1px solid var(--border);white-space:nowrap;vertical-align:middle">${f.due?inr(Math.abs(bal)):'—'}</td>
+      <td style="padding:8px 4px;text-align:center;border-bottom:1px solid var(--border);vertical-align:middle">${statusIcon[s]||statusIcon.pending}</td>
     </tr>`;
   }).join('');
 
-  // Totals row
+  // Totals row (5 columns)
   const totBal = rows.reduce((s,f)=>s+((f.due||0)-(f.paid||0)),0);
   const totTw  = rows.reduce((s,f)=>s+(parseInt((vehicles.get(f.flatId)||{}).tw)||0),0);
   const totFw  = rows.reduce((s,f)=>s+(parseInt((vehicles.get(f.flatId)||{}).fw)||0),0);
-  tbody.innerHTML += `<tr style="background:var(--surface3);border-top:2px solid var(--border2)">
-    <td style="padding:10px 12px;font-size:11px;font-weight:800;color:var(--text2)" colspan="2">Total — ${rows.length} flats</td>
-    <td style="padding:10px 12px;text-align:center;font-size:10px;color:var(--muted)">—</td>
-    <td style="padding:10px 12px;text-align:right;font-weight:800;color:${totBal>0?'var(--red)':'var(--green)'};font-size:13px;white-space:nowrap">${inr(Math.abs(totBal))}</td>
+  const totVeh = (totTw > 0 || totFw > 0)
+    ? `<span style="font-size:12px;font-weight:700;color:var(--text)">${totTw}/${totFw}</span>`
+    : '—';
+  tbody.innerHTML += `<tr style="position:sticky;bottom:0;z-index:2;background:var(--surface3);border-top:2px solid var(--border2)">
+    <td style="padding:8px 6px;font-size:11px;font-weight:800;color:var(--text2)" colspan="2">Total — ${rows.length} flats</td>
+    <td style="padding:8px 4px;text-align:center">${totVeh}</td>
+    <td style="padding:8px 6px;text-align:right;font-weight:800;color:${totBal>0?'var(--red)':'var(--green)'};font-size:13px;white-space:nowrap">${inr(Math.abs(totBal))}</td>
+    <td style="padding:8px 4px;text-align:center;font-size:10px;color:var(--muted)">—</td>
   </tr>`;
 }
 
@@ -4305,7 +4363,7 @@ function _renderSummary() {
   const collPctHead = totDue > 0 ? Math.round(totPaid / totDue * 100) : 0;
   document.getElementById('msSummaryHead').innerHTML = `
     <style>
-      .ms-kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
+      .ms-kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px}
       .ms-kpi{border-radius:12px;padding:12px;position:relative;overflow:hidden}
       .ms-kpi-lbl{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.6px;white-space:nowrap;opacity:.85}
       .ms-kpi-val{font-size:16px;font-weight:800;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.3px}
@@ -4658,11 +4716,17 @@ window._rContacts = function() {
   const el = document.getElementById('contactsList');
   if (!el) return;
 
+  // Ensure grid layout
+  el.style.display = 'grid';
+  el.style.gridTemplateColumns = 'repeat(auto-fill,minmax(88px,1fr))';
+  el.style.gap = '8px';
+
   if (!vis.length) {
-    el.innerHTML = `<div style="width:100%;padding:40px 20px;text-align:center;color:var(--muted)">
+    el.style.display = 'block';
+    el.innerHTML = `<div style="padding:40px 20px;text-align:center;color:var(--muted)">
       <i class="ti ti-address-book-off" style="font-size:28px;display:block;margin-bottom:10px;opacity:.5"></i>
-      <div style="font-size:13px;font-weight:600">No service contacts ${filter!=='all'?'in this category':'yet'}</div>
-      <div style="font-size:11px;margin-top:4px">Tap "Add Contact" to save plumber, electrician, maid etc.</div>
+      <div style="font-size:13px;font-weight:600">No contacts ${filter!=='all'?'in this category':'yet'}</div>
+      <div style="font-size:11px;margin-top:4px">Tap "Add Contact" to save plumber, electrician etc.</div>
     </div>`;
     return;
   }
@@ -4672,22 +4736,29 @@ window._rContacts = function() {
     const color = CONTACT_COLORS[c.cat] || '#6B7280';
     const phone = (c.phone || '').replace(/\D/g, '');
     return `<div onclick="window._oContact('${c.id}')"
-      style="display:inline-flex;align-items:center;gap:6px;background:#fff;border:1.5px solid var(--border2);
-        border-radius:999px;padding:4px 8px 4px 4px;cursor:pointer;transition:box-shadow .12s,border-color .12s;max-width:100%"
-      onmouseover="this.style.boxShadow='0 2px 8px rgba(0,0,0,.06)';this.style.borderColor='${color}'"
+      style="background:#fff;border:1.5px solid var(--border2);border-top:3px solid ${color};
+        border-radius:10px;padding:10px 6px 8px;cursor:pointer;
+        display:flex;flex-direction:column;align-items:center;gap:4px;
+        min-height:100px;text-align:center;
+        transition:box-shadow .12s,border-color .12s;"
+      onmouseover="this.style.boxShadow='0 3px 10px rgba(0,0,0,.08)';this.style.borderColor='${color}'"
       onmouseout="this.style.boxShadow='';this.style.borderColor='var(--border2)'">
-      <div style="width:22px;height:22px;border-radius:999px;background:${color}18;color:${color};
-        display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0">
+      <div style="width:34px;height:34px;border-radius:10px;background:${color}18;color:${color};
+        display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">
         <i class="ti ${icon}"></i>
       </div>
-      <span style="font-size:12px;font-weight:700;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:120px">${c.name || 'Unnamed'}</span>
-      <span style="font-size:9px;font-weight:600;color:${color};white-space:nowrap">${c.cat || 'Other'}</span>
-      <div style="display:flex;gap:3px;flex-shrink:0;margin-left:2px" onclick="event.stopPropagation()">
-        <a href="tel:${phone}" title="Call" style="width:20px;height:20px;display:flex;align-items:center;justify-content:center;background:var(--indigo-bg);color:var(--indigo);border-radius:999px;text-decoration:none">
-          <i class="ti ti-phone" style="font-size:10px"></i>
+      <div style="font-size:10px;font-weight:700;color:var(--text);word-break:break-word;width:100%;line-height:1.3">${c.name || 'Unnamed'}</div>
+      <div style="font-size:9px;font-weight:600;color:${color};width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.cat || 'Other'}</div>
+      <div style="display:flex;gap:4px;margin-top:auto;padding-top:2px" onclick="event.stopPropagation()">
+        <a href="tel:${phone}" title="Call"
+          style="width:24px;height:24px;display:flex;align-items:center;justify-content:center;
+            background:var(--indigo-bg);color:var(--indigo);border-radius:999px;text-decoration:none;">
+          <i class="ti ti-phone" style="font-size:11px"></i>
         </a>
-        ${phone ? `<a href="https://wa.me/91${phone}" target="_blank" title="WhatsApp" style="width:20px;height:20px;display:flex;align-items:center;justify-content:center;background:#D1FAE5;color:#065F46;border-radius:999px;text-decoration:none">
-          <i class="ti ti-brand-whatsapp" style="font-size:11px"></i>
+        ${phone ? `<a href="https://wa.me/91${phone}" target="_blank" title="WhatsApp"
+          style="width:24px;height:24px;display:flex;align-items:center;justify-content:center;
+            background:#D1FAE5;color:#065F46;border-radius:999px;text-decoration:none;">
+          <i class="ti ti-brand-whatsapp" style="font-size:12px"></i>
         </a>` : ''}
       </div>
     </div>`;
@@ -4782,27 +4853,24 @@ window._delContact = async function() {
 window._issSubTab = function(which) {
   const issuesBtn    = document.getElementById('issSubTabIssues');
   const contactsBtn  = document.getElementById('issSubTabContacts');
-  const reportsBtn   = document.getElementById('issSubTabReports');
   const issuesPanel  = document.getElementById('issSubPanelIssues');
   const contactsPanel= document.getElementById('issSubPanelContacts');
-  const reportsPanel = document.getElementById('issSubPanelReports');
   if (!issuesBtn || !contactsBtn || !issuesPanel || !contactsPanel) return;
 
-  const active   = { borderColor:'var(--indigo)', background:'var(--indigo)', color:'#fff' };
-  const inactive = { borderColor:'var(--border2)', background:'#fff', color:'var(--text2)' };
+  const active = { border:'var(--indigo)', bg:'var(--indigo)', color:'#fff' };
+  const inactive = { border:'var(--border2)', bg:'#fff', color:'var(--text2)' };
 
-  const panels = { issues: issuesPanel, contacts: contactsPanel };
-  const btns   = { issues: issuesBtn,   contacts: contactsBtn   };
-  if (reportsBtn  && reportsPanel) { panels.reports = reportsPanel; btns.reports = reportsBtn; }
-
-  Object.keys(panels).forEach(key => {
-    const isActive = key === which;
-    panels[key].style.display = isActive ? '' : 'none';
-    Object.assign(btns[key].style, isActive ? active : inactive);
-  });
-
-  try {
-    if (which === 'issues')   rIssues();
-    else if (which === 'contacts') window._rContacts();
-  } catch(e) { console.error(e); }
+  if (which === 'issues') {
+    issuesPanel.style.display = '';
+    contactsPanel.style.display = 'none';
+    Object.assign(issuesBtn.style, { borderColor: active.border, background: active.bg, color: active.color });
+    Object.assign(contactsBtn.style, { borderColor: inactive.border, background: inactive.bg, color: inactive.color });
+    try { rIssues(); } catch(e) { console.error(e); }
+  } else {
+    issuesPanel.style.display = 'none';
+    contactsPanel.style.display = '';
+    Object.assign(contactsBtn.style, { borderColor: active.border, background: active.bg, color: active.color });
+    Object.assign(issuesBtn.style, { borderColor: inactive.border, background: inactive.bg, color: inactive.color });
+    try { window._rContacts(); } catch(e) { console.error(e); }
+  }
 };
