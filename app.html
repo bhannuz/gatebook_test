@@ -103,13 +103,73 @@
       onmouseout="this.style.background='none';this.style.borderColor='var(--border2)';this.style.color='var(--text2)'">
       <i class="ti ti-refresh" style="font-size:15px"></i>
     </button>
-    <div class="user-chip" onclick="window._doSignOut()">
-      <div class="user-avatar" id="userAvatar">?</div>
-      <span id="userName">Admin</span>
-      <i class="ti ti-logout" style="font-size:14px;color:var(--muted)"></i>
+    <div style="position:relative;">
+      <div class="user-chip" onclick="document.getElementById('userMenu').style.display=document.getElementById('userMenu').style.display==='block'?'none':'block'">
+        <div class="user-avatar" id="userAvatar">?</div>
+        <span id="userName">Admin</span>
+        <i class="ti ti-chevron-down" style="font-size:12px;color:var(--muted)"></i>
+      </div>
+      <div id="userMenu" style="display:none;position:absolute;right:0;top:calc(100% + 6px);background:#fff;border:1.5px solid var(--border2);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.1);min-width:180px;z-index:999;overflow:hidden;">
+        <button onclick="document.getElementById('userMenu').style.display='none';window._openChangePw()"
+          style="width:100%;padding:11px 14px;border:none;background:#fff;text-align:left;font-size:12px;font-weight:600;color:var(--text);cursor:pointer;font-family:var(--font);display:flex;align-items:center;gap:8px;transition:background .12s"
+          onmouseover="this.style.background='var(--surface3)'" onmouseout="this.style.background='#fff'">
+          <i class="ti ti-lock" style="color:var(--indigo);font-size:14px"></i> Change Password
+        </button>
+        <div style="height:1px;background:var(--border2);margin:0 10px"></div>
+        <button onclick="document.getElementById('userMenu').style.display='none';window._doSignOut()"
+          style="width:100%;padding:11px 14px;border:none;background:#fff;text-align:left;font-size:12px;font-weight:600;color:var(--red);cursor:pointer;font-family:var(--font);display:flex;align-items:center;gap:8px;transition:background .12s"
+          onmouseover="this.style.background='#fff5f5'" onmouseout="this.style.background='#fff'">
+          <i class="ti ti-logout" style="font-size:14px"></i> Sign Out
+        </button>
+      </div>
     </div>
   </div>
 </nav>
+
+<!-- Change Password Modal -->
+<div class="mbg" id="changePwM" style="display:none;align-items:center;justify-content:center;">
+  <div class="modal" style="max-width:360px;padding:20px;">
+    <div class="mhead" style="margin-bottom:16px;">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="micon flat" style="background:var(--indigo-bg);color:var(--indigo)"><i class="ti ti-lock"></i></div>
+        <div><div class="mtitle">Change Password</div><div class="msub">Update your admin password</div></div>
+      </div>
+      <button class="mclose" onclick="window._closeChangePw()"><i class="ti ti-x"></i></button>
+    </div>
+    <div id="changePwAlert" style="display:none;padding:8px 12px;border-radius:8px;font-size:12px;font-weight:600;margin-bottom:12px;"></div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <div>
+        <label style="font-size:10px;font-weight:800;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:4px;">Current Password</label>
+        <div class="pw-wrap" style="position:relative;">
+          <input type="password" id="cpCurrent" placeholder="Current password"
+            style="width:100%;box-sizing:border-box;height:38px;padding:0 36px 0 12px;border:1.5px solid var(--border2);border-radius:8px;font-family:var(--font);font-size:13px;outline:none;"/>
+          <button class="pw-toggle" type="button" onclick="togglePw('cpCurrent',this)" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted)"><i class="ti ti-eye"></i></button>
+        </div>
+      </div>
+      <div>
+        <label style="font-size:10px;font-weight:800;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:4px;">New Password</label>
+        <div class="pw-wrap" style="position:relative;">
+          <input type="password" id="cpNew" placeholder="Min. 6 characters"
+            style="width:100%;box-sizing:border-box;height:38px;padding:0 36px 0 12px;border:1.5px solid var(--border2);border-radius:8px;font-family:var(--font);font-size:13px;outline:none;"/>
+          <button class="pw-toggle" type="button" onclick="togglePw('cpNew',this)" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted)"><i class="ti ti-eye"></i></button>
+        </div>
+      </div>
+      <div>
+        <label style="font-size:10px;font-weight:800;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:4px;">Confirm New Password</label>
+        <input type="password" id="cpConfirm" placeholder="Repeat new password"
+          style="width:100%;box-sizing:border-box;height:38px;padding:0 12px;border:1.5px solid var(--border2);border-radius:8px;font-family:var(--font);font-size:13px;outline:none;"/>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:16px;">
+      <button onclick="window._closeChangePw()"
+        style="padding:0 16px;height:40px;border:1.5px solid var(--border2);border-radius:8px;background:#fff;color:var(--text2);font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);">Cancel</button>
+      <button id="cpSaveBtn" onclick="window._saveNewPassword()"
+        style="flex:1;height:40px;border:none;border-radius:8px;background:var(--indigo);color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);">
+        <i class="ti ti-lock"></i> Update Password
+      </button>
+    </div>
+  </div>
+</div>
 
 <!-- APP -->
 <div class="app">
