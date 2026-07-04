@@ -1,5 +1,5 @@
 import { auth, db } from './firebase.js';
-import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js';
+import { onAuthStateChanged, signOut, EmailAuthProvider, reauthenticateWithCredential, updatePassword } from 'https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js';
 import {
   collection, doc, getDocs, getDoc, addDoc, setDoc, updateDoc, deleteDoc,
   onSnapshot, query, where, orderBy, serverTimestamp,
@@ -38,6 +38,68 @@ onAuthStateChanged(auth, user => {
 window._doSignOut = async function() {
   await signOut(auth);
   window.location.replace('index.html');
+};
+
+// Close user menu on outside click
+document.addEventListener('click', e => {
+  const menu = document.getElementById('userMenu');
+  if (menu && !menu.closest('.user-chip') && !e.target.closest('#userMenu') && !e.target.closest('.user-chip')) {
+    menu.style.display = 'none';
+  }
+});
+
+// ── Change Password ──
+window._openChangePw = function() {
+  ['cpCurrent','cpNew','cpConfirm'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+  const al = document.getElementById('changePwAlert'); if(al) al.style.display='none';
+  document.getElementById('changePwM').style.display = 'flex';
+};
+window._closeChangePw = function() {
+  document.getElementById('changePwM').style.display = 'none';
+};
+window.togglePw = function(inputId, btn) {
+  const inp = document.getElementById(inputId);
+  if (!inp) return;
+  const show = inp.type === 'password';
+  inp.type = show ? 'text' : 'password';
+  const ic = btn.querySelector('i');
+  if (ic) ic.className = show ? 'ti ti-eye-off' : 'ti ti-eye';
+};
+window._saveNewPassword = async function() {
+  const current = document.getElementById('cpCurrent').value;
+  const newPw   = document.getElementById('cpNew').value;
+  const confirm = document.getElementById('cpConfirm').value;
+  const alertEl = document.getElementById('changePwAlert');
+  const showAlert = (msg, ok=false) => {
+    alertEl.textContent = msg;
+    alertEl.style.display = 'block';
+    alertEl.style.background = ok ? '#f0fdf4' : '#fff1f2';
+    alertEl.style.color = ok ? '#15803d' : '#dc2626';
+    alertEl.style.border = `1px solid ${ok?'#bbf7d0':'#fecaca'}`;
+  };
+  if (!current) { showAlert('Please enter your current password.'); return; }
+  if (newPw.length < 6) { showAlert('New password must be at least 6 characters.'); return; }
+  if (newPw !== confirm) { showAlert('New passwords do not match.'); return; }
+  const btn = document.getElementById('cpSaveBtn');
+  btn.disabled = true; btn.textContent = 'Updating…';
+  try {
+    const user = auth.currentUser;
+    const cred = EmailAuthProvider.credential(user.email, current);
+    await reauthenticateWithCredential(user, cred);
+    await updatePassword(user, newPw);
+    showAlert('Password updated successfully!', true);
+    setTimeout(() => window._closeChangePw(), 1500);
+  } catch(e) {
+    const msgs = {
+      'auth/wrong-password': 'Current password is incorrect.',
+      'auth/invalid-credential': 'Current password is incorrect.',
+      'auth/too-many-requests': 'Too many attempts. Please try again later.',
+    };
+    showAlert(msgs[e.code] || 'Failed to update password. Please try again.');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="ti ti-lock"></i> Update Password';
+  }
 };
 
 /* ════════════════════════════════
@@ -3915,6 +3977,15 @@ function rAnalytics() {
           style="font-size:11px;height:32px;padding:0 8px;border:1.5px solid var(--border2);border-radius:var(--r-md);background:#fff;color:var(--text);font-family:var(--font);font-weight:600;cursor:pointer;outline:none;"
           onchange="window._anOnMonthChange()">
         </select>
+        <select id="payStatusFilter"
+          style="font-size:11px;height:32px;padding:0 8px;border:1.5px solid var(--border2);border-radius:var(--r-md);background:#fff;color:var(--text);font-family:var(--font);font-weight:600;cursor:pointer;outline:none;"
+          onchange="window._anOnStatusFilterChange()">
+          <option value="all">All Status</option>
+          <option value="paid">✅ Full Paid</option>
+          <option value="partial">🟡 Partial</option>
+          <option value="pending">🔴 Not Paid</option>
+          <option value="vacant">⬜ Vacant</option>
+        </select>
       </div>
     </div>`;
 
@@ -4177,6 +4248,12 @@ function anSetStatus(s) {
 }
 window.anSetStatus = anSetStatus;
 
+window._anOnStatusFilterChange = function() {
+  const val = document.getElementById('payStatusFilter')?.value || 'all';
+  _anStatus = val;
+  renderAnPayTable();
+};
+
 function anSetBlock(b) {
   _anBlock = b;
   // Sync both block selects
@@ -4200,7 +4277,17 @@ function renderAnPayTable(filterType, selMonth, selYear, selBlock) {
   const sb = _anBlock      || 'all';
 
   let rows = _buildFlatSummary(ft, sm, sy, sb);
-  if (_anStatus !== 'all') rows = rows.filter(f => f._status === _anStatus);
+  // Apply status filter
+  const statusFilter = document.getElementById('payStatusFilter')?.value || _anStatus || 'all';
+  if (statusFilter !== 'all') rows = rows.filter(f => f._status === statusFilter);
+  // Sort by block then flat number
+  rows.sort((a, b) => {
+    const blockA = (a.block || a.flatId || '').toUpperCase();
+    const blockB = (b.block || b.flatId || '').toUpperCase();
+    if (blockA < blockB) return -1;
+    if (blockA > blockB) return 1;
+    return (a.flatId||'').localeCompare(b.flatId||'', undefined, {numeric:true});
+  });
 
   const tbody   = document.getElementById('anPayTable');
   const empty   = document.getElementById('anPayEmpty');
