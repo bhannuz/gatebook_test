@@ -394,10 +394,10 @@ window.updatePreview = function() {
 };
 
 function buildConfirm() {
-  const aptName = document.getElementById('aptName').value.trim();
+  const aptName   = document.getElementById('aptName').value.trim();
   const adminName = document.getElementById('adminName').value.trim();
-  const adminEmail = document.getElementById('adminEmail').value.trim();
-  let html = `<strong>${aptName}</strong><br>Admin: ${adminName} (${adminEmail})<br><br>`;
+  const adminId   = document.getElementById('adminId').value.trim();
+  let html = `<strong>${aptName}</strong><br>Admin: ${adminName} (${adminId})<br><br>`;
   blocks.forEach(b=>{
     const cnt = b.floors*b.flatsPerFloor;
     const label = b.name.trim() ? `Block ${b.name}` : 'Building';
