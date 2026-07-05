@@ -2023,6 +2023,11 @@ function switchView(v) {
   document.querySelectorAll('.bnav-item').forEach(p => p.classList.toggle('active', p.dataset.v===v));
   if(v==='analytics') try{ rAnalytics(); } catch(e){ console.error(e); }
   if(v==='structure') try{ rStructure(); } catch(e){ console.error(e); }
+  if(v==='issues') {
+    const phAct = document.getElementById('phAct');
+    if (phAct) phAct.innerHTML = '';
+    try{ window._issSubTab(window._activeIssSubTab || 'issues'); } catch(e){ console.error(e); }
+  }
   if(v==='president') {
     try{ rPresident(); } catch(e){ console.error(e); }
     rPresHistory().catch(e => console.error('rPresHistory', e));
@@ -4945,26 +4950,38 @@ window._delContact = async function() {
    ISSUES / CONTACTS SUB-TAB TOGGLE
 ════════════════════════════════ */
 window._issSubTab = function(which) {
+  window._activeIssSubTab = which;
+
   const issuesBtn    = document.getElementById('issSubTabIssues');
   const contactsBtn  = document.getElementById('issSubTabContacts');
+  const reportsBtn   = document.getElementById('issSubTabReports');
   const issuesPanel  = document.getElementById('issSubPanelIssues');
   const contactsPanel= document.getElementById('issSubPanelContacts');
+  const reportsPanel = document.getElementById('issSubPanelReports');
+
   if (!issuesBtn || !contactsBtn || !issuesPanel || !contactsPanel) return;
 
-  const active = { border:'var(--indigo)', bg:'var(--indigo)', color:'#fff' };
-  const inactive = { border:'var(--border2)', bg:'#fff', color:'var(--text2)' };
+  // Clear phAct so filters from other tabs don't bleed in
+  const phAct = document.getElementById('phAct');
+  if (phAct) phAct.innerHTML = '';
 
-  if (which === 'issues') {
-    issuesPanel.style.display = '';
-    contactsPanel.style.display = 'none';
-    Object.assign(issuesBtn.style, { borderColor: active.border, background: active.bg, color: active.color });
-    Object.assign(contactsBtn.style, { borderColor: inactive.border, background: inactive.bg, color: inactive.color });
-    try { rIssues(); } catch(e) { console.error(e); }
-  } else {
-    issuesPanel.style.display = 'none';
-    contactsPanel.style.display = '';
-    Object.assign(contactsBtn.style, { borderColor: active.border, background: active.bg, color: active.color });
-    Object.assign(issuesBtn.style, { borderColor: inactive.border, background: inactive.bg, color: inactive.color });
-    try { window._rContacts(); } catch(e) { console.error(e); }
-  }
+  const active   = { borderColor:'var(--indigo)', background:'var(--indigo)', color:'#fff' };
+  const inactive = { borderColor:'var(--border2)', background:'#fff', color:'var(--text2)' };
+
+  // Toggle panels
+  issuesPanel.style.display  = which === 'issues'   ? '' : 'none';
+  contactsPanel.style.display= which === 'contacts' ? '' : 'none';
+  if (reportsPanel) reportsPanel.style.display = which === 'reports' ? '' : 'none';
+
+  // Toggle button styles
+  Object.assign(issuesBtn.style,   which === 'issues'   ? active : inactive);
+  Object.assign(contactsBtn.style, which === 'contacts' ? active : inactive);
+  if (reportsBtn) Object.assign(reportsBtn.style, which === 'reports' ? active : inactive);
+
+  // Render content
+  try {
+    if (which === 'issues')   rIssues();
+    else if (which === 'contacts') window._rContacts();
+    // reports panel is static — no render needed
+  } catch(e) { console.error(e); }
 };
