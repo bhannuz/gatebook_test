@@ -189,11 +189,11 @@
   <div id="phAct" style="display:flex;gap:12px;justify-content:flex-start;align-items:center;margin-bottom:0;margin-top:0;flex-wrap:wrap;"></div>
   <div id="statsRow" style="display:none"></div>
 
-  <!-- SERVICES VIEW (with Issues / Contacts / Reports sub-tabs) -->
+  <!-- SERVICES VIEW (with Issues / Contacts / Attendance / Reports sub-tabs) -->
   <div id="iView" style="display:none">
 
     <!-- Sub-tabs -->
-    <div style="display:flex;gap:6px;padding:0 12px;margin-bottom:10px">
+    <div style="display:flex;gap:6px;padding:0 12px;margin-bottom:10px;flex-wrap:wrap;">
       <button id="issSubTabIssues" onclick="window._issSubTab('issues')"
         style="flex:1;height:34px;border-radius:9px;border:1.5px solid var(--indigo);background:var(--indigo);color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);display:inline-flex;align-items:center;justify-content:center;gap:6px">
         <i class="ti ti-alert-circle" style="font-size:14px"></i> Issues
@@ -201,6 +201,10 @@
       <button id="issSubTabContacts" onclick="window._issSubTab('contacts')"
         style="flex:1;height:34px;border-radius:9px;border:1.5px solid var(--border2);background:#fff;color:var(--text2);font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);display:inline-flex;align-items:center;justify-content:center;gap:6px">
         <i class="ti ti-address-book" style="font-size:14px"></i> Contacts
+      </button>
+      <button id="issSubTabAttendance" onclick="window._issSubTab('attendance')"
+        style="flex:1;height:34px;border-radius:9px;border:1.5px solid var(--border2);background:#fff;color:var(--text2);font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);display:inline-flex;align-items:center;justify-content:center;gap:6px">
+        <i class="ti ti-calendar-check" style="font-size:14px"></i> Attendance
       </button>
       <button id="issSubTabReports" onclick="window._issSubTab('reports')"
         style="flex:1;height:34px;border-radius:9px;border:1.5px solid var(--border2);background:#fff;color:var(--text2);font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);display:inline-flex;align-items:center;justify-content:center;gap:6px">
@@ -243,6 +247,29 @@
       <div id="contactsList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px"></div>
     </div>
 
+    <!-- ATTENDANCE SUB-PANEL -->
+    <div id="issSubPanelAttendance" style="display:none;padding:0 12px 12px">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+        <button onclick="window._attShiftMonth(-1)" title="Previous month"
+          style="width:32px;height:32px;border-radius:8px;border:1px solid var(--border2);background:#fff;color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center">
+          <i class="ti ti-chevron-left" style="font-size:14px"></i>
+        </button>
+        <div style="display:flex;flex-direction:column;align-items:center;min-width:130px">
+          <span style="font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Viewing</span>
+          <span id="attMonthLabel" style="font-size:13px;font-weight:800;color:var(--text)">—</span>
+        </div>
+        <button onclick="window._attShiftMonth(1)" title="Next month"
+          style="width:32px;height:32px;border-radius:8px;border:1px solid var(--border2);background:#fff;color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center">
+          <i class="ti ti-chevron-right" style="font-size:14px"></i>
+        </button>
+        <select id="attMonth" onchange="window._rAttendance()" style="display:none"></select>
+        <button class="btn btn-indigo btn-sm" style="margin-left:auto" onclick="window._oStaff()">
+          <i class="ti ti-plus"></i> Add Staff
+        </button>
+      </div>
+      <div id="attendancePanel"></div>
+    </div>
+
     <!-- REPORTS SUB-PANEL -->
     <div id="issSubPanelReports" style="display:none;padding:0 12px 12px">
       <div style="background:#fff;border:1px solid var(--border2);border-top:3px solid #6366F1;border-radius:var(--r-lg);padding:28px 20px;text-align:center">
@@ -251,7 +278,7 @@
         </div>
         <div style="font-size:14px;font-weight:800;color:var(--text);margin-bottom:6px">Monthly Report</div>
         <div style="font-size:12px;color:var(--text2);max-width:320px;margin:0 auto 18px;line-height:1.6">
-          Generate a printable summary of payments collected and expenses for any month — ready to share with residents.
+          Generate a printable summary of payments collected and expenses for any month.
         </div>
         <button class="btn btn-indigo" onclick="window._oMonthlySummary()"><i class="ti ti-file-text"></i> Generate Monthly Report</button>
       </div>
@@ -511,6 +538,51 @@
     <div class="mactions">
       <button class="btn btn-white" onclick="window._cAF()">Cancel</button>
       <button class="btn btn-green" onclick="window._sNF()"><i class="ti ti-plus"></i> Register Flat</button>
+    </div>
+  </div>
+</div>
+
+<!-- STAFF MODAL -->
+<div class="mbg" id="staffM">
+  <div class="modal">
+    <div class="mhead">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div class="micon flat"><i class="ti ti-user-shield"></i></div>
+        <div><div class="mtitle" id="staffMTitle">Add Staff</div><div class="msub">Watchman, Security, Maid etc.</div></div>
+      </div>
+      <button class="mclose" onclick="window._cStaff()"><i class="ti ti-x"></i></button>
+    </div>
+    <input type="hidden" id="staffId"/>
+    <div class="fg2">
+      <div class="fg"><label>Name *</label><input type="text" id="staffName" placeholder="e.g. Raju Kumar"/></div>
+      <div class="fg"><label>Role *</label>
+        <select id="staffRole">
+          <option value="Watchman">🛡️ Watchman</option>
+          <option value="Security">🔒 Security</option>
+          <option value="Maid">🧹 Maid</option>
+          <option value="Gardener">🌳 Gardener</option>
+          <option value="Sweeper">🧺 Sweeper</option>
+          <option value="Other">👤 Other</option>
+        </select>
+      </div>
+    </div>
+    <div class="fg2">
+      <div class="fg"><label>Shift</label>
+        <select id="staffShift">
+          <option value="Morning">🌅 Morning</option>
+          <option value="Night">🌙 Night</option>
+          <option value="Full Day">☀️ Full Day</option>
+        </select>
+      </div>
+      <div class="fg"><label>Phone</label><input type="tel" id="staffPhone" placeholder="Optional"/></div>
+    </div>
+    <div class="fg"><label>Monthly Salary (₹)</label><input type="number" id="staffSalary" placeholder="e.g. 8000" min="0"/></div>
+    <div class="mactions">
+      <button class="btn btn-white" onclick="window._cStaff()">Cancel</button>
+      <button class="btn btn-red btn-sm" id="staffDelBtn" onclick="window._delStaff()" style="display:none"><i class="ti ti-trash"></i> Delete</button>
+      <button class="btn btn-indigo" id="staffSaveBtn" onclick="window._sStaff()">
+        <i class="ti ti-device-floppy"></i><span id="staffSaveLbl">Save Staff</span>
+      </button>
     </div>
   </div>
 </div>
