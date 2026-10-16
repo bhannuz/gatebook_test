@@ -133,9 +133,19 @@ body{font-family:var(--font);background:linear-gradient(135deg,#EEF2FF 0%,#F0F9F
 .lo-bar{width:200px;height:4px;background:var(--surface3);border-radius:99px;overflow:hidden}
 .lo-fill{height:100%;background:linear-gradient(90deg,#6366F1,#8B5CF6,#06B6D4);background-size:200%;animation:loSlide 1.6s ease-in-out infinite}
 @keyframes loSlide{0%{background-position:0%}100%{background-position:200%}}
-.role-switch{display:flex;gap:4px;padding:4px;background:var(--surface3);border:1px solid var(--border2);border-radius:var(--r-md);margin-bottom:14px}
-.rs-btn{flex:1;height:42px;border:0;border-radius:var(--r-sm);background:transparent;color:var(--text2);font-family:inherit;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:7px;cursor:pointer;transition:all .15s}
-.rs-btn.active{background:#fff;color:var(--indigo2);box-shadow:var(--shadow-sm)}
+.role-toggle{display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:20px}
+.rt-lbl{font-size:14px;font-weight:700;color:var(--text2);cursor:pointer;transition:color .2s;user-select:none}
+.rt-lbl.active{color:var(--text)}
+.rt-sw{position:relative;width:58px;height:34px;border-radius:99px;border:0;background:#C7CBE6;cursor:pointer;padding:0;transition:background .25s;flex-shrink:0}
+.rt-sw[aria-checked="true"]{background:var(--indigo2)}
+.rt-knob{position:absolute;top:2px;left:2px;width:30px;height:30px;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.3);transition:transform .25s}
+.rt-sw[aria-checked="true"] .rt-knob{transform:translateX(24px)}
+.rt-sw:focus-visible{outline:3px solid var(--indigo-glow);outline-offset:2px}
+.opt-row{display:flex;gap:10px}
+.opt-btn{flex:1;display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:12px 14px;background:#fff;border:1.5px solid var(--border2);border-radius:var(--r-md);text-decoration:none;color:var(--text);font-size:13px}
+.opt-btn i{font-size:20px;color:var(--indigo);margin-bottom:4px}
+.opt-btn span{font-size:11px;color:var(--text2);font-weight:500}
+.opt-btn:hover{border-color:var(--indigo);background:var(--indigo-bg)}
 </style>
 </head>
 <body>
@@ -159,20 +169,16 @@ body{font-family:var(--font);background:linear-gradient(135deg,#EEF2FF 0%,#F0F9F
     <div class="brand-tag">Smart Society Management</div>
   </div>
 
-  <div class="role-switch" id="roleSwitch">
-    <button type="button" class="rs-btn active" id="rsAdmin" aria-pressed="true" onclick="setRole('admin')"><i class="ti ti-shield-check"></i> Admin</button>
-    <button type="button" class="rs-btn" id="rsMember" aria-pressed="false" onclick="setRole('member')"><i class="ti ti-home"></i> Flat member</button>
-  </div>
-
-  <div class="tabs" id="tabsBar">
-    <button class="tab-btn active" id="tabLogin"  onclick="showTab('login')">Sign In</button>
-    <button class="tab-btn"        id="tabSignup" onclick="showTab('signup')">Create Account</button>
+  <div class="role-toggle" id="roleToggle">
+    <span class="rt-lbl active" id="rtAdmin" onclick="setRole('admin')">Admin</span>
+    <button type="button" class="rt-sw" id="rtSw" role="switch" aria-checked="false" aria-label="Flat member sign in" onclick="toggleRole()"><span class="rt-knob"></span></button>
+    <span class="rt-lbl" id="rtMember" onclick="setRole('member')">Flat member</span>
   </div>
 
   <!-- ── LOGIN FORM ── -->
   <div id="loginForm">
     <div class="card-title">Welcome back</div>
-    <div class="card-sub" id="loginSub">Sign in to manage your apartment.</div>
+    <div class="card-sub" id="loginSub">Sign in with your mobile number or email.</div>
 
     <div class="alert" id="loginAlert"><i class="ti ti-alert-circle"></i><span id="loginAlertMsg"></span></div>
 
@@ -193,7 +199,7 @@ body{font-family:var(--font);background:linear-gradient(135deg,#EEF2FF 0%,#F0F9F
     </div>
 
     <button class="btn-primary" id="loginBtn" onclick="doLogin()">
-      <i class="ti ti-login"></i><span id="loginBtnLbl">Sign in as Admin</span>
+      <i class="ti ti-login"></i><span id="loginBtnLbl">Sign In</span>
     </button>
 
     <div class="divider">or</div>
@@ -228,8 +234,8 @@ body{font-family:var(--font);background:linear-gradient(135deg,#EEF2FF 0%,#F0F9F
 
   <!-- ── SIGNUP FORM ── -->
   <div id="signupForm" style="display:none">
-    <div class="card-title">Create an account</div>
-    <div class="card-sub">Sign up with your mobile number or email.</div>
+    <div class="card-title">Join your apartment</div>
+    <div class="card-sub">Create your account with the code from your apartment admin.</div>
 
     <div class="alert" id="signupAlert"><i class="ti ti-alert-circle"></i><span id="signupAlertMsg"></span></div>
 
@@ -249,14 +255,15 @@ body{font-family:var(--font);background:linear-gradient(135deg,#EEF2FF 0%,#F0F9F
       </div>
     </div>
 
-    <div id="memberFields" style="display:none">
+    <div id="memberFields">
       <div class="fg"><label>Apartment code</label><input type="text" id="signupCode" placeholder="GB-XXXXXX" autocapitalize="characters"/></div>
       <div class="fg"><label>Flat number</label><input type="text" id="signupFlat" placeholder="e.g. A-203"/></div>
     </div>
 
     <button class="btn-primary" id="signupBtn" onclick="doSignup()">
-      <i class="ti ti-user-plus"></i><span id="signupBtnLbl">Create Account</span>
+      <i class="ti ti-user-plus"></i><span id="signupBtnLbl">Create account &amp; join</span>
     </button>
+    <div style="margin-top:14px;text-align:center;"><a href="#" onclick="showTab('login');return false;" style="font-size:12px;font-weight:600;color:var(--indigo);text-decoration:none;">← Back to Sign In</a></div>
   </div>
 
   <!-- ── JOIN APARTMENT (signed in, no apartment yet) ── -->
@@ -267,7 +274,7 @@ body{font-family:var(--font);background:linear-gradient(135deg,#EEF2FF 0%,#F0F9F
     <div class="fg"><label>Apartment code</label><input type="text" id="joinCode" placeholder="GB-XXXXXX" autocapitalize="characters"/></div>
     <div class="fg"><label>Flat number</label><input type="text" id="joinFlat" placeholder="e.g. A-203"/></div>
     <button class="btn-primary" id="joinBtn" onclick="doJoin()"><i class="ti ti-send"></i><span id="joinBtnLbl">Send join request</span></button>
-    <div style="margin-top:14px;text-align:center;"><a href="#" onclick="doSignOut();return false;" style="font-size:12px;font-weight:600;color:var(--indigo);text-decoration:none;">Sign out</a></div>
+    <div style="margin-top:14px;text-align:center;font-size:12px;font-weight:600;"><a href="#" onclick="sessionStorage.setItem('gb_intent','admin');window.location.href='app.html';return false;" style="color:var(--indigo);text-decoration:none;">I am the admin — set up my apartment</a><br><br><a href="#" onclick="doSignOut();return false;" style="color:var(--indigo);text-decoration:none;">Sign out</a></div>
   </div>
 
   <!-- ── WAITING FOR ADMIN APPROVAL ── -->
@@ -289,9 +296,9 @@ import {
 import { doc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/11.8.1/firebase-firestore.js';
 import { resolveRole, PLATFORM_ADMIN_EMAIL } from './js/roles.js';
 
-let SEL = sessionStorage.getItem('gb_intent') === 'member' ? 'member' : 'admin';
 let busy = false;   // true while a login/signup handler is running (blocks auto-redirect)
 
+let SEL = sessionStorage.getItem('gb_intent') === 'member' ? 'member' : 'admin';
 const $ = id => document.getElementById(id);
 const FORMS = ['loginForm','forgotForm','signupForm','joinForm','pendingForm'];
 
@@ -306,30 +313,28 @@ function setLoading(btnId, lblId, on, text) {
 function showCard() { const l = $('pageLoad'); if (l) l.style.display = 'none'; $('mainCard').style.display = ''; }
 function toEmail(raw) { return /^\d{10}$/.test(raw) ? raw + '@gatebook.app' : raw; }
 function show(id) { FORMS.forEach(f => $(f).style.display = f === id ? '' : 'none'); }
-function chrome(on) { $('roleSwitch').style.display = on ? '' : 'none'; $('tabsBar').style.display = on ? '' : 'none'; }
+function chrome(on) { $('roleToggle').style.display = on ? '' : 'none'; }
 
-/* ── Admin / Flat member switch ── */
+/* ── Admin / Flat member toggle (iPhone-style) ── */
 window.setRole = function(sel) {
   SEL = sel; sessionStorage.setItem('gb_intent', sel);
-  $('rsAdmin').classList.toggle('active', sel === 'admin');
-  $('rsMember').classList.toggle('active', sel === 'member');
-  $('rsAdmin').setAttribute('aria-pressed', sel === 'admin');
-  $('rsMember').setAttribute('aria-pressed', sel === 'member');
-  $('loginSub').textContent = sel === 'admin' ? 'Sign in to manage your apartment.' : 'Sign in to view your apartment and raise issues.';
-  $('loginBtnLbl').textContent = sel === 'admin' ? 'Sign in as Admin' : 'Sign in as Flat member';
-  $('loginAlt').innerHTML = sel === 'admin'
-    ? 'New society? <a href="register.html">Register your apartment</a>'
-    : 'New flat member? <a href="#" onclick="showTab(\'signup\');return false;">Create an account</a> and join with your apartment code.';
-  $('memberFields').style.display = sel === 'member' ? '' : 'none';
-  hideAlert('loginAlert'); hideAlert('signupAlert');
+  const m = sel === 'member';
+  $('rtSw').setAttribute('aria-checked', String(m));
+  $('rtAdmin').classList.toggle('active', !m);
+  $('rtMember').classList.toggle('active', m);
+  $('loginSub').textContent = m ? 'Sign in to view your apartment and raise issues.' : 'Sign in to manage your apartment.';
+  $('loginBtnLbl').textContent = m ? 'Sign in as Flat member' : 'Sign in as Admin';
+  $('loginAlt').innerHTML = m
+    ? 'New flat member? <a href="#" onclick="showTab(\'signup\');return false;">Create an account</a> and join with your apartment code.'
+    : 'New society? <a href="register.html">Register your apartment</a>';
+  hideAlert('loginAlert');
 };
+window.toggleRole = () => window.setRole(SEL === 'admin' ? 'member' : 'admin');
 
 window.showTab = function(tab) {
-  if (tab === 'signup' && SEL === 'admin') { window.location.href = 'register.html'; return; }
-  chrome(true);
-  show(tab === 'signup' ? 'signupForm' : tab === 'forgot' ? 'forgotForm' : 'loginForm');
-  $('tabLogin').classList.toggle('active', tab !== 'signup');
-  $('tabSignup').classList.toggle('active', tab === 'signup');
+  chrome(tab !== 'signup');
+  show(tab === 'signup' ? 'signupForm' : 'loginForm');
+  ['loginAlert','signupAlert'].forEach(hideAlert);
 };
 window.showForgot = function() { chrome(false); show('forgotForm'); };
 window.togglePw = function(id, btn) {
@@ -351,7 +356,7 @@ async function route(user, fromLogin) {
   let r;
   try { r = await resolveRole(user); } catch (e) { console.error(e); r = { role: 'new' }; }
 
-  // The switch is only a label — verify it against the real account role.
+  // The toggle is only a label — verify it against the real account role.
   if (fromLogin) {
     const wrongAsMember = SEL === 'member' && r.role === 'admin';
     const wrongAsAdmin  = SEL === 'admin'  && (r.role === 'member' || r.role === 'pending');
@@ -412,7 +417,7 @@ async function submitJoin(user, aptId, flat, name) {
 
 window.doSignup = async function() {
   hideAlert('signupAlert');
-  if (SEL === 'admin') { window.location.href = 'register.html'; return; }
+  sessionStorage.setItem('gb_intent', 'member');
   const name = $('signupName').value.trim(), raw = $('signupId').value.trim(), pw = $('signupPassword').value;
   const code = $('signupCode').value.trim(), flat = $('signupFlat').value.trim().toUpperCase();
   if (!name || !raw || !pw || !code || !flat) { showAlert('signupAlert', 'Fill in all the fields.'); return; }
