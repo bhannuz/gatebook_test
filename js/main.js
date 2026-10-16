@@ -4995,7 +4995,7 @@ function showMemberBanner() {
 }
 
 /* ── Admin: add / reset / remove flat members (mobile + 6-character code) ── */
-let MEMBERS = [], LAST_CREDS = null;
+let MEMBERS = [], _deduping = false;
 
 async function initMembershipUI() {
   const right = document.querySelector('.nav-right'); if (!right) return;
@@ -5025,7 +5025,6 @@ async function initMembershipUI() {
         <button class="btn btn-white btn-sm" type="button" onclick="document.getElementById('mmPin').value=window._randomPin()" title="New random code"><i class="ti ti-refresh"></i></button></div></div>
     </div>
     <button class="btn btn-indigo" id="mmAdd" style="width:100%;justify-content:center;margin-bottom:12px" onclick="window._memAdd()"><i class="ti ti-user-plus"></i> Add member</button>
-    <div id="memCreds"></div>
     <div id="memList"></div></div>`;
   document.body.appendChild(m);
   window._randomPin = randomPin;
@@ -5033,6 +5032,7 @@ async function initMembershipUI() {
   onSnapshot(collection(db, 'apartments', UID, 'members'), s => {
     MEMBERS = s.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => String(a.flatId).localeCompare(String(b.flatId), undefined, { numeric: true }));
     renderMembers();
+    dedupeMembers();
   }, e => console.error(e));
 }
 
@@ -5052,20 +5052,8 @@ window._memPick = () => {
   document.getElementById('mmMobile').value = String(f.phone || '').replace(/\D/g, '').slice(-10);
 };
 
-function shareMessage(c) {
-  const url = new URL('index.html', location.href).href;
-  return `Hi ${c.name}, your Gatebook login (Flat ${c.flatId}):\nMobile: ${c.mobile}\nCode: ${c.pin}\nOpen: ${url}\nSwitch to "Flat member", then sign in. You can change your code after signing in.`;
-}
-
 function renderMembers() {
-  const cr = document.getElementById('memCreds'), list = document.getElementById('memList'); if (!list) return;
-  cr.innerHTML = LAST_CREDS ? `<div style="background:var(--indigo-bg);border-radius:12px;padding:12px 14px;margin-bottom:14px">
-      <div style="font-size:12px;font-weight:700;margin-bottom:6px">Share with ${_esc(LAST_CREDS.name)} (Flat ${_esc(LAST_CREDS.flatId)})</div>
-      <div style="font-size:15px;font-weight:800;letter-spacing:.5px">Mobile ${_esc(LAST_CREDS.mobile)} · Code ${_esc(LAST_CREDS.pin)}</div>
-      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
-        <button class="btn btn-white btn-sm" onclick="window._memCopy()"><i class="ti ti-copy"></i> Copy message</button>
-        <button class="btn btn-white btn-sm" onclick="window._memWhatsApp()"><i class="ti ti-brand-whatsapp"></i> WhatsApp</button>
-      </div></div>` : '';
+  const list = document.getElementById('memList'); if (!list) return;
   const row = r => `<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--border)">
       <div style="flex:1"><div style="font-size:13px;font-weight:700">${_esc(r.name || '—')}</div>
       <div style="font-size:11px;color:var(--text2)">Flat ${_esc(r.flatId)} · ${_esc(r.phone || '')}</div></div>
@@ -5073,6 +5061,27 @@ function renderMembers() {
       <button class="btn btn-white btn-sm" onclick="window._memRemove('${_esc(r.id)}')">Remove</button></div>`;
   list.innerHTML = `<div style="font-size:12px;font-weight:700;margin:6px 0 4px">Members (${MEMBERS.length})</div>` +
     (MEMBERS.length ? MEMBERS.map(row).join('') : '<div style="font-size:12px;color:var(--text2);padding:8px 0">No members yet.</div>');
+}
+
+// One mobile number = one member. If duplicates exist (e.g. from retries), keep the one that
+// the login lookup points to (otherwise the newest) and delete the rest.
+async function dedupeMembers() {
+  if (_deduping) return;
+  const groups = {};
+  MEMBERS.forEach(m => { if (m.phone) (groups[m.phone] = groups[m.phone] || []).push(m); });
+  const dups = Object.entries(groups).filter(([, g]) => g.length > 1);
+  if (!dups.length) return;
+  _deduping = true;
+  try {
+    for (const [phone, g] of dups) {
+      let liveEmail = null;
+      try { liveEmail = (await getDoc(doc(db, 'phoneLogins', phone))).data()?.email || null; } catch (e) {}
+      const keep = g.find(x => x.email === liveEmail) ||
+        [...g].sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')))[0];
+      for (const x of g) if (x.id !== keep.id) await deleteDoc(doc(db, 'apartments', UID, 'members', x.id));
+    }
+  } catch (e) { console.error('dedupe', e); }
+  finally { _deduping = false; }
 }
 
 // Creates the member's sign-in WITHOUT signing the admin out (uses a temporary second Firebase app).
@@ -5107,6 +5116,7 @@ window._memAdd = async () => {
   if (!name) { toast('Enter the resident name.', 'error'); return; }
   if (!isValidMobile(mobile)) { toast('Enter a 10-digit mobile number.', 'error'); return; }
   if (!isValidPin(pin)) { toast('The code must be 6 letters or digits.', 'error'); return; }
+  if (MEMBERS.some(m => m.phone === mobile)) { toast('This mobile number is already added. Use "Reset code" to change its code.', 'error'); return; }
   const btn = document.getElementById('mmAdd'); btn.disabled = true;
   let step = 'check the mobile number';
   try {
@@ -5117,9 +5127,8 @@ window._memAdd = async () => {
     await setDoc(doc(db, 'apartments', UID, 'members', uid), { flatId, name, phone: mobile, email, createdAt: new Date().toISOString() });
     step = 'save the mobile lookup';
     await setDoc(doc(db, 'phoneLogins', mobile), { email, aptId: UID });
-    LAST_CREDS = { flatId, name, mobile, pin };
     document.getElementById('mmPin').value = randomPin(); window._memPick();
-    renderMembers(); toast(`${name} added ✓`);
+    toast(`${name} added ✓`);
   } catch (e) { console.error('Add member failed at:', step, e); toast(memberErr(e, step), 'error'); }
   finally { btn.disabled = false; }
 };
@@ -5134,11 +5143,11 @@ window._memReset = async oldUid => {
     const { uid, email } = await provisionMember(m.flatId, m.name, m.phone, pin);
     step = 'save the member';
     await setDoc(doc(db, 'apartments', UID, 'members', uid), { flatId: m.flatId, name: m.name, phone: m.phone, email, createdAt: new Date().toISOString() });
-    await deleteDoc(doc(db, 'apartments', UID, 'members', oldUid));
+    step = 'remove the old record';
+    for (const x of MEMBERS.filter(x => x.phone === m.phone && x.id !== uid)) await deleteDoc(doc(db, 'apartments', UID, 'members', x.id));
     step = 'save the mobile lookup';
     await setDoc(doc(db, 'phoneLogins', m.phone), { email, aptId: UID });
-    LAST_CREDS = { flatId: m.flatId, name: m.name, mobile: m.phone, pin };
-    renderMembers(); toast('Code reset ✓');
+    toast(`Code reset for ${m.name} ✓`);
   } catch (e) { console.error('Reset code failed at:', step, e); toast(memberErr(e, step), 'error'); }
 };
 
@@ -5151,9 +5160,6 @@ window._memRemove = async uid => {
     toast('Member removed');
   } catch (e) { console.error(e); toast('Remove failed.', 'error'); }
 };
-window._memCopy = () => LAST_CREDS && navigator.clipboard?.writeText(shareMessage(LAST_CREDS)).then(() => toast('Message copied ✓'));
-window._memWhatsApp = () => LAST_CREDS && window.open(`https://wa.me/91${LAST_CREDS.mobile}?text=${encodeURIComponent(shareMessage(LAST_CREDS))}`, '_blank');
-
 /* ── Flat member: change own code ── */
 function initChangeCode() {
   const right = document.querySelector('.nav-right'); if (!right) return;
