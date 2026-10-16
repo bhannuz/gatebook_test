@@ -5089,6 +5089,15 @@ async function provisionMember(flatId, name, mobile, pin) {
   } finally { await deleteApp(secApp).catch(() => {}); }
 }
 
+function memberErr(e, step) {
+  const c = e.code || '';
+  if (c.includes('permission-denied')) return `Permission denied (${step}). Publish the latest firestore.rules in Firebase.`;
+  if (c === 'auth/email-already-in-use') return 'This mobile number already has a login. Use "Reset code" on the member.';
+  if (c === 'auth/operation-not-allowed') return 'Email/Password sign-in is not enabled in Firebase.';
+  if (c === 'auth/network-request-failed') return 'Network error. Check your internet and try again.';
+  return `Could not ${step}: ${c || e.message}`;
+}
+
 window._memAdd = async () => {
   const flatId = document.getElementById('mmFlat').value;
   const name = document.getElementById('mmName').value.trim();
@@ -5099,15 +5108,19 @@ window._memAdd = async () => {
   if (!isValidMobile(mobile)) { toast('Enter a 10-digit mobile number.', 'error'); return; }
   if (!isValidPin(pin)) { toast('The code must be 6 letters or digits.', 'error'); return; }
   const btn = document.getElementById('mmAdd'); btn.disabled = true;
+  let step = 'check the mobile number';
   try {
     if ((await getDoc(doc(db, 'phoneLogins', mobile))).exists()) { toast('This mobile number is already registered.', 'error'); return; }
+    step = 'create the sign-in';
     const { uid, email } = await provisionMember(flatId, name, mobile, pin);
+    step = 'save the member';
     await setDoc(doc(db, 'apartments', UID, 'members', uid), { flatId, name, phone: mobile, email, createdAt: new Date().toISOString() });
+    step = 'save the mobile lookup';
     await setDoc(doc(db, 'phoneLogins', mobile), { email, aptId: UID });
     LAST_CREDS = { flatId, name, mobile, pin };
     document.getElementById('mmPin').value = randomPin(); window._memPick();
     renderMembers(); toast(`${name} added ✓`);
-  } catch (e) { console.error(e); toast('Could not add member. Try again.', 'error'); }
+  } catch (e) { console.error('Add member failed at:', step, e); toast(memberErr(e, step), 'error'); }
   finally { btn.disabled = false; }
 };
 
@@ -5116,14 +5129,17 @@ window._memReset = async oldUid => {
   const pin = normalizePin(prompt(`New 6-character code for ${m.name}:`, randomPin()) || '');
   if (!pin) return;
   if (!isValidPin(pin)) { toast('The code must be 6 letters or digits.', 'error'); return; }
+  let step = 'create the sign-in';
   try {
     const { uid, email } = await provisionMember(m.flatId, m.name, m.phone, pin);
+    step = 'save the member';
     await setDoc(doc(db, 'apartments', UID, 'members', uid), { flatId: m.flatId, name: m.name, phone: m.phone, email, createdAt: new Date().toISOString() });
     await deleteDoc(doc(db, 'apartments', UID, 'members', oldUid));
+    step = 'save the mobile lookup';
     await setDoc(doc(db, 'phoneLogins', m.phone), { email, aptId: UID });
     LAST_CREDS = { flatId: m.flatId, name: m.name, mobile: m.phone, pin };
     renderMembers(); toast('Code reset ✓');
-  } catch (e) { console.error(e); toast('Could not reset the code.', 'error'); }
+  } catch (e) { console.error('Reset code failed at:', step, e); toast(memberErr(e, step), 'error'); }
 };
 
 window._memRemove = async uid => {
