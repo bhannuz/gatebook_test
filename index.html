@@ -133,6 +133,9 @@ body{font-family:var(--font);background:linear-gradient(135deg,#EEF2FF 0%,#F0F9F
 .lo-bar{width:200px;height:4px;background:var(--surface3);border-radius:99px;overflow:hidden}
 .lo-fill{height:100%;background:linear-gradient(90deg,#6366F1,#8B5CF6,#06B6D4);background-size:200%;animation:loSlide 1.6s ease-in-out infinite}
 @keyframes loSlide{0%{background-position:0%}100%{background-position:200%}}
+.role-switch{display:flex;gap:4px;padding:4px;background:var(--surface3);border:1px solid var(--border2);border-radius:var(--r-md);margin-bottom:14px}
+.rs-btn{flex:1;height:42px;border:0;border-radius:var(--r-sm);background:transparent;color:var(--text2);font-family:inherit;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:7px;cursor:pointer;transition:all .15s}
+.rs-btn.active{background:#fff;color:var(--indigo2);box-shadow:var(--shadow-sm)}
 </style>
 </head>
 <body>
@@ -156,7 +159,12 @@ body{font-family:var(--font);background:linear-gradient(135deg,#EEF2FF 0%,#F0F9F
     <div class="brand-tag">Smart Society Management</div>
   </div>
 
-  <div class="tabs">
+  <div class="role-switch" id="roleSwitch">
+    <button type="button" class="rs-btn active" id="rsAdmin" aria-pressed="true" onclick="setRole('admin')"><i class="ti ti-shield-check"></i> Admin</button>
+    <button type="button" class="rs-btn" id="rsMember" aria-pressed="false" onclick="setRole('member')"><i class="ti ti-home"></i> Flat member</button>
+  </div>
+
+  <div class="tabs" id="tabsBar">
     <button class="tab-btn active" id="tabLogin"  onclick="showTab('login')">Sign In</button>
     <button class="tab-btn"        id="tabSignup" onclick="showTab('signup')">Create Account</button>
   </div>
@@ -164,7 +172,7 @@ body{font-family:var(--font);background:linear-gradient(135deg,#EEF2FF 0%,#F0F9F
   <!-- ── LOGIN FORM ── -->
   <div id="loginForm">
     <div class="card-title">Welcome back</div>
-    <div class="card-sub">Sign in with your mobile number or email.</div>
+    <div class="card-sub" id="loginSub">Sign in to manage your apartment.</div>
 
     <div class="alert" id="loginAlert"><i class="ti ti-alert-circle"></i><span id="loginAlertMsg"></span></div>
 
@@ -185,11 +193,11 @@ body{font-family:var(--font);background:linear-gradient(135deg,#EEF2FF 0%,#F0F9F
     </div>
 
     <button class="btn-primary" id="loginBtn" onclick="doLogin()">
-      <i class="ti ti-login"></i><span id="loginBtnLbl">Sign In</span>
+      <i class="ti ti-login"></i><span id="loginBtnLbl">Sign in as Admin</span>
     </button>
 
     <div class="divider">or</div>
-    <div class="register-link">
+    <div class="register-link" id="loginAlt">
       New society? <a href="register.html">Register your apartment</a>
     </div>
   </div>
@@ -197,13 +205,13 @@ body{font-family:var(--font);background:linear-gradient(135deg,#EEF2FF 0%,#F0F9F
   <!-- ── FORGOT PASSWORD ── -->
   <div id="forgotForm" style="display:none">
     <div class="card-title">Reset Password</div>
-    <div class="card-sub">Enter your mobile number or email to receive a reset link.</div>
+    <div class="card-sub">Enter your registered email address to receive a password reset link.</div>
 
     <div class="alert" id="forgotAlert"><i class="ti ti-alert-circle"></i><span id="forgotAlertMsg"></span></div>
 
     <div class="fg">
-      <label>Mobile number or Email</label>
-      <input type="text" id="forgotId" placeholder="9876543210 or you@example.com"/>
+      <label>Email Address</label>
+      <input type="email" id="forgotId" placeholder="you@example.com" autocomplete="email"/>
     </div>
 
     <button class="btn-primary" id="forgotBtn" onclick="doForgot()">
@@ -241,173 +249,230 @@ body{font-family:var(--font);background:linear-gradient(135deg,#EEF2FF 0%,#F0F9F
       </div>
     </div>
 
+    <div id="memberFields" style="display:none">
+      <div class="fg"><label>Apartment code</label><input type="text" id="signupCode" placeholder="GB-XXXXXX" autocapitalize="characters"/></div>
+      <div class="fg"><label>Flat number</label><input type="text" id="signupFlat" placeholder="e.g. A-203"/></div>
+    </div>
+
     <button class="btn-primary" id="signupBtn" onclick="doSignup()">
       <i class="ti ti-user-plus"></i><span id="signupBtnLbl">Create Account</span>
     </button>
   </div>
+
+  <!-- ── JOIN APARTMENT (signed in, no apartment yet) ── -->
+  <div id="joinForm" style="display:none">
+    <div class="card-title">Join your apartment</div>
+    <div class="card-sub">Enter the apartment code from your admin and your flat number.</div>
+    <div class="alert" id="joinAlert"><i class="ti ti-alert-circle"></i><span id="joinAlertMsg"></span></div>
+    <div class="fg"><label>Apartment code</label><input type="text" id="joinCode" placeholder="GB-XXXXXX" autocapitalize="characters"/></div>
+    <div class="fg"><label>Flat number</label><input type="text" id="joinFlat" placeholder="e.g. A-203"/></div>
+    <button class="btn-primary" id="joinBtn" onclick="doJoin()"><i class="ti ti-send"></i><span id="joinBtnLbl">Send join request</span></button>
+    <div style="margin-top:14px;text-align:center;"><a href="#" onclick="doSignOut();return false;" style="font-size:12px;font-weight:600;color:var(--indigo);text-decoration:none;">Sign out</a></div>
+  </div>
+
+  <!-- ── WAITING FOR ADMIN APPROVAL ── -->
+  <div id="pendingForm" style="display:none">
+    <div class="card-title">Waiting for approval</div>
+    <div class="card-sub">Your request was sent. Your apartment admin needs to approve it before you can open the dashboard.</div>
+    <div class="alert" id="pendingAlert"><i class="ti ti-info-circle"></i><span id="pendingAlertMsg"></span></div>
+    <button class="btn-primary" onclick="doCheckStatus()"><i class="ti ti-refresh"></i><span>Check status</span></button>
+    <div style="margin-top:14px;text-align:center;"><a href="#" onclick="doSignOut();return false;" style="font-size:12px;font-weight:600;color:var(--indigo);text-decoration:none;">Sign out</a></div>
+  </div>
 </div>
 
 <script type="module">
-import { auth } from './js/firebase.js';
+import { auth, db } from './js/firebase.js';
 import {
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  onAuthStateChanged,
-  updateProfile,
-  sendPasswordResetEmail,
+  signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged,
+  updateProfile, sendPasswordResetEmail, signOut,
 } from 'https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js';
+import { doc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/11.8.1/firebase-firestore.js';
+import { resolveRole, PLATFORM_ADMIN_EMAIL } from './js/roles.js';
 
-/* ── Admin email — change this to your admin email ── */
-const ADMIN_EMAIL = 'admin@gatebook.app';
+let SEL = sessionStorage.getItem('gb_intent') === 'member' ? 'member' : 'admin';
+let busy = false;   // true while a login/signup handler is running (blocks auto-redirect)
 
-/* ── Mobile → email helper (resolves mobile or plain email) ── */
-function resolveEmail(input) {
-  const v = (input || '').trim();
-  // If it looks like a 10-digit number, convert to gatebook email
-  if (/^\d{10}$/.test(v)) return v + '@gatebook.app';
-  return v; // already an email
+const $ = id => document.getElementById(id);
+const FORMS = ['loginForm','forgotForm','signupForm','joinForm','pendingForm'];
+
+function showAlert(id, msg, type='error') {
+  const el = $(id); $(id+'Msg').textContent = msg;
+  el.className = 'alert show ' + type;
 }
-function validateInput(v) {
-  if (!v) return 'Please enter your mobile number or email.';
-  if (/^\d+$/.test(v) && v.length !== 10) return 'Mobile number must be exactly 10 digits.';
-  if (!v.includes('@') && !/^\d{10}$/.test(v)) return 'Enter a valid mobile number or email address.';
-  return null;
+function hideAlert(id) { $(id).className = 'alert'; }
+function setLoading(btnId, lblId, on, text) {
+  $(btnId).disabled = on; $(lblId).textContent = text;
+}
+function showCard() { const l = $('pageLoad'); if (l) l.style.display = 'none'; $('mainCard').style.display = ''; }
+function toEmail(raw) { return /^\d{10}$/.test(raw) ? raw + '@gatebook.app' : raw; }
+function show(id) { FORMS.forEach(f => $(f).style.display = f === id ? '' : 'none'); }
+function chrome(on) { $('roleSwitch').style.display = on ? '' : 'none'; $('tabsBar').style.display = on ? '' : 'none'; }
+
+/* ── Admin / Flat member switch ── */
+window.setRole = function(sel) {
+  SEL = sel; sessionStorage.setItem('gb_intent', sel);
+  $('rsAdmin').classList.toggle('active', sel === 'admin');
+  $('rsMember').classList.toggle('active', sel === 'member');
+  $('rsAdmin').setAttribute('aria-pressed', sel === 'admin');
+  $('rsMember').setAttribute('aria-pressed', sel === 'member');
+  $('loginSub').textContent = sel === 'admin' ? 'Sign in to manage your apartment.' : 'Sign in to view your apartment and raise issues.';
+  $('loginBtnLbl').textContent = sel === 'admin' ? 'Sign in as Admin' : 'Sign in as Flat member';
+  $('loginAlt').innerHTML = sel === 'admin'
+    ? 'New society? <a href="register.html">Register your apartment</a>'
+    : 'New flat member? <a href="#" onclick="showTab(\'signup\');return false;">Create an account</a> and join with your apartment code.';
+  $('memberFields').style.display = sel === 'member' ? '' : 'none';
+  hideAlert('loginAlert'); hideAlert('signupAlert');
+};
+
+window.showTab = function(tab) {
+  if (tab === 'signup' && SEL === 'admin') { window.location.href = 'register.html'; return; }
+  chrome(true);
+  show(tab === 'signup' ? 'signupForm' : tab === 'forgot' ? 'forgotForm' : 'loginForm');
+  $('tabLogin').classList.toggle('active', tab !== 'signup');
+  $('tabSignup').classList.toggle('active', tab === 'signup');
+};
+window.showForgot = function() { chrome(false); show('forgotForm'); };
+window.togglePw = function(id, btn) {
+  const inp = $(id), showIt = inp.type === 'password';
+  inp.type = showIt ? 'text' : 'password';
+  btn.querySelector('i').className = showIt ? 'ti ti-eye-off' : 'ti ti-eye';
+};
+
+/* ── Routing after we know who the user is ── */
+function showPanel(name, r) {
+  chrome(false); showCard();
+  show(name === 'pending' ? 'pendingForm' : 'joinForm');
+  if (name === 'join' && r && r.rejected)
+    showAlert('joinAlert', 'Your earlier request was declined or your access was removed. Check the code and flat number and send a new request.');
 }
 
-/* ── Auth guard: redirect logged-in users straight to app ── */
-onAuthStateChanged(auth, user => {
-  document.getElementById('pageLoad').style.display = 'none';
-  if (user) {
-    if (user.email === ADMIN_EMAIL) {
-      window.location.replace('admin.html');
-    } else {
-      window.location.replace('app.html');
+async function route(user, fromLogin) {
+  if (user.email === PLATFORM_ADMIN_EMAIL) { window.location.replace('admin.html'); return; }
+  let r;
+  try { r = await resolveRole(user); } catch (e) { console.error(e); r = { role: 'new' }; }
+
+  // The switch is only a label — verify it against the real account role.
+  if (fromLogin) {
+    const wrongAsMember = SEL === 'member' && r.role === 'admin';
+    const wrongAsAdmin  = SEL === 'admin'  && (r.role === 'member' || r.role === 'pending');
+    if (wrongAsMember || wrongAsAdmin) {
+      await signOut(auth); showCard(); showTab('login');
+      showAlert('loginAlert', wrongAsMember
+        ? 'This is an admin account. Switch to “Admin” to sign in.'
+        : 'This is a flat member account. Switch to “Flat member” to sign in.');
+      return;
     }
-  } else {
-    document.getElementById('mainCard').style.display = '';
   }
+  if (r.role === 'admin' || r.role === 'member') { window.location.replace('app.html'); return; }
+  if (r.role === 'pending') { showPanel('pending', r); return; }
+  // signed in, but no apartment and no request yet
+  if (SEL === 'admin') { window.location.replace('app.html'); return; }   // in-app setup wizard
+  showPanel('join', r);
+}
+
+onAuthStateChanged(auth, user => {
+  if (busy) return;
+  if (user) route(user, false);
+  else { showCard(); window.setRole(SEL); }
 });
 
-/* ── Tab switch ── */
-window.showTab = function(tab) {
-  const isLogin  = tab === 'login';
-  const isSignup = tab === 'signup';
-  document.getElementById('loginForm').style.display  = isLogin  ? '' : 'none';
-  document.getElementById('signupForm').style.display = isSignup ? '' : 'none';
-  document.getElementById('forgotForm').style.display = 'none';
-  document.getElementById('tabLogin').classList.toggle('active', isLogin);
-  document.getElementById('tabSignup').classList.toggle('active', isSignup);
-  clearAlerts();
-};
-
-/* ── Show forgot form ── */
-window.showForgot = function() {
-  document.getElementById('loginForm').style.display  = 'none';
-  document.getElementById('signupForm').style.display = 'none';
-  document.getElementById('forgotForm').style.display = '';
-  document.getElementById('tabLogin').classList.remove('active');
-  document.getElementById('tabSignup').classList.remove('active');
-  clearAlerts();
-};
-
-/* ── Password visibility toggle ── */
-window.togglePw = function(inputId, btn) {
-  const inp = document.getElementById(inputId);
-  const show = inp.type === 'password';
-  inp.type = show ? 'text' : 'password';
-  btn.querySelector('i').className = show ? 'ti ti-eye-off' : 'ti ti-eye';
-};
-
-/* ── Helpers ── */
-function showAlert(id, msg, type = 'error') {
-  const el = document.getElementById(id);
-  document.getElementById(id + 'Msg').textContent = msg;
-  el.className = `alert ${type} show`;
-}
-function clearAlerts() {
-  ['loginAlert','signupAlert','forgotAlert'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.classList.remove('show');
-  });
-}
-function setLoading(btnId, lblId, loading, defaultLbl) {
-  document.getElementById(btnId).disabled = loading;
-  document.getElementById(lblId).textContent = loading ? 'Please wait…' : defaultLbl;
-}
-
-/* ── Login ── */
+/* ── Sign in ── */
 window.doLogin = async function() {
-  const raw = document.getElementById('loginId').value.trim();
-  const err = validateInput(raw);
-  if (err) { showAlert('loginAlert', err); return; }
-  const password = document.getElementById('loginPassword').value;
-  if (!password) { showAlert('loginAlert','Please enter your password.'); return; }
-  setLoading('loginBtn','loginBtnLbl', true, 'Sign In');
+  hideAlert('loginAlert');
+  const raw = $('loginId').value.trim(), pw = $('loginPassword').value;
+  if (!raw || !pw) { showAlert('loginAlert', 'Enter your mobile/email and password.'); return; }
+  const lbl = $('loginBtnLbl').textContent;
+  busy = true; setLoading('loginBtn', 'loginBtnLbl', true, 'Signing in…');
   try {
-    await signInWithEmailAndPassword(auth, resolveEmail(raw), password);
-  } catch (e) {
-    const msgs = {
-      'auth/user-not-found':    'No account found. Please check your mobile number or email.',
-      'auth/wrong-password':    'Incorrect password. Please try again.',
-      'auth/invalid-credential':'Incorrect credentials. Please try again.',
-      'auth/too-many-requests': 'Too many attempts. Please try again later.',
+    const cred = await signInWithEmailAndPassword(auth, toEmail(raw), pw);
+    await route(cred.user, true);
+  } catch (err) {
+    const m = {
+      'auth/invalid-credential': 'Wrong mobile/email or password.',
+      'auth/user-not-found': 'No account found. Create one first.',
+      'auth/wrong-password': 'Wrong password.',
+      'auth/too-many-requests': 'Too many attempts. Try again later.',
+      'auth/invalid-email': 'Enter a valid mobile number or email.',
     };
-    showAlert('loginAlert', msgs[e.code] || 'Sign in failed. Please try again.');
-  } finally {
-    setLoading('loginBtn','loginBtnLbl', false, 'Sign In');
-  }
+    showAlert('loginAlert', m[err.code] || 'Sign in failed. Try again.');
+  } finally { busy = false; setLoading('loginBtn', 'loginBtnLbl', false, lbl); }
 };
 
-/* ── Forgot Password ── */
-window.doForgot = async function() {
-  const raw = document.getElementById('forgotId').value.trim();
-  const err = validateInput(raw);
-  if (err) { showAlert('forgotAlert', err); return; }
-  setLoading('forgotBtn','forgotBtnLbl', true, 'Send Reset Link');
-  try {
-    await sendPasswordResetEmail(auth, resolveEmail(raw));
-    showAlert('forgotAlert', 'Reset link sent! Check your email inbox.', 'success');
-  } catch (e) {
-    const msgs = {
-      'auth/user-not-found':    'No account found. Please check your mobile number or email.',
-      'auth/too-many-requests': 'Too many attempts. Please try again later.',
-    };
-    showAlert('forgotAlert', msgs[e.code] || 'Could not send reset link. Please try again.');
-  } finally {
-    setLoading('forgotBtn','forgotBtnLbl', false, 'Send Reset Link');
-  }
-};
+/* ── Flat member: look up code + send join request ── */
+async function lookupCode(code) {
+  const s = await getDoc(doc(db, 'joinCodes', code.trim().toUpperCase()));
+  return s.exists() ? s.data().aptId : null;
+}
+async function submitJoin(user, aptId, flat, name) {
+  const phone = (user.email || '').endsWith('@gatebook.app') ? user.email.split('@')[0] : '';
+  await setDoc(doc(db, 'users', user.uid), { aptId, flatId: flat, name, role: 'member' });
+  await setDoc(doc(db, 'apartments', aptId, 'joinRequests', user.uid),
+    { name, flatId: flat, phone, status: 'pending', createdAt: new Date().toISOString() });
+}
 
-/* ── Signup ── */
 window.doSignup = async function() {
-  const name     = document.getElementById('signupName').value.trim();
-  const raw      = document.getElementById('signupId').value.trim();
-  const password = document.getElementById('signupPassword').value;
-  if (!name) { showAlert('signupAlert','Please enter your full name.'); return; }
-  const err = validateInput(raw);
-  if (err) { showAlert('signupAlert', err); return; }
-  if (password.length < 6) { showAlert('signupAlert','Password must be at least 6 characters.'); return; }
-  setLoading('signupBtn','signupBtnLbl', true, 'Create Account');
+  hideAlert('signupAlert');
+  if (SEL === 'admin') { window.location.href = 'register.html'; return; }
+  const name = $('signupName').value.trim(), raw = $('signupId').value.trim(), pw = $('signupPassword').value;
+  const code = $('signupCode').value.trim(), flat = $('signupFlat').value.trim().toUpperCase();
+  if (!name || !raw || !pw || !code || !flat) { showAlert('signupAlert', 'Fill in all the fields.'); return; }
+  if (pw.length < 6) { showAlert('signupAlert', 'Password must be at least 6 characters.'); return; }
+  busy = true; setLoading('signupBtn', 'signupBtnLbl', true, 'Creating account…');
   try {
-    const cred = await createUserWithEmailAndPassword(auth, resolveEmail(raw), password);
+    const aptId = await lookupCode(code);
+    if (!aptId) { showAlert('signupAlert', 'Invalid apartment code. Ask your admin for the right one.'); return; }
+    const cred = await createUserWithEmailAndPassword(auth, toEmail(raw), pw);
     await updateProfile(cred.user, { displayName: name });
-  } catch (e) {
-    const msgs = {
-      'auth/email-already-in-use':'An account with this mobile number or email already exists.',
-      'auth/weak-password':       'Password is too weak. Use at least 6 characters.',
-    };
-    showAlert('signupAlert', msgs[e.code] || 'Sign up failed. Please try again.');
-  } finally {
-    setLoading('signupBtn','signupBtnLbl', false, 'Create Account');
-  }
+    await submitJoin(cred.user, aptId, flat, name);
+    showPanel('pending');
+  } catch (err) {
+    const m = { 'auth/email-already-in-use': 'An account with this mobile/email already exists. Sign in instead.',
+                'auth/weak-password': 'Password is too weak.', 'auth/invalid-email': 'Enter a valid mobile number or email.' };
+    showAlert('signupAlert', m[err.code] || 'Could not create account. Try again.');
+  } finally { busy = false; setLoading('signupBtn', 'signupBtnLbl', false, 'Create Account'); }
 };
 
-/* ── Enter key submit ── */
+// Already signed in (no apartment yet) → just send the join request
+window.doJoin = async function() {
+  hideAlert('joinAlert');
+  const code = $('joinCode').value.trim(), flat = $('joinFlat').value.trim().toUpperCase();
+  if (!code || !flat) { showAlert('joinAlert', 'Enter the apartment code and your flat number.'); return; }
+  busy = true; setLoading('joinBtn', 'joinBtnLbl', true, 'Sending…');
+  try {
+    const aptId = await lookupCode(code);
+    if (!aptId) { showAlert('joinAlert', 'Invalid apartment code.'); return; }
+    const u = auth.currentUser;
+    await submitJoin(u, aptId, flat, u.displayName || '');
+    showPanel('pending');
+  } catch (e) { console.error(e); showAlert('joinAlert', 'Could not send request. Try again.'); }
+  finally { busy = false; setLoading('joinBtn', 'joinBtnLbl', false, 'Send join request'); }
+};
+
+window.doCheckStatus = async function() {
+  hideAlert('pendingAlert');
+  const r = await resolveRole(auth.currentUser);
+  if (r.role === 'member') window.location.replace('app.html');
+  else if (r.role === 'pending') showAlert('pendingAlert', 'Still waiting for your admin to approve.', 'success');
+  else { showPanel('join', r); }
+};
+window.doSignOut = async function() { await signOut(auth); window.location.reload(); };
+
+/* ── Forgot password ── */
+window.doForgot = async function() {
+  hideAlert('forgotAlert');
+  const email = $('forgotId').value.trim();
+  if (!email) { showAlert('forgotAlert', 'Enter your email address.'); return; }
+  setLoading('forgotBtn', 'forgotBtnLbl', true, 'Sending…');
+  try { await sendPasswordResetEmail(auth, email); showAlert('forgotAlert', 'Reset link sent. Check your inbox.', 'success'); }
+  catch (e) { showAlert('forgotAlert', 'Could not send reset link. Check the email address.'); }
+  finally { setLoading('forgotBtn', 'forgotBtnLbl', false, 'Send Reset Link'); }
+};
+
 document.addEventListener('keydown', e => {
   if (e.key !== 'Enter') return;
-  if (document.getElementById('loginForm').style.display  !== 'none') window.doLogin();
-  else if (document.getElementById('signupForm').style.display !== 'none') window.doSignup();
-  else if (document.getElementById('forgotForm').style.display !== 'none') window.doForgot();
+  if ($('loginForm').style.display !== 'none') window.doLogin();
+  else if ($('signupForm').style.display !== 'none') window.doSignup();
+  else if ($('joinForm').style.display !== 'none') window.doJoin();
 });
 </script>
 </body>
