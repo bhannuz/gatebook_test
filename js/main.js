@@ -1,10 +1,14 @@
-import { auth, db } from './firebase.js';
-import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js';
+import { app, auth, db } from './firebase.js';
+import { initializeApp, deleteApp } from 'https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js';
+import {
+  onAuthStateChanged, signOut, getAuth, createUserWithEmailAndPassword, updateProfile,
+  updatePassword, reauthenticateWithCredential, EmailAuthProvider,
+} from 'https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js';
 import {
   collection, doc, getDocs, getDoc, addDoc as _addDoc, setDoc as _setDoc, updateDoc as _updateDoc, deleteDoc as _deleteDoc,
-  onSnapshot, query, where, orderBy, serverTimestamp,
+  onSnapshot, query, where, orderBy, serverTimestamp, getFirestore,
 } from 'https://www.gstatic.com/firebasejs/11.8.1/firebase-firestore.js';
-import { resolveRole, createJoinCode } from './roles.js';
+import { resolveRole, pinToPassword, randomPin, isValidPin, isValidMobile } from './roles.js';
 /* payments, issues, members inlined below — see functions below */
 
 /* ════════════════════════════════
@@ -12,7 +16,7 @@ import { resolveRole, createJoinCode } from './roles.js';
 ════════════════════════════════ */
 let UID = null;          // apartment id (the admin's uid) — for members it is NOT their own uid
 let ROLE = 'admin';      // 'admin' | 'member'
-let MY_FLAT = null, MY_NAME = '';
+let MY_FLAT = null, MY_NAME = '', MY_PHONE = '';
 const isAdmin  = () => ROLE === 'admin';
 const isMember = () => ROLE === 'member';
 let _booted = false; // prevent duplicate boot on auth token refresh
@@ -48,8 +52,9 @@ onAuthStateChanged(auth, async user => {
 
   let r;
   try { r = await resolveRole(user); } catch (e) { console.error(e); r = { role: 'new' }; }
-  // Waiting for approval / declined / member who still has to join → back to the login page
-  if (r.role === 'pending' || (r.role === 'new' && (r.rejected || sessionStorage.getItem('gb_intent') === 'member'))) {
+  // A flat member who was removed (or never added) goes back to the login page
+  if (r.role === 'new' && sessionStorage.getItem('gb_intent') === 'member') {
+    await signOut(auth);
     window.location.replace('index.html');
     return;
   }
@@ -57,6 +62,7 @@ onAuthStateChanged(auth, async user => {
   UID     = r.aptId || user.uid;
   MY_FLAT = r.flatId || null;
   MY_NAME = r.name || user.displayName || '';
+  MY_PHONE = r.phone || '';
   applyRoleUI();
   boot();
 });
@@ -3335,7 +3341,7 @@ async function boot(){
       listenVehicles();
       listenSocExp();
       listenContacts();
-      if (isAdmin()) initMembershipUI(); else showMemberBanner();
+      if (isAdmin()) initMembershipUI(); else { showMemberBanner(); initChangeCode(); }
       // Reveal the app UI — this was previously only done in the wizard branch,
       // causing a permanently blank page on refresh for already-configured societies.
       document.getElementById('lo').style.display = 'none';
@@ -4988,15 +4994,15 @@ function showMemberBanner() {
      </div>`);
 }
 
-/* ── Admin: invite code + approve / remove flat members ── */
-let JOIN_CODE = '', JOIN_REQS = [], MEMBERS = [];
+/* ── Admin: add / reset / remove flat members (mobile + 4-digit code) ── */
+let MEMBERS = [], LAST_CREDS = null;
 
 async function initMembershipUI() {
   const right = document.querySelector('.nav-right'); if (!right) return;
   const btn = document.createElement('button');
   btn.className = 'btn btn-white btn-sm'; btn.id = 'memBtn';
-  btn.innerHTML = '<i class="ti ti-users-group"></i> Members <span id="memBadge" style="display:none;background:#EF4444;color:#fff;border-radius:99px;font-size:10px;padding:1px 6px;margin-left:4px"></span>';
-  btn.onclick = () => document.getElementById('memM').classList.add('open');
+  btn.innerHTML = '<i class="ti ti-users-group"></i> Flat members';
+  btn.onclick = () => { fillMemberForm(); document.getElementById('memM').classList.add('open'); };
   right.insertBefore(btn, right.firstChild);
 
   const m = document.createElement('div'); m.className = 'mbg'; m.id = 'memM';
@@ -5004,79 +5010,167 @@ async function initMembershipUI() {
     <div class="mhead">
       <div style="display:flex;align-items:center;gap:12px">
         <div class="micon detail"><i class="ti ti-users-group"></i></div>
-        <div><div class="mtitle">Flat members</div><div class="msub">Approve residents and share your apartment code</div></div>
+        <div><div class="mtitle">Flat members</div><div class="msub">Add a resident, then share their mobile number and code</div></div>
       </div>
       <button class="mclose" onclick="document.getElementById('memM').classList.remove('open')"><i class="ti ti-x"></i></button>
     </div>
-    <div id="memBody"></div></div>`;
+    <div class="fg2">
+      <div class="fg"><label>Flat</label><select id="mmFlat"></select></div>
+      <div class="fg"><label>Name</label><input type="text" id="mmName" placeholder="Resident name"/></div>
+    </div>
+    <div class="fg2">
+      <div class="fg"><label>Mobile number</label><input type="tel" id="mmMobile" inputmode="numeric" maxlength="10" placeholder="10 digits"/></div>
+      <div class="fg"><label>4-digit code</label>
+        <div style="display:flex;gap:6px"><input type="text" id="mmPin" inputmode="numeric" maxlength="4" style="flex:1"/>
+        <button class="btn btn-white btn-sm" type="button" onclick="document.getElementById('mmPin').value=window._randomPin()" title="New random code"><i class="ti ti-refresh"></i></button></div></div>
+    </div>
+    <button class="btn btn-indigo" id="mmAdd" style="width:100%;justify-content:center;margin-bottom:12px" onclick="window._memAdd()"><i class="ti ti-user-plus"></i> Add member</button>
+    <div id="memCreds"></div>
+    <div id="memList"></div></div>`;
   document.body.appendChild(m);
+  window._randomPin = randomPin;
 
-  try {
-    const snap = await getDoc(aptDocRef());
-    JOIN_CODE = snap.exists() ? (snap.data().joinCode || '') : '';
-    if (!JOIN_CODE) JOIN_CODE = await createJoinCode(UID, snap.exists() ? snap.data().name : '');
-  } catch (e) { console.error('join code', e); }
-
-  onSnapshot(collection(db, 'apartments', UID, 'joinRequests'), s => {
-    JOIN_REQS = s.docs.map(d => ({ id: d.id, ...d.data() })); renderMembers();
-  }, e => console.error(e));
   onSnapshot(collection(db, 'apartments', UID, 'members'), s => {
-    MEMBERS = s.docs.map(d => ({ id: d.id, ...d.data() })); renderMembers();
+    MEMBERS = s.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => String(a.flatId).localeCompare(String(b.flatId), undefined, { numeric: true }));
+    renderMembers();
   }, e => console.error(e));
-  renderMembers();
+}
+
+function fillMemberForm() {
+  const sel = document.getElementById('mmFlat'); if (!sel) return;
+  sel.innerHTML = [...flats.keys()].sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))
+    .map(f => `<option value="${_esc(f)}">${_esc(f)}</option>`).join('');
+  document.getElementById('mmPin').value = randomPin();
+}
+
+function shareMessage(c) {
+  const url = new URL('index.html', location.href).href;
+  return `Hi ${c.name}, your Gatebook login (Flat ${c.flatId}):\nMobile: ${c.mobile}\nCode: ${c.pin}\nOpen: ${url}\nSwitch to "Flat member", then sign in. You can change your code after signing in.`;
 }
 
 function renderMembers() {
-  const body = document.getElementById('memBody'); if (!body) return;
-  const badge = document.getElementById('memBadge');
-  if (badge) { badge.textContent = JOIN_REQS.length; badge.style.display = JOIN_REQS.length ? '' : 'none'; }
-  const row = (r, actions) => `<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--border)">
+  const cr = document.getElementById('memCreds'), list = document.getElementById('memList'); if (!list) return;
+  cr.innerHTML = LAST_CREDS ? `<div style="background:var(--indigo-bg);border-radius:12px;padding:12px 14px;margin-bottom:14px">
+      <div style="font-size:12px;font-weight:700;margin-bottom:6px">Share with ${_esc(LAST_CREDS.name)} (Flat ${_esc(LAST_CREDS.flatId)})</div>
+      <div style="font-size:15px;font-weight:800;letter-spacing:.5px">Mobile ${_esc(LAST_CREDS.mobile)} · Code ${_esc(LAST_CREDS.pin)}</div>
+      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+        <button class="btn btn-white btn-sm" onclick="window._memCopy()"><i class="ti ti-copy"></i> Copy message</button>
+        <button class="btn btn-white btn-sm" onclick="window._memWhatsApp()"><i class="ti ti-brand-whatsapp"></i> WhatsApp</button>
+      </div></div>` : '';
+  const row = r => `<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--border)">
       <div style="flex:1"><div style="font-size:13px;font-weight:700">${_esc(r.name || '—')}</div>
-      <div style="font-size:11px;color:var(--text2)">Flat ${_esc(r.flatId)}${r.phone ? ' · ' + _esc(r.phone) : ''}</div></div>${actions}</div>`;
-  body.innerHTML = `
-    <div style="background:var(--indigo-bg);border-radius:12px;padding:12px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-      <div style="flex:1;min-width:160px"><div style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase">Apartment code</div>
-        <div style="font-size:20px;font-weight:800;letter-spacing:1px">${_esc(JOIN_CODE) || '—'}</div></div>
-      <button class="btn btn-white btn-sm" onclick="window._memCopy()"><i class="ti ti-copy"></i> Copy</button>
-      <button class="btn btn-white btn-sm" onclick="window._memNewCode()"><i class="ti ti-refresh"></i> New code</button>
-    </div>
-    <div style="font-size:12px;font-weight:700;margin-bottom:4px">Pending requests (${JOIN_REQS.length})</div>
-    ${JOIN_REQS.length ? JOIN_REQS.map(r => row(r,
-      `<button class="btn btn-indigo btn-sm" onclick="window._memApprove('${_esc(r.id)}')">Approve</button>
-       <button class="btn btn-white btn-sm" onclick="window._memReject('${_esc(r.id)}')">Reject</button>`)).join('')
-      : '<div style="font-size:12px;color:var(--text2);padding:8px 0">No pending requests.</div>'}
-    <div style="font-size:12px;font-weight:700;margin:16px 0 4px">Approved members (${MEMBERS.length})</div>
-    ${MEMBERS.length ? MEMBERS.map(r => row(r,
-      `<button class="btn btn-white btn-sm" onclick="window._memRemove('${_esc(r.id)}')">Remove</button>`)).join('')
-      : '<div style="font-size:12px;color:var(--text2);padding:8px 0">No members yet. Share the code above with residents.</div>'}`;
+      <div style="font-size:11px;color:var(--text2)">Flat ${_esc(r.flatId)} · ${_esc(r.phone || '')}</div></div>
+      <button class="btn btn-white btn-sm" onclick="window._memReset('${_esc(r.id)}')">Reset code</button>
+      <button class="btn btn-white btn-sm" onclick="window._memRemove('${_esc(r.id)}')">Remove</button></div>`;
+  list.innerHTML = `<div style="font-size:12px;font-weight:700;margin:6px 0 4px">Members (${MEMBERS.length})</div>` +
+    (MEMBERS.length ? MEMBERS.map(row).join('') : '<div style="font-size:12px;color:var(--text2);padding:8px 0">No members yet.</div>');
 }
 
-window._memCopy = () => navigator.clipboard?.writeText(JOIN_CODE).then(() => toast('Code copied ✓'));
-window._memNewCode = async () => {
-  if (!confirm('Create a new code? The old code stops working (existing members are not affected).')) return;
+// Creates the member's sign-in WITHOUT signing the admin out (uses a temporary second Firebase app).
+async function provisionMember(flatId, name, mobile, pin) {
+  const email = `m${mobile}-${Math.random().toString(36).slice(2, 8)}@gatebook.app`;
+  const secApp = initializeApp(app.options, 'sec-' + Date.now());
   try {
-    const name = (await getDoc(aptDocRef())).data()?.name || '';
-    const old = JOIN_CODE;
-    JOIN_CODE = await createJoinCode(UID, name);
-    if (old) await deleteDoc(doc(db, 'joinCodes', old));
-    renderMembers(); toast('New code created ✓');
-  } catch (e) { console.error(e); toast('Could not create a new code.', 'error'); }
-};
-window._memApprove = async uid => {
-  const r = JOIN_REQS.find(x => x.id === uid); if (!r) return;
+    const secAuth = getAuth(secApp), secDb = getFirestore(secApp);
+    const cred = await createUserWithEmailAndPassword(secAuth, email, pinToPassword(mobile, pin));
+    await updateProfile(cred.user, { displayName: name });
+    await _setDoc(doc(secDb, 'users', cred.user.uid), { aptId: UID, flatId, name, role: 'member' });
+    await signOut(secAuth);
+    return { uid: cred.user.uid, email };
+  } finally { await deleteApp(secApp).catch(() => {}); }
+}
+
+window._memAdd = async () => {
+  const flatId = document.getElementById('mmFlat').value;
+  const name = document.getElementById('mmName').value.trim();
+  const mobile = document.getElementById('mmMobile').value.trim();
+  const pin = document.getElementById('mmPin').value.trim();
+  if (!flatId) { toast('Pick a flat.', 'error'); return; }
+  if (!name) { toast('Enter the resident name.', 'error'); return; }
+  if (!isValidMobile(mobile)) { toast('Enter a 10-digit mobile number.', 'error'); return; }
+  if (!isValidPin(pin)) { toast('The code must be 4 digits.', 'error'); return; }
+  const btn = document.getElementById('mmAdd'); btn.disabled = true;
   try {
-    await setDoc(doc(db, 'apartments', UID, 'members', uid),
-      { flatId: r.flatId, name: r.name, phone: r.phone || '', approvedAt: new Date().toISOString() });
-    await deleteDoc(doc(db, 'apartments', UID, 'joinRequests', uid));
-    toast(`${r.name || 'Member'} approved ✓`);
-  } catch (e) { console.error(e); toast('Approve failed.', 'error'); }
+    if ((await getDoc(doc(db, 'phoneLogins', mobile))).exists()) { toast('This mobile number is already registered.', 'error'); return; }
+    const { uid, email } = await provisionMember(flatId, name, mobile, pin);
+    await setDoc(doc(db, 'apartments', UID, 'members', uid), { flatId, name, phone: mobile, email, createdAt: new Date().toISOString() });
+    await setDoc(doc(db, 'phoneLogins', mobile), { email, aptId: UID });
+    LAST_CREDS = { flatId, name, mobile, pin };
+    document.getElementById('mmName').value = ''; document.getElementById('mmMobile').value = '';
+    document.getElementById('mmPin').value = randomPin();
+    renderMembers(); toast(`${name} added ✓`);
+  } catch (e) { console.error(e); toast('Could not add member. Try again.', 'error'); }
+  finally { btn.disabled = false; }
 };
-window._memReject = async uid => {
-  try { await deleteDoc(doc(db, 'apartments', UID, 'joinRequests', uid)); toast('Request rejected'); }
-  catch (e) { console.error(e); toast('Reject failed.', 'error'); }
+
+window._memReset = async oldUid => {
+  const m = MEMBERS.find(x => x.id === oldUid); if (!m) return;
+  const pin = (prompt(`New 4-digit code for ${m.name}:`, randomPin()) || '').trim();
+  if (!pin) return;
+  if (!isValidPin(pin)) { toast('The code must be 4 digits.', 'error'); return; }
+  try {
+    const { uid, email } = await provisionMember(m.flatId, m.name, m.phone, pin);
+    await setDoc(doc(db, 'apartments', UID, 'members', uid), { flatId: m.flatId, name: m.name, phone: m.phone, email, createdAt: new Date().toISOString() });
+    await deleteDoc(doc(db, 'apartments', UID, 'members', oldUid));
+    await setDoc(doc(db, 'phoneLogins', m.phone), { email, aptId: UID });
+    LAST_CREDS = { flatId: m.flatId, name: m.name, mobile: m.phone, pin };
+    renderMembers(); toast('Code reset ✓');
+  } catch (e) { console.error(e); toast('Could not reset the code.', 'error'); }
 };
+
 window._memRemove = async uid => {
-  if (!confirm('Remove this member? They will lose access.')) return;
-  try { await deleteDoc(doc(db, 'apartments', UID, 'members', uid)); toast('Member removed'); }
-  catch (e) { console.error(e); toast('Remove failed.', 'error'); }
+  const m = MEMBERS.find(x => x.id === uid); if (!m) return;
+  if (!confirm(`Remove ${m.name}? They will lose access.`)) return;
+  try {
+    await deleteDoc(doc(db, 'apartments', UID, 'members', uid));
+    await deleteDoc(doc(db, 'phoneLogins', m.phone));
+    toast('Member removed');
+  } catch (e) { console.error(e); toast('Remove failed.', 'error'); }
+};
+window._memCopy = () => LAST_CREDS && navigator.clipboard?.writeText(shareMessage(LAST_CREDS)).then(() => toast('Message copied ✓'));
+window._memWhatsApp = () => LAST_CREDS && window.open(`https://wa.me/91${LAST_CREDS.mobile}?text=${encodeURIComponent(shareMessage(LAST_CREDS))}`, '_blank');
+
+/* ── Flat member: change own 4-digit code ── */
+function initChangeCode() {
+  const right = document.querySelector('.nav-right'); if (!right) return;
+  const btn = document.createElement('button');
+  btn.className = 'btn btn-white btn-sm'; btn.innerHTML = '<i class="ti ti-key"></i> Change code';
+  btn.onclick = () => document.getElementById('ccM').classList.add('open');
+  right.insertBefore(btn, right.firstChild);
+
+  const m = document.createElement('div'); m.className = 'mbg'; m.id = 'ccM';
+  m.innerHTML = `<div class="modal">
+    <div class="mhead">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div class="micon detail"><i class="ti ti-key"></i></div>
+        <div><div class="mtitle">Change your code</div><div class="msub">Choose a new 4-digit code for signing in</div></div>
+      </div>
+      <button class="mclose" onclick="document.getElementById('ccM').classList.remove('open')"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="fg"><label>Current code</label><input type="password" id="ccOld" inputmode="numeric" maxlength="4" autocomplete="off"/></div>
+    <div class="fg2">
+      <div class="fg"><label>New code</label><input type="password" id="ccNew" inputmode="numeric" maxlength="4" autocomplete="off"/></div>
+      <div class="fg"><label>Confirm new code</label><input type="password" id="ccNew2" inputmode="numeric" maxlength="4" autocomplete="off"/></div>
+    </div>
+    <button class="btn btn-indigo" id="ccSave" style="width:100%;justify-content:center" onclick="window._changeCode()"><i class="ti ti-check"></i> Save new code</button></div>`;
+  document.body.appendChild(m);
+}
+
+window._changeCode = async () => {
+  const o = document.getElementById('ccOld').value, n = document.getElementById('ccNew').value, n2 = document.getElementById('ccNew2').value;
+  if (!isValidPin(o) || !isValidPin(n)) { toast('Codes must be exactly 4 digits.', 'error'); return; }
+  if (n !== n2) { toast('The new codes do not match.', 'error'); return; }
+  if (n === o) { toast('Choose a different code.', 'error'); return; }
+  const btn = document.getElementById('ccSave'); btn.disabled = true;
+  try {
+    const u = auth.currentUser;
+    await reauthenticateWithCredential(u, EmailAuthProvider.credential(u.email, pinToPassword(MY_PHONE, o)));
+    await updatePassword(u, pinToPassword(MY_PHONE, n));
+    ['ccOld', 'ccNew', 'ccNew2'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('ccM').classList.remove('open');
+    toast('Code changed ✓');
+  } catch (e) {
+    console.error(e);
+    toast(e.code === 'auth/invalid-credential' || e.code === 'auth/wrong-password' ? 'Current code is wrong.' : 'Could not change the code. Try again.', 'error');
+  } finally { btn.disabled = false; }
 };
