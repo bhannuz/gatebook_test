@@ -262,15 +262,15 @@ window.setRole = function(sel) {
   $('rtSw').setAttribute('aria-checked', String(m));
   $('rtAdmin').classList.toggle('active', !m);
   $('rtMember').classList.toggle('active', m);
-  $('loginSub').textContent = m ? 'Use the mobile number and 4-digit code your admin gave you.' : 'Sign in to manage your apartment.';
+  $('loginSub').textContent = m ? 'Use the mobile number and 6-character code your admin gave you.' : 'Sign in to manage your apartment.';
   $('loginBtnLbl').textContent = m ? 'Sign in as Flat member' : 'Sign in as Admin';
   $('loginIdLbl').textContent = m ? 'Mobile number' : 'Mobile number or Email';
   $('loginId').placeholder = m ? '10-digit mobile number' : '9876543210 or you@example.com';
   $('loginId').inputMode = m ? 'numeric' : 'text';
-  $('loginPwLbl').textContent = m ? '4-digit code' : 'Password';
-  $('loginPassword').placeholder = m ? '• • • •' : 'Your password';
-  $('loginPassword').inputMode = m ? 'numeric' : 'text';
-  if (m) $('loginPassword').setAttribute('maxlength', '4'); else $('loginPassword').removeAttribute('maxlength');
+  $('loginPwLbl').textContent = m ? '6-character code' : 'Password';
+  $('loginPassword').placeholder = m ? '• • • • • •' : 'Your password';
+  $('loginPassword').setAttribute('autocapitalize', m ? 'characters' : 'off');
+  if (m) $('loginPassword').setAttribute('maxlength', '6'); else $('loginPassword').removeAttribute('maxlength');
   $('loginPassword').value = '';
   $('forgotLink').style.display = m ? 'none' : '';
   $('loginAlt').innerHTML = m
@@ -329,7 +329,7 @@ window.doLogin = async function() {
   const member = SEL === 'member';
   if (member) {
     if (!isValidMobile(raw)) { showAlert('loginAlert', 'Enter your 10-digit mobile number.'); return; }
-    if (!isValidPin(pw))     { showAlert('loginAlert', 'Enter your 4-digit code.'); return; }
+    if (!isValidPin(pw))     { showAlert('loginAlert', 'Enter your 6-character code (letters and digits).'); return; }
   } else if (!raw || !pw) { showAlert('loginAlert', 'Enter your mobile/email and password.'); return; }
 
   const lbl = $('loginBtnLbl').textContent;
