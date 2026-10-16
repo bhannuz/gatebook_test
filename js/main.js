@@ -8,7 +8,7 @@ import {
   collection, doc, getDocs, getDoc, addDoc as _addDoc, setDoc as _setDoc, updateDoc as _updateDoc, deleteDoc as _deleteDoc,
   onSnapshot, query, where, orderBy, serverTimestamp, getFirestore,
 } from 'https://www.gstatic.com/firebasejs/11.8.1/firebase-firestore.js';
-import { resolveRole, pinToPassword, randomPin, isValidPin, isValidMobile } from './roles.js';
+import { resolveRole, pinToPassword, randomPin, isValidPin, isValidMobile, normalizePin } from './roles.js';
 /* payments, issues, members inlined below — see functions below */
 
 /* ════════════════════════════════
@@ -4994,7 +4994,7 @@ function showMemberBanner() {
      </div>`);
 }
 
-/* ── Admin: add / reset / remove flat members (mobile + 4-digit code) ── */
+/* ── Admin: add / reset / remove flat members (mobile + 6-character code) ── */
 let MEMBERS = [], LAST_CREDS = null;
 
 async function initMembershipUI() {
@@ -5015,13 +5015,13 @@ async function initMembershipUI() {
       <button class="mclose" onclick="document.getElementById('memM').classList.remove('open')"><i class="ti ti-x"></i></button>
     </div>
     <div class="fg2">
-      <div class="fg"><label>Flat</label><select id="mmFlat"></select></div>
+      <div class="fg"><label>Flat</label><select id="mmFlat" onchange="window._memPick()"></select></div>
       <div class="fg"><label>Name</label><input type="text" id="mmName" placeholder="Resident name"/></div>
     </div>
     <div class="fg2">
       <div class="fg"><label>Mobile number</label><input type="tel" id="mmMobile" inputmode="numeric" maxlength="10" placeholder="10 digits"/></div>
-      <div class="fg"><label>4-digit code</label>
-        <div style="display:flex;gap:6px"><input type="text" id="mmPin" inputmode="numeric" maxlength="4" style="flex:1"/>
+      <div class="fg"><label>6-character code</label>
+        <div style="display:flex;gap:6px"><input type="text" id="mmPin" maxlength="6" autocapitalize="characters" style="flex:1;text-transform:uppercase"/>
         <button class="btn btn-white btn-sm" type="button" onclick="document.getElementById('mmPin').value=window._randomPin()" title="New random code"><i class="ti ti-refresh"></i></button></div></div>
     </div>
     <button class="btn btn-indigo" id="mmAdd" style="width:100%;justify-content:center;margin-bottom:12px" onclick="window._memAdd()"><i class="ti ti-user-plus"></i> Add member</button>
@@ -5038,10 +5038,19 @@ async function initMembershipUI() {
 
 function fillMemberForm() {
   const sel = document.getElementById('mmFlat'); if (!sel) return;
+  const keep = sel.value;
   sel.innerHTML = [...flats.keys()].sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))
-    .map(f => `<option value="${_esc(f)}">${_esc(f)}</option>`).join('');
+    .map(f => `<option value="${_esc(f)}">${_esc(f)}${flats.get(f)?.owner ? ' — ' + _esc(flats.get(f).owner) : ''}</option>`).join('');
+  if (keep && flats.has(keep)) sel.value = keep;
   document.getElementById('mmPin').value = randomPin();
+  window._memPick();
 }
+// Pre-fill name and mobile from the flat's existing resident details
+window._memPick = () => {
+  const f = flats.get(document.getElementById('mmFlat').value) || {};
+  document.getElementById('mmName').value = f.owner || '';
+  document.getElementById('mmMobile').value = String(f.phone || '').replace(/\D/g, '').slice(-10);
+};
 
 function shareMessage(c) {
   const url = new URL('index.html', location.href).href;
@@ -5084,11 +5093,11 @@ window._memAdd = async () => {
   const flatId = document.getElementById('mmFlat').value;
   const name = document.getElementById('mmName').value.trim();
   const mobile = document.getElementById('mmMobile').value.trim();
-  const pin = document.getElementById('mmPin').value.trim();
+  const pin = normalizePin(document.getElementById('mmPin').value);
   if (!flatId) { toast('Pick a flat.', 'error'); return; }
   if (!name) { toast('Enter the resident name.', 'error'); return; }
   if (!isValidMobile(mobile)) { toast('Enter a 10-digit mobile number.', 'error'); return; }
-  if (!isValidPin(pin)) { toast('The code must be 4 digits.', 'error'); return; }
+  if (!isValidPin(pin)) { toast('The code must be 6 letters or digits.', 'error'); return; }
   const btn = document.getElementById('mmAdd'); btn.disabled = true;
   try {
     if ((await getDoc(doc(db, 'phoneLogins', mobile))).exists()) { toast('This mobile number is already registered.', 'error'); return; }
@@ -5096,8 +5105,7 @@ window._memAdd = async () => {
     await setDoc(doc(db, 'apartments', UID, 'members', uid), { flatId, name, phone: mobile, email, createdAt: new Date().toISOString() });
     await setDoc(doc(db, 'phoneLogins', mobile), { email, aptId: UID });
     LAST_CREDS = { flatId, name, mobile, pin };
-    document.getElementById('mmName').value = ''; document.getElementById('mmMobile').value = '';
-    document.getElementById('mmPin').value = randomPin();
+    document.getElementById('mmPin').value = randomPin(); window._memPick();
     renderMembers(); toast(`${name} added ✓`);
   } catch (e) { console.error(e); toast('Could not add member. Try again.', 'error'); }
   finally { btn.disabled = false; }
@@ -5105,9 +5113,9 @@ window._memAdd = async () => {
 
 window._memReset = async oldUid => {
   const m = MEMBERS.find(x => x.id === oldUid); if (!m) return;
-  const pin = (prompt(`New 4-digit code for ${m.name}:`, randomPin()) || '').trim();
+  const pin = normalizePin(prompt(`New 6-character code for ${m.name}:`, randomPin()) || '');
   if (!pin) return;
-  if (!isValidPin(pin)) { toast('The code must be 4 digits.', 'error'); return; }
+  if (!isValidPin(pin)) { toast('The code must be 6 letters or digits.', 'error'); return; }
   try {
     const { uid, email } = await provisionMember(m.flatId, m.name, m.phone, pin);
     await setDoc(doc(db, 'apartments', UID, 'members', uid), { flatId: m.flatId, name: m.name, phone: m.phone, email, createdAt: new Date().toISOString() });
@@ -5130,7 +5138,7 @@ window._memRemove = async uid => {
 window._memCopy = () => LAST_CREDS && navigator.clipboard?.writeText(shareMessage(LAST_CREDS)).then(() => toast('Message copied ✓'));
 window._memWhatsApp = () => LAST_CREDS && window.open(`https://wa.me/91${LAST_CREDS.mobile}?text=${encodeURIComponent(shareMessage(LAST_CREDS))}`, '_blank');
 
-/* ── Flat member: change own 4-digit code ── */
+/* ── Flat member: change own code ── */
 function initChangeCode() {
   const right = document.querySelector('.nav-right'); if (!right) return;
   const btn = document.createElement('button');
@@ -5143,22 +5151,22 @@ function initChangeCode() {
     <div class="mhead">
       <div style="display:flex;align-items:center;gap:12px">
         <div class="micon detail"><i class="ti ti-key"></i></div>
-        <div><div class="mtitle">Change your code</div><div class="msub">Choose a new 4-digit code for signing in</div></div>
+        <div><div class="mtitle">Change your code</div><div class="msub">Choose a new 6-character code (letters and digits)</div></div>
       </div>
       <button class="mclose" onclick="document.getElementById('ccM').classList.remove('open')"><i class="ti ti-x"></i></button>
     </div>
-    <div class="fg"><label>Current code</label><input type="password" id="ccOld" inputmode="numeric" maxlength="4" autocomplete="off"/></div>
+    <div class="fg"><label>Current code</label><input type="password" id="ccOld" maxlength="6" autocapitalize="characters" autocomplete="off"/></div>
     <div class="fg2">
-      <div class="fg"><label>New code</label><input type="password" id="ccNew" inputmode="numeric" maxlength="4" autocomplete="off"/></div>
-      <div class="fg"><label>Confirm new code</label><input type="password" id="ccNew2" inputmode="numeric" maxlength="4" autocomplete="off"/></div>
+      <div class="fg"><label>New code</label><input type="password" id="ccNew" maxlength="6" autocapitalize="characters" autocomplete="off"/></div>
+      <div class="fg"><label>Confirm new code</label><input type="password" id="ccNew2" maxlength="6" autocapitalize="characters" autocomplete="off"/></div>
     </div>
     <button class="btn btn-indigo" id="ccSave" style="width:100%;justify-content:center" onclick="window._changeCode()"><i class="ti ti-check"></i> Save new code</button></div>`;
   document.body.appendChild(m);
 }
 
 window._changeCode = async () => {
-  const o = document.getElementById('ccOld').value, n = document.getElementById('ccNew').value, n2 = document.getElementById('ccNew2').value;
-  if (!isValidPin(o) || !isValidPin(n)) { toast('Codes must be exactly 4 digits.', 'error'); return; }
+  const o = normalizePin(document.getElementById('ccOld').value), n = normalizePin(document.getElementById('ccNew').value), n2 = normalizePin(document.getElementById('ccNew2').value);
+  if (!isValidPin(o) || !isValidPin(n)) { toast('Codes must be 6 letters or digits.', 'error'); return; }
   if (n !== n2) { toast('The new codes do not match.', 'error'); return; }
   if (n === o) { toast('Choose a different code.', 'error'); return; }
   const btn = document.getElementById('ccSave'); btn.disabled = true;

@@ -1,4 +1,4 @@
-// roles.js — shared role resolution + helpers for the mobile + 4-digit-code login
+// roles.js — shared role resolution + helpers for the mobile + 6-character-code login
 // Roles: 'platform' (admin@gatebook.app) | 'admin' (owns an apartment)
 //        'member' (flat member added by the admin) | 'new' (signed in, no apartment/membership)
 import { db } from './firebase.js';
@@ -9,11 +9,18 @@ import {
 export const PLATFORM_ADMIN_EMAIL = 'admin@gatebook.app';
 
 export const isValidMobile = m => /^\d{10}$/.test(m);
-export const isValidPin    = p => /^\d{4}$/.test(p);
-export const randomPin     = () => String(crypto.getRandomValues(new Uint32Array(1))[0] % 10000).padStart(4, '0');
 
-// Firebase passwords need 6+ characters, so the 4-digit code is expanded before use.
-export const pinToPassword = (mobile, pin) => `gb:${mobile}:${pin}`;
+// Access code: 6 characters, letters and digits (case-insensitive). The app generates 4 digits + 2 letters, e.g. 6024KM.
+export const normalizePin = p => String(p || '').trim().toUpperCase();
+export const isValidPin   = p => /^[A-Z0-9]{6}$/.test(normalizePin(p));
+const LETTERS = 'ABCDEFGHJKMNPQRSTUVWXYZ';          // no I / O (look like 1 / 0)
+export function randomPin() {
+  const r = crypto.getRandomValues(new Uint32Array(3));
+  return String(r[0] % 10000).padStart(4, '0') + LETTERS[r[1] % LETTERS.length] + LETTERS[r[2] % LETTERS.length];
+}
+
+// Firebase passwords need 6+ characters; the code is combined with the mobile number before use.
+export const pinToPassword = (mobile, pin) => `gb:${mobile}:${normalizePin(pin)}`;
 
 export async function resolveRole(user) {
   if (user.email === PLATFORM_ADMIN_EMAIL) return { role: 'platform' };
