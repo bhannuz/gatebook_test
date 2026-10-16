@@ -1,19 +1,33 @@
 import { auth, db } from './firebase.js';
-import { onAuthStateChanged, signOut, EmailAuthProvider, reauthenticateWithCredential, updatePassword } from 'https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js';
+import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js';
 import {
-  collection, doc, getDocs, getDoc, addDoc, setDoc, updateDoc, deleteDoc,
+  collection, doc, getDocs, getDoc, addDoc as _addDoc, setDoc as _setDoc, updateDoc as _updateDoc, deleteDoc as _deleteDoc,
   onSnapshot, query, where, orderBy, serverTimestamp,
 } from 'https://www.gstatic.com/firebasejs/11.8.1/firebase-firestore.js';
+import { resolveRole, createJoinCode } from './roles.js';
 /* payments, issues, members inlined below — see functions below */
 
 /* ════════════════════════════════
    AUTH GUARD
 ════════════════════════════════ */
-let UID = null;
+let UID = null;          // apartment id (the admin's uid) — for members it is NOT their own uid
+let ROLE = 'admin';      // 'admin' | 'member'
+let MY_FLAT = null, MY_NAME = '';
+const isAdmin  = () => ROLE === 'admin';
+const isMember = () => ROLE === 'member';
 let _booted = false; // prevent duplicate boot on auth token refresh
 
+/* Write guard (UX layer). The REAL enforcement is firestore.rules.
+   Admin: everything. Flat member: may only create documents in /issues. */
+const _canWrite = ref => isAdmin() || (isMember() && /\/issues$/.test(ref.path || ''));
+const _deny = () => { toast('Only the apartment admin can make changes.', 'error'); throw new Error('read-only'); };
+const addDoc    = (ref, ...a) => _canWrite(ref) ? _addDoc(ref, ...a)    : _deny();
+const setDoc    = (ref, ...a) => _canWrite(ref) ? _setDoc(ref, ...a)    : _deny();
+const updateDoc = (ref, ...a) => _canWrite(ref) ? _updateDoc(ref, ...a) : _deny();
+const deleteDoc = (ref, ...a) => _canWrite(ref) ? _deleteDoc(ref, ...a) : _deny();
+
 const ADMIN_EMAIL = 'admin@gatebook.app';
-onAuthStateChanged(auth, user => {
+onAuthStateChanged(auth, async user => {
   if (!user) {
     window.location.replace('index.html');
     return;
@@ -31,75 +45,25 @@ onAuthStateChanged(auth, user => {
   // Only boot once — onAuthStateChanged can fire multiple times
   if (_booted) return;
   _booted = true;
-  UID = user.uid;
+
+  let r;
+  try { r = await resolveRole(user); } catch (e) { console.error(e); r = { role: 'new' }; }
+  // Waiting for approval / declined / member who still has to join → back to the login page
+  if (r.role === 'pending' || (r.role === 'new' && (r.rejected || sessionStorage.getItem('gb_intent') === 'member'))) {
+    window.location.replace('index.html');
+    return;
+  }
+  ROLE    = r.role === 'member' ? 'member' : 'admin';
+  UID     = r.aptId || user.uid;
+  MY_FLAT = r.flatId || null;
+  MY_NAME = r.name || user.displayName || '';
+  applyRoleUI();
   boot();
 });
 
 window._doSignOut = async function() {
   await signOut(auth);
   window.location.replace('index.html');
-};
-
-// Close user menu on outside click
-document.addEventListener('click', e => {
-  const menu = document.getElementById('userMenu');
-  if (menu && !menu.closest('.user-chip') && !e.target.closest('#userMenu') && !e.target.closest('.user-chip')) {
-    menu.style.display = 'none';
-  }
-});
-
-// ── Change Password ──
-window._openChangePw = function() {
-  ['cpCurrent','cpNew','cpConfirm'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
-  const al = document.getElementById('changePwAlert'); if(al) al.style.display='none';
-  document.getElementById('changePwM').style.display = 'flex';
-};
-window._closeChangePw = function() {
-  document.getElementById('changePwM').style.display = 'none';
-};
-window.togglePw = function(inputId, btn) {
-  const inp = document.getElementById(inputId);
-  if (!inp) return;
-  const show = inp.type === 'password';
-  inp.type = show ? 'text' : 'password';
-  const ic = btn.querySelector('i');
-  if (ic) ic.className = show ? 'ti ti-eye-off' : 'ti ti-eye';
-};
-window._saveNewPassword = async function() {
-  const current = document.getElementById('cpCurrent').value;
-  const newPw   = document.getElementById('cpNew').value;
-  const confirm = document.getElementById('cpConfirm').value;
-  const alertEl = document.getElementById('changePwAlert');
-  const showAlert = (msg, ok=false) => {
-    alertEl.textContent = msg;
-    alertEl.style.display = 'block';
-    alertEl.style.background = ok ? '#f0fdf4' : '#fff1f2';
-    alertEl.style.color = ok ? '#15803d' : '#dc2626';
-    alertEl.style.border = `1px solid ${ok?'#bbf7d0':'#fecaca'}`;
-  };
-  if (!current) { showAlert('Please enter your current password.'); return; }
-  if (newPw.length < 6) { showAlert('New password must be at least 6 characters.'); return; }
-  if (newPw !== confirm) { showAlert('New passwords do not match.'); return; }
-  const btn = document.getElementById('cpSaveBtn');
-  btn.disabled = true; btn.textContent = 'Updating…';
-  try {
-    const user = auth.currentUser;
-    const cred = EmailAuthProvider.credential(user.email, current);
-    await reauthenticateWithCredential(user, cred);
-    await updatePassword(user, newPw);
-    showAlert('Password updated successfully!', true);
-    setTimeout(() => window._closeChangePw(), 1500);
-  } catch(e) {
-    const msgs = {
-      'auth/wrong-password': 'Current password is incorrect.',
-      'auth/invalid-credential': 'Current password is incorrect.',
-      'auth/too-many-requests': 'Too many attempts. Please try again later.',
-    };
-    showAlert(msgs[e.code] || 'Failed to update password. Please try again.');
-  } finally {
-    btn.disabled = false;
-    btn.innerHTML = '<i class="ti ti-lock"></i> Update Password';
-  }
 };
 
 /* ════════════════════════════════
@@ -136,9 +100,10 @@ const vehicles = new Map();   // flatId -> {tw,fw,nums,slot}
 const socExps  = [];          // society-level expenses
 let president  = null;        // current president object
 let customCats = { flat: [], soc: [] }; // user-defined expense categories
-const DEFAULT_FLAT_CATS = ['Maintenance','Water','Electricity','Parking','Lift','Security','Cleaning','Other'];
+const DEFAULT_FLAT_CATS = ['Maintenance','Water','Electricity','Parking','Lift','Security','Cleaning','Corpus Fund','Other'];
 const DEFAULT_SOC_CATS  = ['Maintenance','Water','Electricity','Security','Cleaning','Lift','Gardening','Painting','Other'];
 let APT_NAME = 'Gatebook';
+let APT_CORPUS_FUND = 0;
 
 /* ════════════════════════════════
    HELPERS
@@ -385,189 +350,213 @@ function oFlEdit(fid) {
 
   document.getElementById('dBody').innerHTML = `<div style="padding:4px 0 8px;">
 
-    <style>
-      .sec-hd{display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:10px;
-        cursor:pointer;user-select:none;margin-bottom:4px;transition:background .12s;}
-      .sec-hd:hover{background:var(--surface3)}
-      .sec-body{padding:4px 2px 12px;}
-    </style>
-
-    <!-- ── RESIDENT SECTION (collapsible) ── -->
-    <div style="border:1.5px solid var(--border2);border-radius:12px;margin-bottom:10px;overflow:hidden;">
-      <div class="sec-hd" onclick="(function(h){const b=h.nextElementSibling;const ic=h.querySelector('.sec-ic');const open=b.style.display!=='none';b.style.display=open?'none':'';ic.style.transform=open?'rotate(-90deg)':'rotate(0)'})(this)">
-        <div style="width:28px;height:28px;border-radius:8px;background:var(--indigo-bg);color:var(--indigo);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-          <i class="ti ti-user" style="font-size:14px;"></i>
-        </div>
-        <span style="font-size:13px;font-weight:800;color:var(--text);flex:1;">Resident</span>
-        <i class="ti ti-chevron-down sec-ic" style="color:var(--muted);font-size:14px;transition:transform .2s;"></i>
+    <!-- ── RESIDENT SECTION ── -->
+    <div style="margin-bottom:18px;">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--indigo);">
+        <i class="ti ti-user" style="color:var(--indigo);font-size:15px;"></i>
+        <span style="font-size:13px;font-weight:800;color:var(--text);">Resident</span>
       </div>
-      <div class="sec-body" style="padding:0 12px 14px;">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
-          ${_fld('Name', _inp('edOwner','text',(f.owner||'').replace(/"/g,'&quot;'),'Full name'))}
-          ${_fld('Type', `<select id="edType" onchange="window._toggleOwnerFields(this.value)"
-            style="width:100%;height:38px;padding:0 11px;background:#fff;border:1.5px solid var(--border2);
-            color:var(--text);font-family:var(--font);font-size:13px;font-weight:600;border-radius:8px;outline:none;box-sizing:border-box;">
-            <option value="owner" ${!isTenant?'selected':''}>🏠 Owner</option>
-            <option value="tenant" ${isTenant?'selected':''}>🔑 Tenant</option>
-          </select>`)}
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
-          ${_fld('📱 Mobile Number', _inp('edPhone','tel',(f.phone||f.ownerPhone||'').replace(/"/g,'&quot;'),'10-digit mobile no.'))}
-          ${_fld('WhatsApp', `<div style="display:flex;align-items:center;height:38px;gap:8px;">
-            <input type="checkbox" id="edWA" ${f.waEnabled!==false?'checked':''}
-              style="width:18px;height:18px;accent-color:var(--indigo);cursor:pointer;"/>
-            <label for="edWA" style="font-size:12px;font-weight:600;color:var(--text);cursor:pointer;">WhatsApp enabled</label>
-          </div>`)}
-        </div>
-        <div id="ownerSection" style="display:${isTenant?'grid':'none'};grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
-          ${_fld('Owner Name', _inp('edOwnerName','text',(f.ownerName||'').replace(/"/g,'&quot;'),'Flat owner'))}
-          ${_fld('Owner Phone', _inp('edOwnerPhone','tel',(f.ownerPhone||'').replace(/"/g,'&quot;'),'Contact no.'))}
-        </div>
-        <div style="display:flex;gap:8px;margin-bottom:10px;">
-          <button id="activeTab" type="button" onclick="window._setResidentStatus('active')"
-            style="flex:1;height:36px;border:none;background:var(--indigo);color:#fff;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);">✅ Active</button>
-          <button id="movedTab" type="button" onclick="window._setResidentStatus('moved')"
-            style="flex:1;height:36px;border:1.5px solid var(--border2);background:#fff;color:var(--text2);border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);">🚪 Moved Out</button>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-          ${_fld('Move-In Date', _inp('edMoveIn','date',f.moveIn||'',''))}
-          <div id="moveOutSection" style="${f.moveOut?'display:block':'display:none'}">
-            ${_lbl('Move-Out Date')}${_inp('edMoveOut','date',f.moveOut||'','')}
-          </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+        ${_fld('Name', _inp('edOwner','text',(f.owner||'').replace(/"/g,'&quot;'),'Full name'))}
+        ${_fld('Type', `<select id="edType" onchange="window._toggleOwnerFields(this.value)"
+          style="width:100%;height:38px;padding:0 11px;background:#fff;border:1.5px solid var(--border2);
+          color:var(--text);font-family:var(--font);font-size:13px;font-weight:600;border-radius:8px;outline:none;box-sizing:border-box;">
+          <option value="owner" ${!isTenant?'selected':''}>🏠 Owner</option>
+          <option value="tenant" ${isTenant?'selected':''}>🔑 Tenant</option>
+        </select>`)}
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+        ${_fld('📱 Mobile Number', _inp('edPhone','tel',(f.phone||f.ownerPhone||'').replace(/"/g,'&quot;'),'10-digit mobile no.'))}
+        ${_fld('WhatsApp', `<div style="display:flex;align-items:center;height:38px;gap:8px;">
+          <input type="checkbox" id="edWA" ${f.waEnabled!==false?'checked':''}
+            style="width:18px;height:18px;accent-color:var(--indigo);cursor:pointer;"/>
+          <label for="edWA" style="font-size:12px;font-weight:600;color:var(--text);cursor:pointer;">WhatsApp enabled</label>
+        </div>`)}
+      </div>
+
+      <!-- Owner fields (tenant only) -->
+      <div id="ownerSection" style="display:${isTenant?'grid':'none'};grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+        ${_fld('Owner Name', _inp('edOwnerName','text',(f.ownerName||'').replace(/"/g,'&quot;'),'Flat owner'))}
+        ${_fld('Owner Phone', _inp('edOwnerPhone','tel',(f.ownerPhone||'').replace(/"/g,'&quot;'),'Contact no.'))}
+      </div>
+
+      <!-- Status -->
+      <div style="display:flex;gap:8px;margin-bottom:12px;">
+        <button id="activeTab" type="button" onclick="window._setResidentStatus('active')"
+          style="flex:1;height:38px;border:none;background:var(--indigo);color:#fff;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);">
+          ✅ Active
+        </button>
+        <button id="movedTab" type="button" onclick="window._setResidentStatus('moved')"
+          style="flex:1;height:38px;border:1.5px solid var(--border2);background:#fff;color:var(--text2);border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);">
+          🚪 Moved Out
+        </button>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        ${_fld('Move-In Date', _inp('edMoveIn','date',f.moveIn||'',''))}
+        <div id="moveOutSection" style="${f.moveOut?'display:block':'display:none'}">
+          ${_lbl('Move-Out Date')}${_inp('edMoveOut','date',f.moveOut||',','')}
         </div>
       </div>
     </div>
 
-    <!-- ── FLAT DETAILS SECTION (collapsible, collapsed by default) ── -->
-    <div style="border:1.5px solid var(--border2);border-radius:12px;margin-bottom:10px;overflow:hidden;">
-      <div class="sec-hd" onclick="(function(h){const b=h.nextElementSibling;const ic=h.querySelector('.sec-ic');const open=b.style.display!=='none';b.style.display=open?'none':'';ic.style.transform=open?'rotate(-90deg)':'rotate(0)'})(this)">
-        <div style="width:28px;height:28px;border-radius:8px;background:#f3f0ff;color:var(--purple);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-          <i class="ti ti-building" style="font-size:14px;"></i>
-        </div>
-        <span style="font-size:13px;font-weight:800;color:var(--text);flex:1;">Flat Details</span>
-        <i class="ti ti-chevron-down sec-ic" style="color:var(--muted);font-size:14px;transition:transform .2s;transform:rotate(-90deg);"></i>
+    <!-- ── FLAT DETAILS SECTION ── -->
+    <div style="margin-bottom:18px;">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--purple);">
+        <i class="ti ti-building" style="color:var(--purple);font-size:15px;"></i>
+        <span style="font-size:13px;font-weight:800;color:var(--text);">Flat Details</span>
       </div>
-      <div class="sec-body" style="display:none;padding:0 12px 14px;">
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
-          ${_fld('Monthly Due (₹)', _inp('edDue','number',f.due||'','e.g. 5000','min="0"'))}
-          ${_fld('Area (sq.ft)', _inp('edSft','number',f.sft||'','e.g. 850','min="0"'))}
-          ${_fld('Vehicles 2W/4W', _inp('edVehicles','text',tw+'/'+fw,'1/1'))}
-        </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+        ${_fld('Monthly Due (₹)', _inp('edDue','number',f.due||'','e.g. 5000','min="0"'))}
+        ${_fld('Area (sq.ft)', _inp('edSft','number',f.sft||'','e.g. 850','min="0"'))}
+        ${_fld('Vehicles 2W/4W', _inp('edVehicles','text',tw+'/'+fw,'1/1'))}
       </div>
     </div>
 
     <!-- ── SAVE / CANCEL ── -->
-    <div style="display:flex;gap:10px;margin-bottom:14px;">
+    <div style="display:flex;gap:10px;">
       <button onclick="window._cD()"
         style="padding:0 20px;height:44px;border:1.5px solid var(--border2);border-radius:10px;background:#fff;
           color:var(--text2);font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);white-space:nowrap;">
         Cancel
       </button>
       <button id="edSaveBtn" onclick="window._saveFlat('${fid}')"
-        style="flex:1;height:44px;border:none;border-radius:10px;background:var(--indigo);
+        style="padding:0 28px;height:44px;border:none;border-radius:10px;background:var(--indigo);
           color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);
           display:flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap;">
         <i class="ti ti-device-floppy" style="font-size:15px;"></i> Save
       </button>
     </div>
 
-    <!-- ── HISTORY SECTION (collapsible) ── -->
-    <div style="border:1.5px solid var(--border2);border-radius:12px;overflow:hidden;">
-      <div class="sec-hd" onclick="(function(h){const b=h.nextElementSibling;const ic=h.querySelector('.sec-ic');const open=b.style.display!=='none';b.style.display=open?'none':'';ic.style.transform=open?'rotate(-90deg)':'rotate(0)'})(this)">
-        <div style="width:28px;height:28px;border-radius:8px;background:#fff7ed;color:var(--amber);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-          <i class="ti ti-history" style="font-size:14px;"></i>
+  </div>
+
+
+    <!-- HISTORY TOGGLE -->
+    <div style="display:flex;gap:6px;background:var(--surface2);padding:6px;border-radius:8px;margin-bottom:14px">
+      <button id="payHistToggle" data-history="payment" onclick="window._toggleHistory('payment')" 
+        style="flex:1;padding:8px 12px;border:none;background:var(--indigo);color:#fff;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font);transition:all .15s">
+        <i class="ti ti-receipt" style="margin-right:4px;font-size:12px"></i>Payment History
+      </button>
+      <button id="stayHistToggle" data-history="staying" onclick="window._toggleHistory('staying')" 
+        style="flex:1;padding:8px 12px;border:none;background:transparent;color:var(--text2);border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font);transition:all .15s">
+        <i class="ti ti-calendar" style="margin-right:4px;font-size:12px"></i>Staying History
+      </button>
+    </div>
+
+    <!-- PAYMENT HISTORY -->
+    <div id="paymentHistSection" style="background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--r-lg);padding:14px;margin-bottom:14px;display:block">
+      <div style="font-size:12px;font-weight:800;color:var(--text);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;gap:6px">
+        <div style="display:flex;align-items:center;gap:6px">
+          <i class="ti ti-receipt" style="color:var(--amber);font-size:13px"></i> Payment History
         </div>
-        <span style="font-size:13px;font-weight:800;color:var(--text);flex:1;">History</span>
-        <i class="ti ti-chevron-down sec-ic" style="color:var(--muted);font-size:14px;transition:transform .2s;transform:rotate(-90deg);"></i>
+        <button type="button" onclick="window._togglePaymentEdit()" style="padding:4px 8px;background:transparent;border:1.5px solid var(--border);color:var(--text2);font-size:10px;font-weight:700;border-radius:4px;cursor:pointer;font-family:var(--font);">
+          <i class="ti ti-edit" style="font-size:11px;margin-right:2px"></i>Edit
+        </button>
       </div>
-      <div style="display:none;padding:0 12px 14px;">
-
-        <!-- Sub-tabs: Payment | Staying -->
-        <div style="display:flex;gap:6px;background:var(--surface2);padding:5px;border-radius:8px;margin-bottom:12px;">
-          <button id="payHistToggle" onclick="window._toggleHistory('payment')"
-            style="flex:1;padding:7px 10px;border:none;background:var(--indigo);color:#fff;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font);transition:all .15s">
-            <i class="ti ti-receipt" style="margin-right:4px;font-size:11px"></i>Payment History
-          </button>
-          <button id="stayHistToggle" onclick="window._toggleHistory('staying')"
-            style="flex:1;padding:7px 10px;border:none;background:transparent;color:var(--text2);border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font);transition:all .15s">
-            <i class="ti ti-calendar" style="margin-right:4px;font-size:11px"></i>Staying History
-          </button>
+      <div id="paymentHistoryList" style="max-height:300px;overflow-y:auto;border-radius:8px"></div>
+      <div id="paymentEditSection" style="display:none;margin-top:10px;padding-top:10px;border-top:1.5px solid var(--border)">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+          <input id="newPaymentDate" type="date" placeholder="Date" style="padding:8px;border:1.5px solid var(--border);border-radius:6px;font-family:var(--font);font-size:11px"/>
+          <input id="newPaymentAmt" type="number" placeholder="Amount" style="padding:8px;border:1.5px solid var(--border);border-radius:6px;font-family:var(--font);font-size:11px"/>
         </div>
-
-        <!-- Payment History Panel -->
-        <div id="paymentHistSection" style="display:block">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-            <span style="font-size:11px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:6px;">
-              <i class="ti ti-receipt" style="color:var(--amber);font-size:12px"></i> Payment History
-            </span>
-            <button type="button" onclick="window._togglePaymentEdit()" style="padding:3px 8px;background:transparent;border:1.5px solid var(--border);color:var(--text2);font-size:10px;font-weight:700;border-radius:4px;cursor:pointer;font-family:var(--font);">
-              <i class="ti ti-edit" style="font-size:10px;margin-right:2px"></i>Edit
-            </button>
-          </div>
-          <div id="paymentHistoryList" style="max-height:280px;overflow-y:auto;border-radius:8px;background:var(--surface2);border:1px solid var(--border)"></div>
-          <div id="paymentEditSection" style="display:none;margin-top:10px;padding-top:10px;border-top:1.5px solid var(--border)">
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-              <input id="newPaymentDate" type="date" style="padding:8px;border:1.5px solid var(--border);border-radius:6px;font-family:var(--font);font-size:11px"/>
-              <input id="newPaymentAmt" type="number" placeholder="Amount" style="padding:8px;border:1.5px solid var(--border);border-radius:6px;font-family:var(--font);font-size:11px"/>
-            </div>
-            <button id="paymentBtn" type="button" onclick="window._addPayment('${fid}')" style="width:100%;padding:8px;background:var(--indigo);color:#fff;border:none;border-radius:6px;font-weight:700;font-size:11px;cursor:pointer;font-family:var(--font);">+ Add Payment</button>
-          </div>
-        </div>
-
-        <!-- Staying History Panel -->
-        <div id="stayingHistSection" style="display:none">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-            <span style="font-size:11px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:6px;">
-              <i class="ti ti-calendar" style="color:var(--green);font-size:12px"></i> Staying History
-            </span>
-            <button type="button" onclick="window._toggleStayingEdit()" style="padding:3px 8px;background:transparent;border:1.5px solid var(--border);color:var(--text2);font-size:10px;font-weight:700;border-radius:4px;cursor:pointer;font-family:var(--font);">
-              <i class="ti ti-edit" style="font-size:10px;margin-right:2px"></i>Edit
-            </button>
-          </div>
-          <div style="display:grid;gap:8px">
-            ${(() => {
-              const allPeriods = [];
-              if (f.moveIn) allPeriods.push({ owner: f.owner||'Resident', moveIn: f.moveIn, moveOut: f.moveOut||'', isCurrent: !f.moveOut });
-              if (f.stayPeriods && f.stayPeriods.length > 0) f.stayPeriods.forEach(p => allPeriods.push({ owner: p.owner||'Resident', moveIn: p.moveIn, moveOut: p.moveOut||'', isCurrent: false }));
-              allPeriods.sort((a,b) => new Date(b.moveIn||0) - new Date(a.moveIn||0));
-              if (!allPeriods.length) return '<div style="padding:12px;text-align:center;color:var(--muted);font-size:11px">No stay records yet</div>';
-              return allPeriods.map(p => `
-                <div style="background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;padding:10px;font-size:12px">
-                  <div style="font-weight:700;color:var(--text)">${p.owner}</div>
-                  <div style="color:var(--text2);margin-top:3px;font-size:11px">
-                    ${p.moveIn ? new Date(p.moveIn).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) : '—'} →
-                    ${p.moveOut ? new Date(p.moveOut).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) : 'Present'}
-                  </div>
-                  ${p.isCurrent ? '<span style="margin-top:5px;display:inline-block;padding:2px 8px;background:var(--green);color:#fff;border-radius:4px;font-size:9px;font-weight:700;">Current</span>' : ''}
-                </div>`).join('');
-            })()}
-          </div>
-          <div id="stayingEditSection" style="display:none;margin-top:10px;padding-top:10px;border-top:1.5px solid var(--border)">
-            <div style="display:grid;gap:8px;margin-bottom:8px">
-              <div>
-                <label style="font-size:10px;font-weight:700;color:var(--text2);margin-bottom:4px;display:block">Move-In Date</label>
-                <input id="editMoveIn" type="date" value="${f.moveIn||''}" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:6px;font-family:var(--font);font-size:11px;box-sizing:border-box"/>
-              </div>
-              <div>
-                <label style="font-size:10px;font-weight:700;color:var(--text2);margin-bottom:4px;display:block">Move-Out Date</label>
-                <input id="editMoveOut" type="date" value="${f.moveOut||''}" placeholder="Leave empty if still staying" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:6px;font-family:var(--font);font-size:11px;box-sizing:border-box"/>
-              </div>
-            </div>
-            <div style="display:flex;gap:8px">
-              <button type="button" onclick="window._updateStayingDates('${fid}')" style="flex:1;padding:8px;background:var(--indigo);color:#fff;border:none;border-radius:6px;font-weight:700;font-size:11px;cursor:pointer;font-family:var(--font);">Save Dates</button>
-              <button type="button" onclick="window._addStayPeriod('${fid}')" style="flex:1;padding:8px;background:var(--green);color:#fff;border:none;border-radius:6px;font-weight:700;font-size:11px;cursor:pointer;font-family:var(--font);">+ Add Period</button>
-            </div>
-            <div id="stayPeriodsContainer" style="margin-top:10px;display:grid;gap:8px"></div>
-          </div>
-        </div>
-
+        <button id="paymentBtn" type="button" onclick="window._addPayment('${fid}')" style="width:100%;padding:8px;background:var(--indigo);color:#fff;border:none;border-radius:6px;font-weight:700;font-size:11px;cursor:pointer;font-family:var(--font);">
+          + Add Payment
+        </button>
       </div>
     </div>
 
-  </div>`;
-
-  // Populate payment history after dBody is set
-  setTimeout(() => {
+    <!-- STAYING HISTORY -->
+    <div id="stayingHistSection" style="background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--r-lg);padding:14px;margin-bottom:14px;display:none">
+      <div style="font-size:12px;font-weight:800;color:var(--text);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;gap:6px">
+        <div style="display:flex;align-items:center;gap:6px">
+          <i class="ti ti-calendar" style="color:var(--green);font-size:13px"></i> Staying History
+        </div>
+        <button type="button" onclick="window._toggleStayingEdit()" style="padding:4px 8px;background:transparent;border:1.5px solid var(--border);color:var(--text2);font-size:10px;font-weight:700;border-radius:4px;cursor:pointer;font-family:var(--font);">
+          <i class="ti ti-edit" style="font-size:11px;margin-right:2px"></i>Edit
+        </button>
+      </div>
+      <div style="display:grid;gap:8px">
+        <!-- All Stay Periods - Chronological -->
+        ${(() => {
+          // Combine current resident with all stay periods
+          const allPeriods = [];
+          
+          // Add current resident if exists
+          if (f.moveIn) {
+            allPeriods.push({
+              owner: f.owner || 'Resident',
+              moveIn: f.moveIn,
+              moveOut: f.moveOut || '',
+              isCurrent: !f.moveOut
+            });
+          }
+          
+          // Add historical periods
+          if (f.stayPeriods && f.stayPeriods.length > 0) {
+            f.stayPeriods.forEach(p => {
+              allPeriods.push({
+                owner: p.owner || 'Resident',
+                moveIn: p.moveIn,
+                moveOut: p.moveOut || '',
+                isCurrent: false
+              });
+            });
+          }
+          
+          // Sort by moveIn date (newest first)
+          allPeriods.sort((a, b) => new Date(b.moveIn || 0) - new Date(a.moveIn || 0));
+          
+          if (allPeriods.length === 0) {
+            return '<div style="padding:12px;text-align:center;color:var(--muted);font-size:11px">No stay records yet</div>';
+          }
+          
+          return allPeriods.map((p, idx) => `
+            <div style="background:#fff;border:1.5px solid var(--border);border-radius:8px;padding:12px;font-size:12px">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start">
+                <div style="flex:1">
+                  <div style="font-weight:700;color:var(--text)">${p.owner}</div>
+                  <div style="color:var(--text2);margin-top:4px;font-size:11px">
+                    ${p.moveIn ? new Date(p.moveIn).toLocaleDateString('en-IN',{day:'2-digit',month:'2-digit',year:'numeric'}) : '—'} 
+                    → 
+                    ${p.moveOut ? new Date(p.moveOut).toLocaleDateString('en-IN',{day:'2-digit',month:'2-digit',year:'numeric'}) : 'Present'}
+                  </div>
+                  ${p.isCurrent ? '<div style="margin-top:6px;padding:4px 8px;background:var(--green);color:#fff;border-radius:4px;font-size:10px;font-weight:700;width:fit-content">Current</div>' : ''}
+                </div>
+              </div>
+            </div>
+          `).join('');
+        })()}
+      </div>
+      <div id="stayingEditSection" style="display:none;margin-top:10px;padding-top:10px;border-top:1.5px solid var(--border)">
+        <div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:10px;padding:8px;background:var(--surface2);border-radius:6px">
+          ℹ️ Edit current resident's dates or add historical stay periods
+        </div>
+        <div style="display:grid;gap:8px;margin-bottom:8px">
+          <div>
+            <label style="font-size:10px;font-weight:700;color:var(--text2);margin-bottom:4px;display:block">CURRENT RESIDENT - Move-In Date</label>
+            <input id="editMoveIn" type="date" value="${f.moveIn||''}" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:6px;font-family:var(--font);font-size:11px;box-sizing:border-box"/>
+          </div>
+          <div>
+            <label style="font-size:10px;font-weight:700;color:var(--text2);margin-bottom:4px;display:block">CURRENT RESIDENT - Move-Out Date</label>
+            <input id="editMoveOut" type="date" value="${f.moveOut||''}" placeholder="Leave empty if still staying" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:6px;font-family:var(--font);font-size:11px;box-sizing:border-box"/>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button type="button" onclick="window._updateStayingDates('${fid}')" style="flex:1;padding:8px;background:var(--indigo);color:#fff;border:none;border-radius:6px;font-weight:700;font-size:11px;cursor:pointer;font-family:var(--font);">
+            Save Current Resident
+          </button>
+          <button type="button" onclick="window._addStayPeriod('${fid}')" style="flex:1;padding:8px;background:var(--green);color:#fff;border:none;border-radius:6px;font-weight:700;font-size:11px;cursor:pointer;font-family:var(--font);">
+            + Add Historical Period
+          </button>
+        </div>
+        <div id="stayPeriodsContainer" style="margin-top:10px;display:grid;gap:8px">
+          <!-- Additional stay periods will be rendered here -->
+        </div>
+      </div>
+    </div>`;
+    
+    // Populate payment history after dBody is set
+    setTimeout(() => {
     const ex = fex(fid);
     const historyList = document.getElementById('paymentHistoryList');
     if (historyList) {
@@ -807,23 +796,10 @@ async function saveFlat(fid) {
     await updateDoc(flatRef(fid), updatePayload);
     await setDoc(vehRef(fid), { flatId:fid, tw, fw, updatedAt:serverTimestamp() }, { merge:true });
     vehicles.set(fid, { ...(vehicles.get(fid)||{}), tw, fw });
-
-    // If flatId changed, cascade to expenses and issues
-    const oldFlatId = existingFlat.flatId || '';
-    const newFlatId = updatePayload.flatId || oldFlatId;
-    if (newFlatId && newFlatId !== oldFlatId) {
-      const cascadeWrites = [];
-      const expSnap = await getDocs(expColl());
-      expSnap.forEach(d => { if (d.data().flatId === oldFlatId) cascadeWrites.push(updateDoc(d.ref, { flatId: newFlatId })); });
-      const issSnap = await getDocs(issuesColl());
-      issSnap.forEach(d => { if (d.data().flatId === oldFlatId) cascadeWrites.push(updateDoc(d.ref, { flatId: newFlatId })); });
-      if (cascadeWrites.length) await Promise.all(cascadeWrites);
-    }
-
     sync('live');
     toast('Saved ✓');
-    cD();
-    rAll();
+    cD(); // close drawer
+    rAll(); // refresh data
   } catch(e) {
     console.error(e); sync('error'); toast('Save failed.', 'error');
     if (btn) { btn.disabled = false; btn.innerHTML = '<i class="ti ti-device-floppy" style="font-size:15px"></i> Save Changes'; }
@@ -909,21 +885,18 @@ function cA(){document.getElementById('addM').classList.remove('open');}
 document.getElementById('fB').addEventListener('change',fFS);
 
 async function sE(){
-  const block=document.getElementById('fB').value,flatIdVal=document.getElementById('fF').value;
+  const block=document.getElementById('fB').value,fid=document.getElementById('fF').value;
   const cat=document.getElementById('fC').value,amt=parseInt(document.getElementById('fA').value)||0;
   const dv=document.getElementById('fD').value,s=document.getElementById('fS').value;
   const note=document.getElementById('fN').value.trim();
   if(!amt||amt<=0){toast('Please enter a valid amount.','error');return;}
-  // Find flat entry by flatId value (map key may differ from flatId)
-  const flatEntry = [...flats.entries()].find(([,flat]) => flat.flatId === flatIdVal || flat.flatId === flatIdVal.toUpperCase());
-  if(!flatEntry){toast('Flat not found.','error');return;}
-  const [fid, f] = flatEntry;
+  const f=flats.get(fid);if(!f){toast('Flat not found.','error');return;}
   sync('saving');
   const btn=document.getElementById('svBtn');btn.disabled=true;
   document.getElementById('svLbl').textContent='Saving…';
   try{
     const payMonth = dv ? dv.slice(0,7) : AM;
-    await addDoc(expColl(),{flatId:flatIdVal,block,cat,amt,date:dv?fd(dv):fd(new Date().toISOString()),rawDate:dv||new Date().toISOString().split('T')[0],note,status:s,month:payMonth,createdAt:serverTimestamp()});
+    await addDoc(expColl(),{flatId:fid,block,cat,amt,date:dv?fd(dv):fd(new Date().toISOString()),rawDate:dv||new Date().toISOString().split('T')[0],note,status:s,month:payMonth,createdAt:serverTimestamp()});
     let np=f.paid;
     if(s==='paid')np=f.due;else if(s==='partial')np=Math.min(f.paid+amt,f.due-1);
     await updateDoc(flatRef(fid),{paid:np});
@@ -963,6 +936,13 @@ function oRI(){
   document.getElementById('iBl').innerHTML=bks().map(b=>`<option value="${b}">Block ${b}</option>`).join('')+'<option value="Common">Common Area</option>';
   const btn=document.getElementById('issBtn');btn.disabled=false;
   document.getElementById('issBtnL').textContent='Submit Complaint';
+  const _lock=isMember();
+  if(_lock){
+    document.getElementById('iRe').value=MY_NAME||'';
+    document.getElementById('iFl').value=MY_FLAT||'';
+    const _f=flats.get(MY_FLAT); if(_f&&_f.block) document.getElementById('iBl').value=_f.block;
+  }
+  ['iRe','iFl','iBl'].forEach(id=>{document.getElementById(id).disabled=_lock;});
   document.getElementById('rIM').classList.add('open');
 }
 function cRI(){
@@ -988,6 +968,7 @@ async function sI(){
     const now=new Date().toISOString();
     await addDoc(issuesColl(),{
       title,cat,priority,block,flat,desc,reporter,
+      reporterUid:auth.currentUser?.uid||null,
       status:'open',month:AM,
       timeline:[{action:'Issue reported',by:reporter,status:'open',ts:now}],
       createdAt:serverTimestamp(),
@@ -1090,6 +1071,7 @@ function oID(id){
         </div>
       </div>`).join('')}
   `;
+  if(isMember()) document.querySelectorAll('#idC input,#idC select,#idC textarea').forEach(el=>{el.disabled=true;});
   document.getElementById('idM').classList.add('open');
 }
 function cID(){document.getElementById('idM').classList.remove('open');}
@@ -1449,67 +1431,11 @@ window._renameBlockPrompt = async (oldName) => {
   const toUpdate = [...flats.entries()].filter(([,f]) => f.block === oldName);
   sync('saving');
   try {
-    // Build old→new flatId map
-    const flatIdMap = {};
-    toUpdate.forEach(([fid, f]) => {
-      const oldFlatId = f.flatId || '';
-      let suffix = oldFlatId;
-      if (oldFlatId.startsWith(oldName + '-')) suffix = oldFlatId.slice(oldName.length + 1);
-      flatIdMap[oldFlatId] = nn + '-' + suffix;
-    });
-
-    const writes = [];
-
-    // 1. Update flats
-    toUpdate.forEach(([fid]) => {
-      const f = flats.get(fid);
-      const newFlatId = flatIdMap[f.flatId || ''] || (nn + '-' + (f.flatId || ''));
-      writes.push(updateDoc(doc(db,'apartments',UID,'flats',fid), { block: nn, flatId: newFlatId }));
-    });
-
-    // 2. Update vehicles
-    const vehSnap = await getDocs(collection(db,'apartments',UID,'vehicles'));
-    vehSnap.forEach(d => {
-      const oldFid = d.data().flatId;
-      if (flatIdMap[oldFid]) writes.push(updateDoc(d.ref, { flatId: flatIdMap[oldFid] }));
-    });
-
-    // 3. Update expenses/payments
-    const expSnap = await getDocs(expColl());
-    expSnap.forEach(d => {
-      const oldFid = d.data().flatId;
-      if (flatIdMap[oldFid]) writes.push(updateDoc(d.ref, { flatId: flatIdMap[oldFid], block: nn }));
-    });
-
-    // 4. Update issues
-    const issSnap = await getDocs(issuesColl());
-    issSnap.forEach(d => {
-      const oldFid = d.data().flatId;
-      if (flatIdMap[oldFid]) writes.push(updateDoc(d.ref, { flatId: flatIdMap[oldFid] }));
-    });
-
-    await Promise.all(writes);
-
-    // Update in-memory maps
-    toUpdate.forEach(([fid, f]) => {
-      const newFlatId = flatIdMap[f.flatId || ''] || f.flatId;
-      f.block  = nn;
-      f.flatId = newFlatId;
-      flats.set(fid, f);
-    });
-    // Re-key vehicles map
-    [...vehicles.entries()].forEach(([k, v]) => {
-      if (flatIdMap[k]) { vehicles.set(flatIdMap[k], v); vehicles.delete(k); }
-    });
-
-    sync('live');
-    toast('Block renamed — all records updated ✓');
-    rAll();
-    window._renderStructureList();
-    rStructure();
-  } catch(e) {
-    console.error(e); sync('error'); toast('Rename failed','error');
-  }
+    await Promise.all(toUpdate.map(([fid]) => updateDoc(doc(db,'apartments',UID,'flats',fid), {block: nn})));
+    toUpdate.forEach(([fid, f]) => { f.block = nn; flats.set(fid, f); });
+    sync('live'); toast('Block renamed ✓');
+    window._renderStructureList(); rStructure();
+  } catch(e) { sync('error'); toast('Rename failed','error'); }
 };
 window._closeStructureManager = () => {
   document.getElementById('structureModal').style.display = 'none';
@@ -1664,7 +1590,7 @@ window._saveNewStructure = async () => {
     for (const f of newFlats) {
       const fid = (blockName + '-' + f.flatNum).replace(/[^a-z0-9-]/gi, '_').toLowerCase();
       const flatDoc = {
-        flatId: blockName + '-' + f.flatNum,
+        flatId: f.flatNum,
         block: blockName,
         floor: f.floor,
         owner: f.resName,
@@ -1971,8 +1897,10 @@ window._wizLaunch = async function() {
   btn.disabled = true;
   document.getElementById('wLaunchLbl').textContent = ' Creating…';
   try {
+    // Get corpus fund value from input
+    const corpusFundValue = parseFloat(document.getElementById('wCorpusFund')?.value || 0) || 0;
     // Save apt config (merge so name is preserved if set)
-    await setDoc(aptDocRef(), { name: APT_NAME, blocks: WIZ_BLOCKS }, { merge: true });
+    await setDoc(aptDocRef(), { name: APT_NAME, blocks: WIZ_BLOCKS, corpusFund: corpusFundValue }, { merge: true });
     // Create flats
     // Check if flats already exist (prevent duplicate creation on double-tap)
     const existingSnap = await getDocs(flatsColl());
@@ -2023,11 +1951,6 @@ function switchView(v) {
   document.querySelectorAll('.bnav-item').forEach(p => p.classList.toggle('active', p.dataset.v===v));
   if(v==='analytics') try{ rAnalytics(); } catch(e){ console.error(e); }
   if(v==='structure') try{ rStructure(); } catch(e){ console.error(e); }
-  if(v==='issues') {
-    const phAct = document.getElementById('phAct');
-    if (phAct) phAct.innerHTML = '';
-    try{ window._issSubTab(window._activeIssSubTab || 'issues'); } catch(e){ console.error(e); }
-  }
   if(v==='president') {
     try{ rPresident(); } catch(e){ console.error(e); }
     rPresHistory().catch(e => console.error('rPresHistory', e));
@@ -2058,6 +1981,7 @@ function listenVehicles(){
   vu=onSnapshot(vehColl(),snap=>{
     vehicles.clear();
     snap.forEach(d=>vehicles.set(d.id,{...d.data()}));
+    console.log('Vehicles loaded:', vehicles.size, 'items');
     rStats();
   },e=>console.error('veh listener',e));
 }
@@ -2594,7 +2518,6 @@ function rPresident() {
       <div style="display:flex;gap:8px;align-items:center;flex-shrink:0;">
         <button class="btn btn-indigo" onclick="window._oA()"><i class="ti ti-plus"></i> Add Payment</button>
         <button class="btn btn-indigo" onclick="window._oPresExp()"><i class="ti ti-receipt"></i> Add Expense</button>
-        <button class="btn btn-white" onclick="window._oMonthlySummary()" style="border:1.5px solid var(--border2)"><i class="ti ti-file-text"></i> Monthly Report</button>
       </div>
       <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
         <select id="histYearFilter"
@@ -2645,7 +2568,12 @@ function rPresident() {
         const lbl = new Date(m + '-01').toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
         return `<option value="${m}">${lbl}</option>`;
       }).join('');
-    if (_savedMonth && filteredMonths.includes(_savedMonth)) mSel.value = _savedMonth;
+    // Default to current month (AM) if available
+    if (!_savedMonth) {
+      mSel.value = filteredMonths.includes(AM) ? AM : (filteredMonths[0] || 'all');
+    } else if (filteredMonths.includes(_savedMonth)) {
+      mSel.value = _savedMonth;
+    }
   }
 
   // Category dropdown — restore saved selection
@@ -2668,25 +2596,29 @@ function rPresident() {
     return true;
   });
 
-  /* ── Summary cards (based on filtered vis data) ── */
-  const totalFilteredExp = vis.reduce((s,e)=>s+(e.amt||0),0);
-  const totalAllExp      = socExps.reduce((s,e)=>s+(e.amt||0),0);
+  /* ── Calculate current month expenses ── */
+  const currentMonthExpenses = socExps.filter(e => {
+    const m = e.month || '';
+    return m === AM;
+  });
+  const totalCurrentMonthExp = currentMonthExpenses.reduce((s,e)=>s+(e.amt||0),0);
 
-  // Build period label for the chip
-  let periodLabel = 'All Time';
-  if (yf !== 'all' && mf !== 'all') {
-    periodLabel = new Date(mf+'-01').toLocaleDateString('en-IN',{month:'long',year:'numeric'});
-  } else if (yf !== 'all') {
-    periodLabel = `Year ${yf}`;
-  } else if (mf !== 'all') {
-    periodLabel = new Date(mf+'-01').toLocaleDateString('en-IN',{month:'long',year:'numeric'});
-  } else if (cf !== 'all') {
-    periodLabel = cf;
-  }
+  /* ── Summary cards (Current Month vs All Time) ── */
+  const totalAllExp = socExps.reduce((s,e)=>s+(e.amt||0),0);
+  const currentMonthLabel = new Date(AM + '-01').toLocaleDateString('en-IN',{month:'long',year:'numeric'});
+
+  /* ── Calculate total society expenses ── */
+  const totalSocietyExpenses = socExps.reduce((s, e) => s + (e.amt || 0), 0);
+  
+  /* ── Calculate all-time payments ── */
+  const allTimePayments = Array.from(exps.values())
+    .flat()
+    .reduce((s, e) => s + (e.amt || 0), 0);
 
   document.getElementById('fundRow').innerHTML = `
-    <div class="fcard2 red"><div class="fcard2-label">All Time</div><div class="fcard2-val" style="color:var(--red)">${inr(totalAllExp)}</div><div class="fcard2-sub">${socExps.length} records</div></div>
-    <div class="fcard2 indigo"><div class="fcard2-label">${periodLabel}</div><div class="fcard2-val">${inr(totalFilteredExp)}</div><div class="fcard2-sub">${vis.length} record${vis.length!==1?'s':''}</div></div>`;
+    <div class="fcard2 indigo"><div class="fcard2-label">${currentMonthLabel}</div><div class="fcard2-val">${inr(totalCurrentMonthExp)}</div><div class="fcard2-sub">${currentMonthExpenses.length} record${currentMonthExpenses.length!==1?'s':''}</div></div>
+    <div class="fcard2 indigo"><div class="fcard2-label">All Time</div><div class="fcard2-val">${inr(totalAllExp)}</div><div class="fcard2-sub">${socExps.length} records</div></div>`;
+
 
   /* ── Build pie segments from filtered data ── */
   const catMap2 = new Map();
@@ -3383,6 +3315,7 @@ async function boot(){
 
     if(aptDoc.exists() && aptDoc.data().name) applyAptName(aptDoc.data().name);
     if(aptDoc.exists() && aptDoc.data().president) president=aptDoc.data().president;
+    if(aptDoc.exists() && aptDoc.data().corpusFund) APT_CORPUS_FUND=aptDoc.data().corpusFund;
     await loadCats();
 
     // Check if society is already configured (registered via register.html)
@@ -3394,7 +3327,7 @@ async function boot(){
     // Also check flat count
     const snap = await getDocs(flatsColl());
 
-    if (!snap.empty || hasAptBlocks) {
+    if (!snap.empty || hasAptBlocks || isMember()) {
       // Society already set up — go straight to app
       listenFlats();
       listenExp();
@@ -3402,6 +3335,7 @@ async function boot(){
       listenVehicles();
       listenSocExp();
       listenContacts();
+      if (isAdmin()) initMembershipUI(); else showMemberBanner();
       // Reveal the app UI — this was previously only done in the wizard branch,
       // causing a permanently blank page on refresh for already-configured societies.
       document.getElementById('lo').style.display = 'none';
@@ -3607,7 +3541,7 @@ function rStructure() {
             <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:${paidCnt===fts.length?'var(--green)':paidCnt>0?'var(--amber)':'var(--red)'};color:#fff;">${paidCnt}/${fts.length}</span>
             <i class="ti ti-chevron-down blk-toggle-icon" style="color:var(--indigo);font-size:13px;transition:transform .2s;"></i>
           </div>
-          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;">
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
             ${fts.map(f => makeChip(f)).join('')}
           </div>
         </div>`
@@ -3615,7 +3549,7 @@ function rStructure() {
 
   } else {
     // All flats in one grid
-    chipsEl.innerHTML = `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;">
+    chipsEl.innerHTML = `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
       ${rows.map(f => makeChip(f)).join('')}
     </div>`;
   }
@@ -3632,37 +3566,30 @@ function rStructure() {
       if (flat.flatId === f.flatId && flat.block === f.block) { fid = key; break; }
     }
 
-    const barClr  = {paid:'#22c55e', partial:'#f59e0b', pending:'#ef4444', vacant:'#e5e7eb'}[status];
+    // Option 4 — Icon chip: status dot + flat ID + type (3-col grid)
+    const dotClr  = {paid:'#22c55e', partial:'#f59e0b', pending:'#ef4444', vacant:'#d1d5db'}[status];
     const typeLbl = isVacant ? 'Vacant' : rType==='tenant' ? 'Tenant' : 'Owner';
     const typeClr = isVacant ? '#9ca3af' : rType==='tenant' ? '#d97706' : '#6366f1';
-    const ini     = isVacant ? '?' : (f.owner||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-    const iniClr  = {paid:'#16a34a', partial:'#d97706', pending:'#dc2626', vacant:'#9ca3af'}[status];
-    const iniTxt  = {paid:'#dcfce7', partial:'#fef9c3', pending:'#fee2e2', vacant:'#f3f4f6'}[status];
+    const borderClr = {paid:'#bbf7d0', partial:'#fde68a', pending:'#fecaca', vacant:'#e5e7eb'}[status];
+    const bgClr   = {paid:'#f0fdf4', partial:'#fffbeb', pending:'#fff1f2', vacant:'#fafafa'}[status];
 
     return `<button onclick="window.oFlEdit('${fid}')"
-      style="background:#fff;border:1.5px solid #f0f0f0;border-radius:10px;padding:0;
-        cursor:pointer;font-family:var(--font);text-align:left;width:100%;
-        overflow:hidden;transition:box-shadow .12s,border-color .12s;
-        box-shadow:0 1px 3px rgba(0,0,0,.05);"
-      onmouseover="this.style.boxShadow='0 4px 10px rgba(0,0,0,.08)';this.style.borderColor='${barClr}'"
-      onmouseout="this.style.boxShadow='0 1px 3px rgba(0,0,0,.05)';this.style.borderColor='#f0f0f0'">
-      <div style="height:3px;background:${barClr};width:100%"></div>
-      <div style="padding:7px 8px;display:flex;align-items:center;gap:7px;background:#fff">
-        <div style="width:26px;height:26px;border-radius:7px;background:${iniTxt};color:${iniClr};
-          font-size:9px;font-weight:800;display:flex;align-items:center;justify-content:center;
-          flex-shrink:0;letter-spacing:-.3px;">${ini}</div>
-        <div style="flex:1;min-width:0;overflow:hidden;">
-          <div style="font-size:11px;font-weight:800;color:#1e293b;white-space:nowrap;
-            overflow:hidden;text-overflow:ellipsis;line-height:1.3;">${f.flatId}</div>
-          <div style="font-size:9px;font-weight:600;color:${typeClr};margin-top:1px;">${typeLbl}</div>
-        </div>
+      style="background:${bgClr};border:1px solid ${borderClr};border-radius:8px;
+        padding:7px 8px;cursor:pointer;font-family:var(--font);text-align:left;
+        display:flex;align-items:center;gap:7px;width:100%;
+        transition:box-shadow .12s,border-color .12s;box-shadow:0 1px 2px rgba(0,0,0,.04);"
+      onmouseover="this.style.boxShadow='0 3px 8px rgba(0,0,0,.1)';this.style.borderColor='${dotClr}'"
+      onmouseout="this.style.boxShadow='0 1px 2px rgba(0,0,0,.04)';this.style.borderColor='${borderClr}'">
+      <span style="width:8px;height:8px;border-radius:50%;background:${dotClr};flex-shrink:0;display:inline-block;"></span>
+      <div style="min-width:0;overflow:hidden;">
+        <div style="font-size:11px;font-weight:700;color:#111827;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2">${f.flatId}</div>
+        <div style="font-size:9px;font-weight:600;color:${typeClr};margin-top:1px;white-space:nowrap">${typeLbl}</div>
       </div>
     </button>`;
   }
 }
 
 window.rStructure = rStructure;
-
 window._setStrView = v => {
   STRVIEW = v;
   document.querySelectorAll('[data-view]').forEach(btn => {
@@ -3982,15 +3909,6 @@ function rAnalytics() {
           style="font-size:11px;height:32px;padding:0 8px;border:1.5px solid var(--border2);border-radius:var(--r-md);background:#fff;color:var(--text);font-family:var(--font);font-weight:600;cursor:pointer;outline:none;"
           onchange="window._anOnMonthChange()">
         </select>
-        <select id="payStatusFilter"
-          style="font-size:11px;height:32px;padding:0 8px;border:1.5px solid var(--border2);border-radius:var(--r-md);background:#fff;color:var(--text);font-family:var(--font);font-weight:600;cursor:pointer;outline:none;"
-          onchange="window._anOnStatusFilterChange()">
-          <option value="all">All Status</option>
-          <option value="paid">✅ Full Paid</option>
-          <option value="partial">🟡 Partial</option>
-          <option value="pending">🔴 Not Paid</option>
-          <option value="vacant">⬜ Vacant</option>
-        </select>
       </div>
     </div>`;
 
@@ -4060,8 +3978,8 @@ function _anPopulateMonths(sortedMonths) {
       return `<option value="${m}">${lbl}</option>`;
     }).join('');
 
-  // Default to first available month in the year
-  if (filtered.length) mSel.value = filtered[0];
+  // Default to current month (AM) if available, otherwise first available month
+  if (filtered.length) mSel.value = filtered.includes(AM) ? AM : filtered[0];
 }
 
 /* Core render: reads exps Map, no paymentHistory needed */
@@ -4131,6 +4049,48 @@ function _anRender() {
   const outstanding = Math.max(0, totalDue - totalCollected);
   const pct = totalDue ? Math.round(totalCollected / totalDue * 100) : 0;
 
+  /* ── All-time outstanding (regardless of filter) ── */
+  let allTimeCollected = 0, allTimeDue = 0;
+  flats.forEach((f, fid) => {
+    if (selBlock && f.block !== selBlock) return;
+    const isVacant = !(f.owner || '').trim();
+    if (isVacant) return;
+
+    const due = f.due || 0;
+    const flatMonths = new Set(
+      (exps.get(fid) || [])
+        .map(e => e.month || (e.rawDate || '').slice(0, 7))
+        .filter(Boolean)
+    );
+    allTimeDue += due * (flatMonths.size || 1);
+    
+    const collected = (exps.get(fid) || [])
+      .reduce((s, e) => s + (e.amt || 0), 0);
+    allTimeCollected += collected;
+  });
+  
+  /* ── Calculate current month collected ── */
+  const currentMonthCollected = Array.from(exps.values())
+    .flat()
+    .filter(e => {
+      const m = e.month || (e.rawDate || '').slice(0, 7) || '';
+      return m === AM;
+    })
+    .reduce((s, e) => s + (e.amt || 0), 0);
+  
+  const currentMonthRecords = Array.from(exps.values())
+    .flat()
+    .filter(e => {
+      const m = e.month || (e.rawDate || '').slice(0, 7) || '';
+      return m === AM;
+    }).length;
+
+  /* ── Calculate total society expenses ── */
+  const totalSocietyExpenses = socExps.reduce((s, e) => s + (e.amt || 0), 0);
+  
+  /* ── Outstanding = Corpus Fund - Expenses + Payments ── */
+  const outstandingBalance = APT_CORPUS_FUND - totalSocietyExpenses + allTimeCollected;
+
   /* ── Pie chart segments ── */
   const segments = [
     { label:'Paid',    value:paid,    color:'#22c55e', displayValue:`${paid} flats`    },
@@ -4146,27 +4106,27 @@ function _anRender() {
     buildLegend('payLegend', segments.map(s => ({ ...s, count: s.value })), totalFlats);
   });
 
-  /* ── Summary cards ── */
+  /* ── Summary cards: Current Month and Outstanding Balance ── */
   const cardsDiv = document.getElementById('analyticsTotals');
-  if (cardsDiv) cardsDiv.innerHTML = `
-    <div class="vscard green">
-      <div class="vscard-icon fw"><i class="ti ti-circle-check"></i></div>
+  if (cardsDiv) {
+    const currentMonthLabel = new Date(AM + '-01').toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+    cardsDiv.innerHTML = `
+    <div class="vscard indigo">
       <div>
-        <div class="vscard-label">Collected</div>
-        <div class="vscard-val" style="color:var(--green)">${inr(totalCollected)}</div>
-        <div style="font-size:10px;color:var(--muted);margin-top:2px">${totalFlats} flats · ${pct}%</div>
-        <div style="font-size:10px;font-weight:700;color:var(--green);margin-top:1px">${periodLabel}</div>
+        <div class="vscard-label" style="color:#000">${currentMonthLabel}</div>
+        <div class="vscard-val" style="color:#000">${inr(currentMonthCollected)}</div>
+        <div style="font-size:10px;color:#000;margin-top:4px">${currentMonthRecords} record${currentMonthRecords!==1?'s':''}</div>
       </div>
     </div>
-    <div class="vscard red">
-      <div class="vscard-icon" style="background:var(--red-bg);color:var(--red)"><i class="ti ti-clock"></i></div>
+    <div class="vscard indigo" style="position:relative">
       <div>
-        <div class="vscard-label">Outstanding</div>
-        <div class="vscard-val" style="color:var(--red)">${inr(outstanding)}</div>
-        <div style="font-size:10px;color:var(--muted);margin-top:2px">${pending + partial} pending · ${totalFlats} total flats</div>
-        <div style="font-size:10px;font-weight:700;color:var(--red-txt);margin-top:1px">${periodLabel}</div>
+        <div class="vscard-label" style="color:#000">Outstanding Balance</div>
+        <div class="vscard-val" style="color:#000">${inr(Math.max(0, outstandingBalance))}</div>
+        <div style="font-size:10px;color:#000;margin-top:4px">Corpus: ${inr(APT_CORPUS_FUND)}</div>
       </div>
+      <button onclick="window._editCorpusFund()" style="position:absolute;top:8px;right:8px;background:none;border:none;cursor:pointer;color:#000;font-size:16px;padding:4px"><i class="ti ti-edit"></i></button>
     </div>`;
+  }
 
   /* ── Payment records table ── */
   renderAnPayTable('month', selectedMonth || AM, selectedYear, selBlock || 'all');
@@ -4253,12 +4213,6 @@ function anSetStatus(s) {
 }
 window.anSetStatus = anSetStatus;
 
-window._anOnStatusFilterChange = function() {
-  const val = document.getElementById('payStatusFilter')?.value || 'all';
-  _anStatus = val;
-  renderAnPayTable();
-};
-
 function anSetBlock(b) {
   _anBlock = b;
   // Sync both block selects
@@ -4282,17 +4236,7 @@ function renderAnPayTable(filterType, selMonth, selYear, selBlock) {
   const sb = _anBlock      || 'all';
 
   let rows = _buildFlatSummary(ft, sm, sy, sb);
-  // Apply status filter
-  const statusFilter = document.getElementById('payStatusFilter')?.value || _anStatus || 'all';
-  if (statusFilter !== 'all') rows = rows.filter(f => f._status === statusFilter);
-  // Sort by block then flat number
-  rows.sort((a, b) => {
-    const blockA = (a.block || a.flatId || '').toUpperCase();
-    const blockB = (b.block || b.flatId || '').toUpperCase();
-    if (blockA < blockB) return -1;
-    if (blockA > blockB) return 1;
-    return (a.flatId||'').localeCompare(b.flatId||'', undefined, {numeric:true});
-  });
+  if (_anStatus !== 'all') rows = rows.filter(f => f._status === _anStatus);
 
   const tbody   = document.getElementById('anPayTable');
   const empty   = document.getElementById('anPayEmpty');
@@ -4308,30 +4252,20 @@ function renderAnPayTable(filterType, selMonth, selYear, selBlock) {
   if (empty)   empty.style.display   = 'none';
   if (counter) counter.textContent   = `(${rows.length} flats)`;
 
-  const statusIcon = {
-    paid:    `<span title="Paid"    style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:#dcfce7"><i class="ti ti-circle-check" style="color:#16a34a;font-size:15px"></i></span>`,
-    partial: `<span title="Partial" style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:#fef9c3"><i class="ti ti-circle-half" style="color:#d97706;font-size:15px"></i></span>`,
-    pending: `<span title="Pending" style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:#fee2e2"><i class="ti ti-clock" style="color:#dc2626;font-size:15px"></i></span>`,
-    vacant:  `<span title="Vacant"  style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:#f3f4f6"><i class="ti ti-door" style="color:#9ca3af;font-size:15px"></i></span>`,
-  };
-
   tbody.innerHTML = rows.map((f,i) => {
     const s        = f._status || 'pending';
     const bal      = (f.due||0) - (f.paid||0);
     const balColor = bal > 0 ? 'var(--red)' : 'var(--green)';
-    // Normalize flatId: capitalize block prefix, ensure block-number format
-    const rawFid   = f.flatId || '';
-    const normFid  = rawFid.includes('-')
-      ? rawFid.replace(/^([a-z]+)-/, m => m.toUpperCase()) // a-103 → A-103
-      : (f.block ? f.block.toUpperCase() + '-' + rawFid : rawFid); // 402 → A-402
-    const displayFid = normFid;
-    // Vehicle lookup tries both normalized and raw
-    const v        = vehicles.get(rawFid) || vehicles.get(normFid) || {};
+    const v        = vehicles.get(f.flatId) || { tw: 0, fw: 0 };
     const tw       = parseInt(v.tw) || 0;
     const fw       = parseInt(v.fw) || 0;
     const vehCell  = (tw === 0 && fw === 0)
       ? `<span style="font-size:11px;color:var(--muted)">—</span>`
-      : `<span style="font-size:12px;font-weight:700;color:var(--text)">${tw}/${fw}</span>`;
+      : `<span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--text)">
+           ${tw > 0 ? `<span>${tw}</span>` : ''}
+           ${tw > 0 && fw > 0 ? `<span style="color:var(--text2)">/ </span>` : ''}
+           ${fw > 0 ? `<span>${fw}</span>` : ''}
+         </span>`;
     const isVacant = !(f.owner||'').trim();
     const resType  = isVacant ? 'vacant' : (f.resType||'owner');
     const typeBadge = isVacant
@@ -4339,34 +4273,44 @@ function renderAnPayTable(filterType, selMonth, selYear, selBlock) {
       : resType === 'tenant'
         ? `<span style="font-size:9px;font-weight:700;color:var(--amber)">🔑 Tenant</span>`
         : `<span style="font-size:9px;font-weight:700;color:var(--indigo)">🏠 Owner</span>`;
+    
+    const statusText = {
+      paid: 'Paid',
+      partial: 'Partial',
+      pending: 'Pending',
+      vacant: 'Vacant'
+    }[s] || 'Pending';
+    
     return `<tr
-      onclick="window._openPayHistory('${rawFid}')"
+      onclick="window._openPayHistory('${f.flatId}')"
       style="cursor:pointer;transition:background .12s"
       onmouseover="this.style.background='var(--indigo-bg)'"
       onmouseout="this.style.background=''">
-      <td style="padding:8px 6px;font-weight:800;color:var(--indigo);font-size:12px;border-bottom:1px solid var(--border);vertical-align:middle;white-space:nowrap">${displayFid}</td>
-      <td style="padding:8px 6px;border-bottom:1px solid var(--border);overflow:hidden;vertical-align:middle">
+      <td style="padding:10px 12px;font-weight:800;color:var(--indigo);font-size:12px;border-bottom:1px solid var(--border);vertical-align:middle;white-space:nowrap">${f.flatId}</td>
+      <td style="padding:10px 12px;border-bottom:1px solid var(--border);overflow:hidden;vertical-align:middle">
         <div style="font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${f.owner||'<em style="color:var(--muted);font-weight:400">Vacant</em>'}</div>
         <div style="margin-top:2px">${typeBadge}</div>
       </td>
-      <td style="padding:8px 4px;text-align:center;border-bottom:1px solid var(--border);vertical-align:middle">${vehCell}</td>
-      <td style="padding:8px 6px;text-align:right;font-weight:800;color:${balColor};font-size:13px;border-bottom:1px solid var(--border);white-space:nowrap;vertical-align:middle">${f.due?inr(Math.abs(bal)):'—'}</td>
-      <td style="padding:8px 4px;text-align:center;border-bottom:1px solid var(--border);vertical-align:middle">${statusIcon[s]||statusIcon.pending}</td>
+      <td style="padding:10px 12px;text-align:center;border-bottom:1px solid var(--border);vertical-align:middle;font-size:12px">${vehCell}</td>
+      <td style="padding:10px 12px;text-align:right;font-weight:800;color:${balColor};font-size:13px;border-bottom:1px solid var(--border);white-space:nowrap;vertical-align:middle">${f.due?inr(Math.abs(bal)):'—'}</td>
+      <td style="padding:10px 12px;text-align:center;border-bottom:1px solid var(--border);vertical-align:middle;position:relative" class="status-col">
+        <span class="status-text" style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:4px 8px;border-radius:6px;${s==='paid'?'background:#dcfce7;color:#16a34a':s==='partial'?'background:#fef9c3;color:#d97706':s==='pending'?'background:#fee2e2;color:#dc2626':'background:#f3f4f6;color:#9ca3af'}">${statusText}</span>
+        <span class="status-icon" style="display:none;font-size:20px;${s==='paid'?'color:#16a34a':s==='partial'?'color:#d97706':'color:#dc2626'}" title="${statusText}">
+          <i class="ti ti-circle-filled"></i>
+        </span>
+      </td>
     </tr>`;
   }).join('');
 
-  // Totals row (5 columns)
+  // Totals row
   const totBal = rows.reduce((s,f)=>s+((f.due||0)-(f.paid||0)),0);
   const totTw  = rows.reduce((s,f)=>s+(parseInt((vehicles.get(f.flatId)||{}).tw)||0),0);
   const totFw  = rows.reduce((s,f)=>s+(parseInt((vehicles.get(f.flatId)||{}).fw)||0),0);
-  const totVeh = (totTw > 0 || totFw > 0)
-    ? `<span style="font-size:12px;font-weight:700;color:var(--text)">${totTw}/${totFw}</span>`
-    : '—';
-  tbody.innerHTML += `<tr style="position:sticky;bottom:0;z-index:2;background:var(--surface3);border-top:2px solid var(--border2)">
-    <td style="padding:8px 6px;font-size:11px;font-weight:800;color:var(--text2)" colspan="2">Total — ${rows.length} flats</td>
-    <td style="padding:8px 4px;text-align:center">${totVeh}</td>
-    <td style="padding:8px 6px;text-align:right;font-weight:800;color:${totBal>0?'var(--red)':'var(--green)'};font-size:13px;white-space:nowrap">${inr(Math.abs(totBal))}</td>
-    <td style="padding:8px 4px;text-align:center;font-size:10px;color:var(--muted)">—</td>
+  tbody.innerHTML += `<tr style="background:var(--surface3);border-top:2px solid var(--border2)">
+    <td style="padding:10px 12px;font-size:11px;font-weight:800;color:var(--text2)" colspan="2">Total — ${rows.length} flats</td>
+    <td style="padding:10px 12px;text-align:center;font-size:12px;font-weight:700;color:var(--text)">${totTw>0?`${totTw}`:''} ${totTw>0&&totFw>0?'/ ':''} ${totFw>0?`${totFw}`:''}</td>
+    <td style="padding:10px 12px;text-align:right;font-weight:800;color:${totBal>0?'var(--red)':'var(--green)'};font-size:13px;white-space:nowrap">${inr(Math.abs(totBal))}</td>
+    <td style="padding:10px 12px;text-align:center;font-size:10px;color:var(--muted)">—</td>
   </tr>`;
 }
 
@@ -4462,7 +4406,7 @@ function _renderSummary() {
   const collPctHead = totDue > 0 ? Math.round(totPaid / totDue * 100) : 0;
   document.getElementById('msSummaryHead').innerHTML = `
     <style>
-      .ms-kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px}
+      .ms-kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
       .ms-kpi{border-radius:12px;padding:12px;position:relative;overflow:hidden}
       .ms-kpi-lbl{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.6px;white-space:nowrap;opacity:.85}
       .ms-kpi-val{font-size:16px;font-weight:800;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.3px}
@@ -4815,17 +4759,11 @@ window._rContacts = function() {
   const el = document.getElementById('contactsList');
   if (!el) return;
 
-  // Ensure grid layout
-  el.style.display = 'grid';
-  el.style.gridTemplateColumns = 'repeat(auto-fill,minmax(88px,1fr))';
-  el.style.gap = '8px';
-
   if (!vis.length) {
-    el.style.display = 'block';
-    el.innerHTML = `<div style="padding:40px 20px;text-align:center;color:var(--muted)">
+    el.innerHTML = `<div style="grid-column:1/-1;padding:40px 20px;text-align:center;color:var(--muted)">
       <i class="ti ti-address-book-off" style="font-size:28px;display:block;margin-bottom:10px;opacity:.5"></i>
-      <div style="font-size:13px;font-weight:600">No contacts ${filter!=='all'?'in this category':'yet'}</div>
-      <div style="font-size:11px;margin-top:4px">Tap "Add Contact" to save plumber, electrician etc.</div>
+      <div style="font-size:13px;font-weight:600">No service contacts ${filter!=='all'?'in this category':'yet'}</div>
+      <div style="font-size:11px;margin-top:4px">Tap "Add Contact" to save plumber, electrician, maid etc.</div>
     </div>`;
     return;
   }
@@ -4835,29 +4773,24 @@ window._rContacts = function() {
     const color = CONTACT_COLORS[c.cat] || '#6B7280';
     const phone = (c.phone || '').replace(/\D/g, '');
     return `<div onclick="window._oContact('${c.id}')"
-      style="background:#fff;border:1.5px solid var(--border2);border-top:3px solid ${color};
-        border-radius:10px;padding:10px 6px 8px;cursor:pointer;
-        display:flex;flex-direction:column;align-items:center;gap:4px;
-        min-height:100px;text-align:center;
-        transition:box-shadow .12s,border-color .12s;"
-      onmouseover="this.style.boxShadow='0 3px 10px rgba(0,0,0,.08)';this.style.borderColor='${color}'"
+      style="display:flex;align-items:center;gap:8px;background:#fff;border:1.5px solid var(--border2);
+        border-radius:10px;padding:7px 8px;cursor:pointer;transition:box-shadow .12s,border-color .12s"
+      onmouseover="this.style.boxShadow='0 2px 8px rgba(0,0,0,.06)';this.style.borderColor='${color}'"
       onmouseout="this.style.boxShadow='';this.style.borderColor='var(--border2)'">
-      <div style="width:34px;height:34px;border-radius:10px;background:${color}18;color:${color};
-        display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">
+      <div style="width:30px;height:30px;border-radius:8px;background:${color}18;color:${color};
+        display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">
         <i class="ti ${icon}"></i>
       </div>
-      <div style="font-size:10px;font-weight:700;color:var(--text);word-break:break-word;width:100%;line-height:1.3">${c.name || 'Unnamed'}</div>
-      <div style="font-size:9px;font-weight:600;color:${color};width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.cat || 'Other'}</div>
-      <div style="display:flex;gap:4px;margin-top:auto;padding-top:2px" onclick="event.stopPropagation()">
-        <a href="tel:${phone}" title="Call"
-          style="width:24px;height:24px;display:flex;align-items:center;justify-content:center;
-            background:var(--indigo-bg);color:var(--indigo);border-radius:999px;text-decoration:none;">
-          <i class="ti ti-phone" style="font-size:11px"></i>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12px;font-weight:700;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.name || 'Unnamed'}</div>
+        <div style="font-size:9px;font-weight:600;color:${color};margin-top:1px">${c.cat || 'Other'}${c.phone ? ' · '+c.phone : ''}</div>
+      </div>
+      <div style="display:flex;gap:4px;flex-shrink:0" onclick="event.stopPropagation()">
+        <a href="tel:${phone}" title="Call" style="width:26px;height:26px;display:flex;align-items:center;justify-content:center;background:var(--indigo-bg);color:var(--indigo);border-radius:6px;text-decoration:none">
+          <i class="ti ti-phone" style="font-size:12px"></i>
         </a>
-        ${phone ? `<a href="https://wa.me/91${phone}" target="_blank" title="WhatsApp"
-          style="width:24px;height:24px;display:flex;align-items:center;justify-content:center;
-            background:#D1FAE5;color:#065F46;border-radius:999px;text-decoration:none;">
-          <i class="ti ti-brand-whatsapp" style="font-size:12px"></i>
+        ${phone ? `<a href="https://wa.me/91${phone}" target="_blank" title="WhatsApp" style="width:26px;height:26px;display:flex;align-items:center;justify-content:center;background:#D1FAE5;color:#065F46;border-radius:6px;text-decoration:none">
+          <i class="ti ti-brand-whatsapp" style="font-size:13px"></i>
         </a>` : ''}
       </div>
     </div>`;
@@ -4947,41 +4880,203 @@ window._delContact = async function() {
 };
 
 /* ════════════════════════════════
+   EDIT CORPUS FUND
+════════════════════════════════ */
+window._editCorpusFund = function() {
+  const newAmount = prompt('Enter new Corpus Fund amount:', APT_CORPUS_FUND);
+  if (newAmount === null) return; // User cancelled
+  
+  const corpusValue = parseInt(newAmount) || 0;
+  if (corpusValue < 0) {
+    toast('Amount cannot be negative', 'error');
+    return;
+  }
+  
+  sync('saving');
+  updateDoc(aptDocRef(), { corpusFund: corpusValue })
+    .then(() => {
+      APT_CORPUS_FUND = corpusValue;
+      sync('live');
+      toast('Corpus Fund updated ✓');
+      // Refresh both tabs
+      if(document.getElementById('presidentView').style.display !== 'none') rPresident();
+      if(document.getElementById('analyticsView').style.display !== 'none') rAnalytics();
+    })
+    .catch(e => {
+      console.error(e);
+      sync('error');
+      toast('Update failed', 'error');
+    });
+};
+
+/* ════════════════════════════════
    ISSUES / CONTACTS SUB-TAB TOGGLE
 ════════════════════════════════ */
 window._issSubTab = function(which) {
-  window._activeIssSubTab = which;
-
   const issuesBtn    = document.getElementById('issSubTabIssues');
   const contactsBtn  = document.getElementById('issSubTabContacts');
   const reportsBtn   = document.getElementById('issSubTabReports');
   const issuesPanel  = document.getElementById('issSubPanelIssues');
   const contactsPanel= document.getElementById('issSubPanelContacts');
   const reportsPanel = document.getElementById('issSubPanelReports');
+  if (!issuesBtn || !contactsBtn || !reportsBtn || !issuesPanel || !contactsPanel || !reportsPanel) return;
 
-  if (!issuesBtn || !contactsBtn || !issuesPanel || !contactsPanel) return;
+  const active = { border:'var(--indigo)', bg:'var(--indigo)', color:'#fff' };
+  const inactive = { border:'var(--border2)', bg:'#fff', color:'var(--text2)' };
 
-  // Clear phAct so filters from other tabs don't bleed in
-  const phAct = document.getElementById('phAct');
-  if (phAct) phAct.innerHTML = '';
+  // Reset all
+  issuesPanel.style.display = 'none';
+  contactsPanel.style.display = 'none';
+  reportsPanel.style.display = 'none';
+  Object.assign(issuesBtn.style, { borderColor: inactive.border, background: inactive.bg, color: inactive.color });
+  Object.assign(contactsBtn.style, { borderColor: inactive.border, background: inactive.bg, color: inactive.color });
+  Object.assign(reportsBtn.style, { borderColor: inactive.border, background: inactive.bg, color: inactive.color });
 
-  const active   = { borderColor:'var(--indigo)', background:'var(--indigo)', color:'#fff' };
-  const inactive = { borderColor:'var(--border2)', background:'#fff', color:'var(--text2)' };
+  if (which === 'issues') {
+    issuesPanel.style.display = '';
+    Object.assign(issuesBtn.style, { borderColor: active.border, background: active.bg, color: active.color });
+    try { rIssues(); } catch(e) { console.error(e); }
+  } else if (which === 'contacts') {
+    contactsPanel.style.display = '';
+    Object.assign(contactsBtn.style, { borderColor: active.border, background: active.bg, color: active.color });
+    try { window._rContacts(); } catch(e) { console.error(e); }
+  } else if (which === 'reports') {
+    reportsPanel.style.display = '';
+    Object.assign(reportsBtn.style, { borderColor: active.border, background: active.bg, color: active.color });
+    // Add report initialization if needed
+  }
+};
 
-  // Toggle panels
-  issuesPanel.style.display  = which === 'issues'   ? '' : 'none';
-  contactsPanel.style.display= which === 'contacts' ? '' : 'none';
-  if (reportsPanel) reportsPanel.style.display = which === 'reports' ? '' : 'none';
 
-  // Toggle button styles
-  Object.assign(issuesBtn.style,   which === 'issues'   ? active : inactive);
-  Object.assign(contactsBtn.style, which === 'contacts' ? active : inactive);
-  if (reportsBtn) Object.assign(reportsBtn.style, which === 'reports' ? active : inactive);
+/* ═══════════════════════════════════════════════════════════
+   ROLES — admin vs flat member
+   (guards, read-only UI, member banner, admin approval screen)
+═══════════════════════════════════════════════════════════ */
 
-  // Render content
+// Buttons wired to these handlers are hidden for flat members.
+// Add a handler name here if you add a new write feature.
+const ADMIN_ONLY_HANDLERS = [
+  '_oA','_oAFor','_oAF','_sNF','_sE','_oPresExp','_sPresExp','_oPresM','_sPres',
+  '_oContact','_sContact','_delContact','_delIssue','_saveIss','_delExp','_delCat',
+  '_addCat','_addInlineCat','_oVehM','_oVehFor','_sVeh','_delVeh',
+  '_delPresHist','_editPresHist','_savePresHistEdit','_delSEModal','_openSEModal','_saveSEModal',
+  '_deletePayment','_deleteStayPeriod','_addPayment','_addStayPeriod','_addNewFlatRow','_editPayment',
+  '_editCorpusFund','_saveFlat','oFlEdit','_oFlEdit','_saveResEdit','_saveExpEdit','_openExpEdit',
+  '_saveNewStructure','_openStructureManager','_renameBlockPrompt','_toggleResEdit','_setResidentStatus',
+  '_toggleStayingEdit','_updateStayingDates','_togglePaymentEdit','_phSave','_phEdit','_phDelete','_wizLaunch',
+];
+const _esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+function applyRoleUI() {
+  if (!isMember()) return;
+  document.body.classList.add('role-member');
+  const re = new RegExp('(?<![\\w$])(?:window\\.)?(?:' + ADMIN_ONLY_HANDLERS.join('|') + ')\\s*\\(');
+  const sweep = () => document.querySelectorAll('[onclick]').forEach(el => {
+    if (re.test(el.getAttribute('onclick') || '')) el.style.setProperty('display', 'none', 'important');
+  });
+  sweep();
+  let raf = 0;
+  new MutationObserver(() => { if (raf) return; raf = requestAnimationFrame(() => { raf = 0; sweep(); }); })
+    .observe(document.body, { childList: true, subtree: true });
+}
+
+function showMemberBanner() {
+  const nav = document.querySelector('.navbar'); if (!nav) return;
+  nav.insertAdjacentHTML('afterend',
+    `<div style="background:#CCFBF1;color:#115E59;padding:9px 24px;font-size:13px;font-weight:600;display:flex;gap:8px;align-items:center">
+       <i class="ti ti-eye"></i>View-only access${MY_FLAT ? ' · Flat ' + _esc(MY_FLAT) : ''}. You can see all details and raise issues from the Services tab. Only the admin can make changes.
+     </div>`);
+}
+
+/* ── Admin: invite code + approve / remove flat members ── */
+let JOIN_CODE = '', JOIN_REQS = [], MEMBERS = [];
+
+async function initMembershipUI() {
+  const right = document.querySelector('.nav-right'); if (!right) return;
+  const btn = document.createElement('button');
+  btn.className = 'btn btn-white btn-sm'; btn.id = 'memBtn';
+  btn.innerHTML = '<i class="ti ti-users-group"></i> Members <span id="memBadge" style="display:none;background:#EF4444;color:#fff;border-radius:99px;font-size:10px;padding:1px 6px;margin-left:4px"></span>';
+  btn.onclick = () => document.getElementById('memM').classList.add('open');
+  right.insertBefore(btn, right.firstChild);
+
+  const m = document.createElement('div'); m.className = 'mbg'; m.id = 'memM';
+  m.innerHTML = `<div class="modal">
+    <div class="mhead">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div class="micon detail"><i class="ti ti-users-group"></i></div>
+        <div><div class="mtitle">Flat members</div><div class="msub">Approve residents and share your apartment code</div></div>
+      </div>
+      <button class="mclose" onclick="document.getElementById('memM').classList.remove('open')"><i class="ti ti-x"></i></button>
+    </div>
+    <div id="memBody"></div></div>`;
+  document.body.appendChild(m);
+
   try {
-    if (which === 'issues')   rIssues();
-    else if (which === 'contacts') window._rContacts();
-    // reports panel is static — no render needed
-  } catch(e) { console.error(e); }
+    const snap = await getDoc(aptDocRef());
+    JOIN_CODE = snap.exists() ? (snap.data().joinCode || '') : '';
+    if (!JOIN_CODE) JOIN_CODE = await createJoinCode(UID, snap.exists() ? snap.data().name : '');
+  } catch (e) { console.error('join code', e); }
+
+  onSnapshot(collection(db, 'apartments', UID, 'joinRequests'), s => {
+    JOIN_REQS = s.docs.map(d => ({ id: d.id, ...d.data() })); renderMembers();
+  }, e => console.error(e));
+  onSnapshot(collection(db, 'apartments', UID, 'members'), s => {
+    MEMBERS = s.docs.map(d => ({ id: d.id, ...d.data() })); renderMembers();
+  }, e => console.error(e));
+  renderMembers();
+}
+
+function renderMembers() {
+  const body = document.getElementById('memBody'); if (!body) return;
+  const badge = document.getElementById('memBadge');
+  if (badge) { badge.textContent = JOIN_REQS.length; badge.style.display = JOIN_REQS.length ? '' : 'none'; }
+  const row = (r, actions) => `<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--border)">
+      <div style="flex:1"><div style="font-size:13px;font-weight:700">${_esc(r.name || '—')}</div>
+      <div style="font-size:11px;color:var(--text2)">Flat ${_esc(r.flatId)}${r.phone ? ' · ' + _esc(r.phone) : ''}</div></div>${actions}</div>`;
+  body.innerHTML = `
+    <div style="background:var(--indigo-bg);border-radius:12px;padding:12px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <div style="flex:1;min-width:160px"><div style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase">Apartment code</div>
+        <div style="font-size:20px;font-weight:800;letter-spacing:1px">${_esc(JOIN_CODE) || '—'}</div></div>
+      <button class="btn btn-white btn-sm" onclick="window._memCopy()"><i class="ti ti-copy"></i> Copy</button>
+      <button class="btn btn-white btn-sm" onclick="window._memNewCode()"><i class="ti ti-refresh"></i> New code</button>
+    </div>
+    <div style="font-size:12px;font-weight:700;margin-bottom:4px">Pending requests (${JOIN_REQS.length})</div>
+    ${JOIN_REQS.length ? JOIN_REQS.map(r => row(r,
+      `<button class="btn btn-indigo btn-sm" onclick="window._memApprove('${_esc(r.id)}')">Approve</button>
+       <button class="btn btn-white btn-sm" onclick="window._memReject('${_esc(r.id)}')">Reject</button>`)).join('')
+      : '<div style="font-size:12px;color:var(--text2);padding:8px 0">No pending requests.</div>'}
+    <div style="font-size:12px;font-weight:700;margin:16px 0 4px">Approved members (${MEMBERS.length})</div>
+    ${MEMBERS.length ? MEMBERS.map(r => row(r,
+      `<button class="btn btn-white btn-sm" onclick="window._memRemove('${_esc(r.id)}')">Remove</button>`)).join('')
+      : '<div style="font-size:12px;color:var(--text2);padding:8px 0">No members yet. Share the code above with residents.</div>'}`;
+}
+
+window._memCopy = () => navigator.clipboard?.writeText(JOIN_CODE).then(() => toast('Code copied ✓'));
+window._memNewCode = async () => {
+  if (!confirm('Create a new code? The old code stops working (existing members are not affected).')) return;
+  try {
+    const name = (await getDoc(aptDocRef())).data()?.name || '';
+    const old = JOIN_CODE;
+    JOIN_CODE = await createJoinCode(UID, name);
+    if (old) await deleteDoc(doc(db, 'joinCodes', old));
+    renderMembers(); toast('New code created ✓');
+  } catch (e) { console.error(e); toast('Could not create a new code.', 'error'); }
+};
+window._memApprove = async uid => {
+  const r = JOIN_REQS.find(x => x.id === uid); if (!r) return;
+  try {
+    await setDoc(doc(db, 'apartments', UID, 'members', uid),
+      { flatId: r.flatId, name: r.name, phone: r.phone || '', approvedAt: new Date().toISOString() });
+    await deleteDoc(doc(db, 'apartments', UID, 'joinRequests', uid));
+    toast(`${r.name || 'Member'} approved ✓`);
+  } catch (e) { console.error(e); toast('Approve failed.', 'error'); }
+};
+window._memReject = async uid => {
+  try { await deleteDoc(doc(db, 'apartments', UID, 'joinRequests', uid)); toast('Request rejected'); }
+  catch (e) { console.error(e); toast('Reject failed.', 'error'); }
+};
+window._memRemove = async uid => {
+  if (!confirm('Remove this member? They will lose access.')) return;
+  try { await deleteDoc(doc(db, 'apartments', UID, 'members', uid)); toast('Member removed'); }
+  catch (e) { console.error(e); toast('Remove failed.', 'error'); }
 };
