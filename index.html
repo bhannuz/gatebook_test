@@ -183,13 +183,13 @@ body{font-family:var(--font);background:linear-gradient(135deg,#EEF2FF 0%,#F0F9F
     <div class="alert" id="loginAlert"><i class="ti ti-alert-circle"></i><span id="loginAlertMsg"></span></div>
 
     <div class="fg">
-      <label>Mobile number or Email</label>
+      <label id="loginIdLbl">Mobile number or Email</label>
       <input type="text" id="loginId" placeholder="9876543210 or you@example.com" autocomplete="username"/>
     </div>
     <div class="fg">
       <label style="display:flex;justify-content:space-between;align-items:center;">
-        Password
-        <a href="#" onclick="showForgot();return false;"
+        <span id="loginPwLbl">Password</span>
+        <a href="#" id="forgotLink" onclick="showForgot();return false;"
           style="font-size:11px;font-weight:600;color:var(--indigo);text-decoration:none;">Forgot password?</a>
       </label>
       <div class="pw-wrap">
@@ -231,89 +231,29 @@ body{font-family:var(--font);background:linear-gradient(135deg,#EEF2FF 0%,#F0F9F
       </a>
     </div>
   </div>
-
-  <!-- ── SIGNUP FORM ── -->
-  <div id="signupForm" style="display:none">
-    <div class="card-title">Join your apartment</div>
-    <div class="card-sub">Create your account with the code from your apartment admin.</div>
-
-    <div class="alert" id="signupAlert"><i class="ti ti-alert-circle"></i><span id="signupAlertMsg"></span></div>
-
-    <div class="fg">
-      <label>Full Name</label>
-      <input type="text" id="signupName" placeholder="Your full name"/>
-    </div>
-    <div class="fg">
-      <label>Mobile number or Email</label>
-      <input type="text" id="signupId" placeholder="9876543210 or you@example.com" autocomplete="username"/>
-    </div>
-    <div class="fg">
-      <label>Password</label>
-      <div class="pw-wrap">
-        <input type="password" id="signupPassword" placeholder="Min. 6 characters" autocomplete="new-password"/>
-        <button class="pw-toggle" type="button" onclick="togglePw('signupPassword',this)"><i class="ti ti-eye"></i></button>
-      </div>
-    </div>
-
-    <div id="memberFields">
-      <div class="fg"><label>Apartment code</label><input type="text" id="signupCode" placeholder="GB-XXXXXX" autocapitalize="characters"/></div>
-      <div class="fg"><label>Flat number</label><input type="text" id="signupFlat" placeholder="e.g. A-203"/></div>
-    </div>
-
-    <button class="btn-primary" id="signupBtn" onclick="doSignup()">
-      <i class="ti ti-user-plus"></i><span id="signupBtnLbl">Create account &amp; join</span>
-    </button>
-    <div style="margin-top:14px;text-align:center;"><a href="#" onclick="showTab('login');return false;" style="font-size:12px;font-weight:600;color:var(--indigo);text-decoration:none;">← Back to Sign In</a></div>
-  </div>
-
-  <!-- ── JOIN APARTMENT (signed in, no apartment yet) ── -->
-  <div id="joinForm" style="display:none">
-    <div class="card-title">Join your apartment</div>
-    <div class="card-sub">Enter the apartment code from your admin and your flat number.</div>
-    <div class="alert" id="joinAlert"><i class="ti ti-alert-circle"></i><span id="joinAlertMsg"></span></div>
-    <div class="fg"><label>Apartment code</label><input type="text" id="joinCode" placeholder="GB-XXXXXX" autocapitalize="characters"/></div>
-    <div class="fg"><label>Flat number</label><input type="text" id="joinFlat" placeholder="e.g. A-203"/></div>
-    <button class="btn-primary" id="joinBtn" onclick="doJoin()"><i class="ti ti-send"></i><span id="joinBtnLbl">Send join request</span></button>
-    <div style="margin-top:14px;text-align:center;font-size:12px;font-weight:600;"><a href="#" onclick="sessionStorage.setItem('gb_intent','admin');window.location.href='app.html';return false;" style="color:var(--indigo);text-decoration:none;">I am the admin — set up my apartment</a><br><br><a href="#" onclick="doSignOut();return false;" style="color:var(--indigo);text-decoration:none;">Sign out</a></div>
-  </div>
-
-  <!-- ── WAITING FOR ADMIN APPROVAL ── -->
-  <div id="pendingForm" style="display:none">
-    <div class="card-title">Waiting for approval</div>
-    <div class="card-sub">Your request was sent. Your apartment admin needs to approve it before you can open the dashboard.</div>
-    <div class="alert" id="pendingAlert"><i class="ti ti-info-circle"></i><span id="pendingAlertMsg"></span></div>
-    <button class="btn-primary" onclick="doCheckStatus()"><i class="ti ti-refresh"></i><span>Check status</span></button>
-    <div style="margin-top:14px;text-align:center;"><a href="#" onclick="doSignOut();return false;" style="font-size:12px;font-weight:600;color:var(--indigo);text-decoration:none;">Sign out</a></div>
-  </div>
 </div>
 
 <script type="module">
 import { auth, db } from './js/firebase.js';
 import {
-  signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged,
-  updateProfile, sendPasswordResetEmail, signOut,
+  signInWithEmailAndPassword, onAuthStateChanged, sendPasswordResetEmail, signOut,
 } from 'https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js';
-import { doc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/11.8.1/firebase-firestore.js';
-import { resolveRole, PLATFORM_ADMIN_EMAIL } from './js/roles.js';
-
-let busy = false;   // true while a login/signup handler is running (blocks auto-redirect)
+import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/11.8.1/firebase-firestore.js';
+import { resolveRole, pinToPassword, isValidMobile, isValidPin, PLATFORM_ADMIN_EMAIL } from './js/roles.js';
 
 let SEL = sessionStorage.getItem('gb_intent') === 'member' ? 'member' : 'admin';
-const $ = id => document.getElementById(id);
-const FORMS = ['loginForm','forgotForm','signupForm','joinForm','pendingForm'];
+let busy = false;   // true while doLogin runs (blocks the auto-redirect)
 
-function showAlert(id, msg, type='error') {
-  const el = $(id); $(id+'Msg').textContent = msg;
-  el.className = 'alert show ' + type;
-}
+const $ = id => document.getElementById(id);
+const FORMS = ['loginForm', 'forgotForm'];
+
+function showAlert(id, msg, type='error') { $(id+'Msg').textContent = msg; $(id).className = 'alert show ' + type; }
 function hideAlert(id) { $(id).className = 'alert'; }
-function setLoading(btnId, lblId, on, text) {
-  $(btnId).disabled = on; $(lblId).textContent = text;
-}
+function setLoading(btnId, lblId, on, text) { $(btnId).disabled = on; $(lblId).textContent = text; }
 function showCard() { const l = $('pageLoad'); if (l) l.style.display = 'none'; $('mainCard').style.display = ''; }
-function toEmail(raw) { return /^\d{10}$/.test(raw) ? raw + '@gatebook.app' : raw; }
 function show(id) { FORMS.forEach(f => $(f).style.display = f === id ? '' : 'none'); }
 function chrome(on) { $('roleToggle').style.display = on ? '' : 'none'; }
+function toEmail(raw) { return /^\d{10}$/.test(raw) ? raw + '@gatebook.app' : raw; }
 
 /* ── Admin / Flat member toggle (iPhone-style) ── */
 window.setRole = function(sel) {
@@ -322,20 +262,25 @@ window.setRole = function(sel) {
   $('rtSw').setAttribute('aria-checked', String(m));
   $('rtAdmin').classList.toggle('active', !m);
   $('rtMember').classList.toggle('active', m);
-  $('loginSub').textContent = m ? 'Sign in to view your apartment and raise issues.' : 'Sign in to manage your apartment.';
+  $('loginSub').textContent = m ? 'Use the mobile number and 4-digit code your admin gave you.' : 'Sign in to manage your apartment.';
   $('loginBtnLbl').textContent = m ? 'Sign in as Flat member' : 'Sign in as Admin';
+  $('loginIdLbl').textContent = m ? 'Mobile number' : 'Mobile number or Email';
+  $('loginId').placeholder = m ? '10-digit mobile number' : '9876543210 or you@example.com';
+  $('loginId').inputMode = m ? 'numeric' : 'text';
+  $('loginPwLbl').textContent = m ? '4-digit code' : 'Password';
+  $('loginPassword').placeholder = m ? '• • • •' : 'Your password';
+  $('loginPassword').inputMode = m ? 'numeric' : 'text';
+  if (m) $('loginPassword').setAttribute('maxlength', '4'); else $('loginPassword').removeAttribute('maxlength');
+  $('loginPassword').value = '';
+  $('forgotLink').style.display = m ? 'none' : '';
   $('loginAlt').innerHTML = m
-    ? 'New flat member? <a href="#" onclick="showTab(\'signup\');return false;">Create an account</a> and join with your apartment code.'
+    ? 'No code yet? Ask your apartment admin to add you.<br>Forgot your code? Your admin can reset it.'
     : 'New society? <a href="register.html">Register your apartment</a>';
   hideAlert('loginAlert');
 };
 window.toggleRole = () => window.setRole(SEL === 'admin' ? 'member' : 'admin');
 
-window.showTab = function(tab) {
-  chrome(tab !== 'signup');
-  show(tab === 'signup' ? 'signupForm' : 'loginForm');
-  ['loginAlert','signupAlert'].forEach(hideAlert);
-};
+window.showTab = function(tab) { chrome(tab !== 'forgot'); show(tab === 'forgot' ? 'forgotForm' : 'loginForm'); hideAlert('loginAlert'); };
 window.showForgot = function() { chrome(false); show('forgotForm'); };
 window.togglePw = function(id, btn) {
   const inp = $(id), showIt = inp.type === 'password';
@@ -343,14 +288,7 @@ window.togglePw = function(id, btn) {
   btn.querySelector('i').className = showIt ? 'ti ti-eye-off' : 'ti ti-eye';
 };
 
-/* ── Routing after we know who the user is ── */
-function showPanel(name, r) {
-  chrome(false); showCard();
-  show(name === 'pending' ? 'pendingForm' : 'joinForm');
-  if (name === 'join' && r && r.rejected)
-    showAlert('joinAlert', 'Your earlier request was declined or your access was removed. Check the code and flat number and send a new request.');
-}
-
+/* ── Routing once we know who the user is ── */
 async function route(user, fromLogin) {
   if (user.email === PLATFORM_ADMIN_EMAIL) { window.location.replace('admin.html'); return; }
   let r;
@@ -359,7 +297,7 @@ async function route(user, fromLogin) {
   // The toggle is only a label — verify it against the real account role.
   if (fromLogin) {
     const wrongAsMember = SEL === 'member' && r.role === 'admin';
-    const wrongAsAdmin  = SEL === 'admin'  && (r.role === 'member' || r.role === 'pending');
+    const wrongAsAdmin  = SEL === 'admin'  && r.role === 'member';
     if (wrongAsMember || wrongAsAdmin) {
       await signOut(auth); showCard(); showTab('login');
       showAlert('loginAlert', wrongAsMember
@@ -369,10 +307,13 @@ async function route(user, fromLogin) {
     }
   }
   if (r.role === 'admin' || r.role === 'member') { window.location.replace('app.html'); return; }
-  if (r.role === 'pending') { showPanel('pending', r); return; }
-  // signed in, but no apartment and no request yet
-  if (SEL === 'admin') { window.location.replace('app.html'); return; }   // in-app setup wizard
-  showPanel('join', r);
+  // signed in, but not an admin and not an added member
+  if (SEL === 'member') {
+    await signOut(auth); showCard(); showTab('login');
+    showAlert('loginAlert', 'You have not been added to an apartment yet. Ask your admin to add you.');
+    return;
+  }
+  window.location.replace('app.html');   // admin with no apartment yet → in-app setup wizard
 }
 
 onAuthStateChanged(auth, user => {
@@ -385,84 +326,36 @@ onAuthStateChanged(auth, user => {
 window.doLogin = async function() {
   hideAlert('loginAlert');
   const raw = $('loginId').value.trim(), pw = $('loginPassword').value;
-  if (!raw || !pw) { showAlert('loginAlert', 'Enter your mobile/email and password.'); return; }
+  const member = SEL === 'member';
+  if (member) {
+    if (!isValidMobile(raw)) { showAlert('loginAlert', 'Enter your 10-digit mobile number.'); return; }
+    if (!isValidPin(pw))     { showAlert('loginAlert', 'Enter your 4-digit code.'); return; }
+  } else if (!raw || !pw) { showAlert('loginAlert', 'Enter your mobile/email and password.'); return; }
+
   const lbl = $('loginBtnLbl').textContent;
   busy = true; setLoading('loginBtn', 'loginBtnLbl', true, 'Signing in…');
   try {
-    const cred = await signInWithEmailAndPassword(auth, toEmail(raw), pw);
+    let email, password = pw;
+    if (member) {
+      const s = await getDoc(doc(db, 'phoneLogins', raw));
+      if (!s.exists()) { showAlert('loginAlert', 'No flat member found for this number. Ask your admin to add you.'); return; }
+      email = s.data().email; password = pinToPassword(raw, pw);
+    } else email = toEmail(raw);
+    const cred = await signInWithEmailAndPassword(auth, email, password);
     await route(cred.user, true);
   } catch (err) {
     const m = {
-      'auth/invalid-credential': 'Wrong mobile/email or password.',
-      'auth/user-not-found': 'No account found. Create one first.',
-      'auth/wrong-password': 'Wrong password.',
-      'auth/too-many-requests': 'Too many attempts. Try again later.',
+      'auth/invalid-credential': member ? 'Wrong mobile number or code.' : 'Wrong mobile/email or password.',
+      'auth/user-not-found': 'No account found.',
+      'auth/wrong-password': member ? 'Wrong code.' : 'Wrong password.',
+      'auth/too-many-requests': 'Too many attempts. Wait a few minutes and try again.',
       'auth/invalid-email': 'Enter a valid mobile number or email.',
     };
     showAlert('loginAlert', m[err.code] || 'Sign in failed. Try again.');
   } finally { busy = false; setLoading('loginBtn', 'loginBtnLbl', false, lbl); }
 };
 
-/* ── Flat member: look up code + send join request ── */
-async function lookupCode(code) {
-  const s = await getDoc(doc(db, 'joinCodes', code.trim().toUpperCase()));
-  return s.exists() ? s.data().aptId : null;
-}
-async function submitJoin(user, aptId, flat, name) {
-  const phone = (user.email || '').endsWith('@gatebook.app') ? user.email.split('@')[0] : '';
-  await setDoc(doc(db, 'users', user.uid), { aptId, flatId: flat, name, role: 'member' });
-  await setDoc(doc(db, 'apartments', aptId, 'joinRequests', user.uid),
-    { name, flatId: flat, phone, status: 'pending', createdAt: new Date().toISOString() });
-}
-
-window.doSignup = async function() {
-  hideAlert('signupAlert');
-  sessionStorage.setItem('gb_intent', 'member');
-  const name = $('signupName').value.trim(), raw = $('signupId').value.trim(), pw = $('signupPassword').value;
-  const code = $('signupCode').value.trim(), flat = $('signupFlat').value.trim().toUpperCase();
-  if (!name || !raw || !pw || !code || !flat) { showAlert('signupAlert', 'Fill in all the fields.'); return; }
-  if (pw.length < 6) { showAlert('signupAlert', 'Password must be at least 6 characters.'); return; }
-  busy = true; setLoading('signupBtn', 'signupBtnLbl', true, 'Creating account…');
-  try {
-    const aptId = await lookupCode(code);
-    if (!aptId) { showAlert('signupAlert', 'Invalid apartment code. Ask your admin for the right one.'); return; }
-    const cred = await createUserWithEmailAndPassword(auth, toEmail(raw), pw);
-    await updateProfile(cred.user, { displayName: name });
-    await submitJoin(cred.user, aptId, flat, name);
-    showPanel('pending');
-  } catch (err) {
-    const m = { 'auth/email-already-in-use': 'An account with this mobile/email already exists. Sign in instead.',
-                'auth/weak-password': 'Password is too weak.', 'auth/invalid-email': 'Enter a valid mobile number or email.' };
-    showAlert('signupAlert', m[err.code] || 'Could not create account. Try again.');
-  } finally { busy = false; setLoading('signupBtn', 'signupBtnLbl', false, 'Create Account'); }
-};
-
-// Already signed in (no apartment yet) → just send the join request
-window.doJoin = async function() {
-  hideAlert('joinAlert');
-  const code = $('joinCode').value.trim(), flat = $('joinFlat').value.trim().toUpperCase();
-  if (!code || !flat) { showAlert('joinAlert', 'Enter the apartment code and your flat number.'); return; }
-  busy = true; setLoading('joinBtn', 'joinBtnLbl', true, 'Sending…');
-  try {
-    const aptId = await lookupCode(code);
-    if (!aptId) { showAlert('joinAlert', 'Invalid apartment code.'); return; }
-    const u = auth.currentUser;
-    await submitJoin(u, aptId, flat, u.displayName || '');
-    showPanel('pending');
-  } catch (e) { console.error(e); showAlert('joinAlert', 'Could not send request. Try again.'); }
-  finally { busy = false; setLoading('joinBtn', 'joinBtnLbl', false, 'Send join request'); }
-};
-
-window.doCheckStatus = async function() {
-  hideAlert('pendingAlert');
-  const r = await resolveRole(auth.currentUser);
-  if (r.role === 'member') window.location.replace('app.html');
-  else if (r.role === 'pending') showAlert('pendingAlert', 'Still waiting for your admin to approve.', 'success');
-  else { showPanel('join', r); }
-};
-window.doSignOut = async function() { await signOut(auth); window.location.reload(); };
-
-/* ── Forgot password ── */
+/* ── Forgot password (admins only) ── */
 window.doForgot = async function() {
   hideAlert('forgotAlert');
   const email = $('forgotId').value.trim();
@@ -474,10 +367,7 @@ window.doForgot = async function() {
 };
 
 document.addEventListener('keydown', e => {
-  if (e.key !== 'Enter') return;
-  if ($('loginForm').style.display !== 'none') window.doLogin();
-  else if ($('signupForm').style.display !== 'none') window.doSignup();
-  else if ($('joinForm').style.display !== 'none') window.doJoin();
+  if (e.key === 'Enter' && $('loginForm').style.display !== 'none') window.doLogin();
 });
 </script>
 </body>
