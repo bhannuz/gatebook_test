@@ -4970,6 +4970,7 @@ const ADMIN_ONLY_HANDLERS = [
   '_editCorpusFund','_saveFlat','oFlEdit','_oFlEdit','_saveResEdit','_saveExpEdit','_openExpEdit',
   '_saveNewStructure','_openStructureManager','_renameBlockPrompt','_toggleResEdit','_setResidentStatus',
   '_toggleStayingEdit','_updateStayingDates','_togglePaymentEdit','_phSave','_phEdit','_phDelete','_wizLaunch',
+  '_deleteBlock','_deleteFlat','_wizAddBlock','wizRemoveBlock',
 ];
 const _esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
@@ -4977,9 +4978,16 @@ function applyRoleUI() {
   if (!isMember()) return;
   document.body.classList.add('role-member');
   const re = new RegExp('(?<![\\w$])(?:window\\.)?(?:' + ADMIN_ONLY_HANDLERS.join('|') + ')\\s*\\(');
-  const sweep = () => document.querySelectorAll('[onclick]').forEach(el => {
-    if (re.test(el.getAttribute('onclick') || '')) el.style.setProperty('display', 'none', 'important');
-  });
+  const sweep = () => {
+    document.querySelectorAll('[onclick]').forEach(el => {
+      if (!re.test(el.getAttribute('onclick') || '')) return;
+      // A whole row or card that is clickable to edit (expense row, contact card): keep it
+      // visible so members can read it, just make it non-clickable. Buttons are hidden.
+      if (['TR', 'TD', 'LI', 'DIV'].includes(el.tagName)) { el.removeAttribute('onclick'); el.style.cursor = 'default'; }
+      else el.style.setProperty('display', 'none', 'important');
+    });
+    document.querySelectorAll('[id^="redit_"] input, [id^="redit_"] select').forEach(el => { el.disabled = true; });
+  };
   sweep();
   let raf = 0;
   new MutationObserver(() => { if (raf) return; raf = requestAnimationFrame(() => { raf = 0; sweep(); }); })
@@ -5012,7 +5020,7 @@ async function initMembershipUI() {
         <div class="micon detail"><i class="ti ti-users-group"></i></div>
         <div><div class="mtitle">Flat members</div><div class="msub">Add a resident, then share their mobile number and code</div></div>
       </div>
-      <button class="mclose" onclick="document.getElementById('memM').classList.remove('open')"><i class="ti ti-x"></i></button>
+      <button class="mclose" onclick="document.getElementById('memM').classList.remove('open');document.getElementById('memCode').innerHTML=''"><i class="ti ti-x"></i></button>
     </div>
     <div class="fg2">
       <div class="fg"><label>Flat</label><select id="mmFlat" onchange="window._memPick()"></select></div>
@@ -5025,6 +5033,7 @@ async function initMembershipUI() {
         <button class="btn btn-white btn-sm" type="button" onclick="document.getElementById('mmPin').value=window._randomPin()" title="New random code"><i class="ti ti-refresh"></i></button></div></div>
     </div>
     <button class="btn btn-indigo" id="mmAdd" style="width:100%;justify-content:center;margin-bottom:12px" onclick="window._memAdd()"><i class="ti ti-user-plus"></i> Add member</button>
+    <div id="memCode"></div>
     <div id="memList"></div></div>`;
   document.body.appendChild(m);
   window._randomPin = randomPin;
@@ -5038,6 +5047,7 @@ async function initMembershipUI() {
 
 function fillMemberForm() {
   const sel = document.getElementById('mmFlat'); if (!sel) return;
+  document.getElementById('memCode').innerHTML = '';
   const keep = sel.value;
   sel.innerHTML = [...flats.keys()].sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))
     .map(f => `<option value="${_esc(f)}">${_esc(f)}${flats.get(f)?.owner ? ' — ' + _esc(flats.get(f).owner) : ''}</option>`).join('');
@@ -5051,6 +5061,16 @@ window._memPick = () => {
   document.getElementById('mmName').value = f.owner || '';
   document.getElementById('mmMobile').value = String(f.phone || '').replace(/\D/g, '').slice(-10);
 };
+
+// Shows the code once, right after Add / Reset. It is never stored, so it cannot be viewed later.
+function showCodeOnce(name, mobile, pin) {
+  const el = document.getElementById('memCode'); if (!el) return;
+  el.innerHTML = `<div style="background:var(--indigo-bg);border-radius:12px;padding:12px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px">
+    <div style="flex:1"><div style="font-size:12px;font-weight:700">${_esc(name)}: note this code now</div>
+    <div style="font-size:18px;font-weight:800;letter-spacing:1px;margin-top:2px">${_esc(mobile)} · ${_esc(pin)}</div>
+    <div style="font-size:11px;color:var(--text2);margin-top:2px">Shown only once. It cannot be viewed again later.</div></div>
+    <button class="btn btn-white btn-sm" onclick="document.getElementById('memCode').innerHTML=''">Done</button></div>`;
+}
 
 function renderMembers() {
   const list = document.getElementById('memList'); if (!list) return;
@@ -5129,6 +5149,7 @@ window._memAdd = async () => {
     await setDoc(doc(db, 'phoneLogins', mobile), { email, aptId: UID });
     document.getElementById('mmPin').value = randomPin(); window._memPick();
     toast(`${name} added ✓`);
+    showCodeOnce(name, mobile, pin);
   } catch (e) { console.error('Add member failed at:', step, e); toast(memberErr(e, step), 'error'); }
   finally { btn.disabled = false; }
 };
@@ -5148,6 +5169,7 @@ window._memReset = async oldUid => {
     step = 'save the mobile lookup';
     await setDoc(doc(db, 'phoneLogins', m.phone), { email, aptId: UID });
     toast(`Code reset for ${m.name} ✓`);
+    showCodeOnce(m.name, m.phone, pin);
   } catch (e) { console.error('Reset code failed at:', step, e); toast(memberErr(e, step), 'error'); }
 };
 
