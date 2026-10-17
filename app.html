@@ -305,6 +305,23 @@
          style.css stacks it to one column on tablets and phones. */
       .an-layout-grid{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:12px;align-items:start}
       #analyticsTotals{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:stretch}
+
+      /* Payment Records table: columns are sized to their content. The Owner column takes the
+         spare width, so the Vehicles / Balance / Status columns stay close together. */
+      #analyticsView .an-table{width:100%;border-collapse:collapse}
+      #analyticsView .an-table th,#analyticsView .an-table td{padding:12px 14px;vertical-align:middle}
+      #analyticsView .an-table th{padding-top:9px;padding-bottom:9px;font-size:10px;font-weight:800;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;border-bottom:1.5px solid var(--border2);white-space:nowrap;text-align:left}
+      #analyticsView .an-table td{border-bottom:1px solid var(--border)}
+      #analyticsView .an-table tbody tr:last-child td{border-bottom:0}
+      #analyticsView .an-table .c-flat{width:1%;white-space:nowrap;padding-left:18px}
+      #analyticsView .an-table .c-owner{width:100%;max-width:0}
+      #analyticsView .an-table .c-veh{width:1%;white-space:nowrap;text-align:center}
+      #analyticsView .an-table .c-bal{width:1%;white-space:nowrap;text-align:right}
+      #analyticsView .an-table .c-st{width:1%;white-space:nowrap;text-align:center;padding-right:18px}
+      @media(max-width:768px){
+        #analyticsView .an-table .c-bal{text-align:right!important}
+        #analyticsView .an-table .c-veh,#analyticsView .an-table .c-st{text-align:center!important}
+      }
     </style>
 
     <div class="an-layout-grid">
@@ -318,21 +335,14 @@
           <i class="ti ti-table" style="color:var(--indigo)"></i> Payment Records <span id="anPayCount" style="font-size:10px;color:var(--muted);font-weight:600;text-transform:none;letter-spacing:0"></span>
         </div>
         <div style="max-height:460px;overflow-x:auto;overflow-y:auto;">
-          <table style="width:100%;border-collapse:collapse;table-layout:fixed">
-            <colgroup>
-              <col style="width:14%"/>
-              <col style="width:32%"/>
-              <col style="width:16%"/>
-              <col style="width:22%"/>
-              <col style="width:16%"/>
-            </colgroup>
+          <table class="an-table">
             <thead style="position:sticky;top:0;z-index:2;">
               <tr style="background:var(--surface3)">
-                <th style="padding:8px 6px;font-size:10px;font-weight:800;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;border-bottom:1.5px solid var(--border2);text-align:left;white-space:nowrap">Flat</th>
-                <th style="padding:8px 6px;font-size:10px;font-weight:800;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;border-bottom:1.5px solid var(--border2);text-align:left">Owner</th>
-                <th style="padding:8px 4px;font-size:10px;font-weight:800;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;border-bottom:1.5px solid var(--border2);text-align:center;white-space:nowrap">🏍/🚗</th>
-                <th style="padding:8px 6px;font-size:10px;font-weight:800;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;border-bottom:1.5px solid var(--border2);text-align:right;white-space:nowrap">Balance</th>
-                <th style="padding:8px 4px;font-size:10px;font-weight:800;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;border-bottom:1.5px solid var(--border2);text-align:center;white-space:nowrap">Status</th>
+                <th class="c-flat">Flat</th>
+                <th class="c-owner">Owner</th>
+                <th class="c-veh" title="Two-wheelers / four-wheelers">🏍/🚗</th>
+                <th class="c-bal">Balance</th>
+                <th class="c-st">Status</th>
               </tr>
             </thead>
             <tbody id="anPayTable"></tbody>
