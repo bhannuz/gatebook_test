@@ -22,8 +22,8 @@ const isMember = () => ROLE === 'member';
 let _booted = false; // prevent duplicate boot on auth token refresh
 
 /* Write guard (UX layer). The REAL enforcement is firestore.rules.
-   Admin: everything. Flat member: may only create documents in /issues. */
-const _canWrite = ref => isAdmin() || (isMember() && /\/issues$/.test(ref.path || ''));
+   Admin: everything. Flat member: may only create documents in /issues and /contacts. */
+const _canWrite = ref => isAdmin() || (isMember() && /\/(issues|contacts)$/.test(ref.path || ''));
 const _deny = () => { toast('Only the apartment admin can make changes.', 'error'); throw new Error('read-only'); };
 const addDoc    = (ref, ...a) => _canWrite(ref) ? _addDoc(ref, ...a)    : _deny();
 const setDoc    = (ref, ...a) => _canWrite(ref) ? _setDoc(ref, ...a)    : _deny();
@@ -1046,7 +1046,7 @@ function oID(id){
       <label style="font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Description</label>
       <textarea id="ie_desc" rows="3"
         style="width:100%;box-sizing:border-box;padding:8px;background:var(--surface);border:1.5px solid var(--border);color:var(--text);font-family:var(--font);font-size:12px;border-radius:var(--r-md);outline:none;resize:vertical;line-height:1.6"
-        onfocus="this.style.borderColor='var(--indigo)'" onblur="this.style.borderColor='var(--border)'">${iss.desc||''}</textarea>
+        onfocus="this.style.borderColor='var(--indigo)'" onblur="this.style.borderColor='var(--border)'">${_esc(iss.desc||'')}</textarea>
     </div>
     <div style="display:flex;gap:8px;justify-content:flex-end;padding-top:4px;border-top:1px solid var(--border)">
       <button onclick="window._delIssue('${id}')"
@@ -1073,8 +1073,8 @@ function oID(id){
           ${i<tl.length-1?'<div class="itl-line"></div>':''}
         </div>
         <div class="itl-body">
-          <div class="itl-action">${t.action}</div>
-          <div class="itl-by">By ${t.by||'System'} · ${t.ts?new Date(t.ts).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):fdt(iss.createdAt)}</div>
+          <div class="itl-action">${_esc(t.action)}</div>
+          <div class="itl-by">By ${_esc(t.by||'System')} · ${t.ts?new Date(t.ts).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):fdt(iss.createdAt)}</div>
         </div>
       </div>`).join('')}
   `;
@@ -2226,19 +2226,19 @@ function rIssues() {
             <td style="padding:11px 14px;border-bottom:1px solid var(--border);vertical-align:middle">
               <div style="font-size:13px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:7px">
                 <i class="ti ${icons[iss.cat] || 'ti-clipboard'}" style="font-size:14px;color:var(--indigo);flex-shrink:0"></i>
-                ${iss.title}
+                ${_esc(iss.title)}
               </div>
-              ${iss.desc ? `<div style="font-size:11px;color:var(--text2);margin-top:2px">${iss.desc.length > 80 ? iss.desc.slice(0,80)+'…' : iss.desc}</div>` : ''}
+              ${iss.desc ? `<div style="font-size:11px;color:var(--text2);margin-top:2px">${_esc(iss.desc.length > 80 ? iss.desc.slice(0,80)+'…' : iss.desc)}</div>` : ''}
             </td>
             <td style="padding:11px 14px;border-bottom:1px solid var(--border);vertical-align:middle">
-              <span class="tab-chip indigo">${iss.flat || iss.block}</span>
+              <span class="tab-chip indigo">${_esc(iss.flat || iss.block)}</span>
             </td>
             <td style="padding:11px 14px;border-bottom:1px solid var(--border);vertical-align:middle">
-              <span class="tab-chip purple">${iss.cat}</span>
+              <span class="tab-chip purple">${_esc(iss.cat)}</span>
             </td>
             <td style="padding:11px 14px;border-bottom:1px solid var(--border);vertical-align:middle;font-size:12px;color:var(--text2);white-space:nowrap">
               <div>${fdt(iss.createdAt)}</div>
-              <div style="font-size:11px;color:var(--muted);margin-top:1px">By ${iss.reporter}</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:1px">By ${_esc(iss.reporter)}</div>
             </td>
             <td style="padding:11px 14px;border-bottom:1px solid var(--border);vertical-align:middle;text-align:center">
               <div title="${pLabel} Priority" style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:8px;background:${pColor}18;color:${pColor}">
@@ -4765,6 +4765,8 @@ window._rContacts = function() {
   const vis = filter === 'all' ? contacts : contacts.filter(c => c.cat === filter);
   const el = document.getElementById('contactsList');
   if (!el) return;
+  el.style.gridTemplateColumns = 'repeat(auto-fill,minmax(min(100%,230px),1fr))';
+  el.style.gap = '10px';
 
   if (!vis.length) {
     el.innerHTML = `<div style="grid-column:1/-1;padding:40px 20px;text-align:center;color:var(--muted)">
@@ -4778,28 +4780,30 @@ window._rContacts = function() {
   el.innerHTML = vis.map(c => {
     const icon  = CONTACT_ICONS[c.cat] || 'ti-tool';
     const color = CONTACT_COLORS[c.cat] || '#6B7280';
-    const phone = (c.phone || '').replace(/\D/g, '');
+    const digits = (c.phone || '').replace(/\D/g, '');
+    const btn = 'flex:1 1 96px;min-height:38px;display:inline-flex;align-items:center;justify-content:center;gap:6px;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;padding:0 10px;';
     return `<div onclick="window._oContact('${c.id}')"
-      style="display:flex;align-items:center;gap:8px;background:#fff;border:1.5px solid var(--border2);
-        border-radius:10px;padding:7px 8px;cursor:pointer;transition:box-shadow .12s,border-color .12s"
+      style="display:flex;flex-direction:column;gap:10px;min-width:0;background:#fff;border:1.5px solid var(--border2);
+        border-radius:12px;padding:12px;cursor:pointer;transition:box-shadow .12s,border-color .12s"
       onmouseover="this.style.boxShadow='0 2px 8px rgba(0,0,0,.06)';this.style.borderColor='${color}'"
       onmouseout="this.style.boxShadow='';this.style.borderColor='var(--border2)'">
-      <div style="width:30px;height:30px;border-radius:8px;background:${color}18;color:${color};
-        display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">
-        <i class="ti ${icon}"></i>
+      <div style="display:flex;align-items:center;gap:10px;min-width:0">
+        <div style="width:38px;height:38px;border-radius:10px;background:${color}18;color:${color};
+          display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">
+          <i class="ti ${icon}"></i>
+        </div>
+        <div style="min-width:0;flex:1">
+          <div class="ct-name" style="font-size:14px;font-weight:700;color:var(--text);line-height:1.25;overflow-wrap:anywhere;
+            display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${_esc(c.name || 'Unnamed')}</div>
+          <div class="ct-meta" style="font-size:12px;font-weight:600;color:var(--text2);margin-top:2px">${_esc(c.cat || 'Other')}</div>
+        </div>
       </div>
-      <div style="flex:1;min-width:0">
-        <div style="font-size:12px;font-weight:700;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.name || 'Unnamed'}</div>
-        <div style="font-size:9px;font-weight:600;color:${color};margin-top:1px">${c.cat || 'Other'}${c.phone ? ' · '+c.phone : ''}</div>
-      </div>
-      <div style="display:flex;gap:4px;flex-shrink:0" onclick="event.stopPropagation()">
-        <a href="tel:${phone}" title="Call" style="width:26px;height:26px;display:flex;align-items:center;justify-content:center;background:var(--indigo-bg);color:var(--indigo);border-radius:6px;text-decoration:none">
-          <i class="ti ti-phone" style="font-size:12px"></i>
-        </a>
-        ${phone ? `<a href="https://wa.me/91${phone}" target="_blank" title="WhatsApp" style="width:26px;height:26px;display:flex;align-items:center;justify-content:center;background:#D1FAE5;color:#065F46;border-radius:6px;text-decoration:none">
-          <i class="ti ti-brand-whatsapp" style="font-size:13px"></i>
-        </a>` : ''}
-      </div>
+      ${c.phone ? `<div data-t style="font-size:13px;font-weight:700;color:var(--text);letter-spacing:.2px;overflow-wrap:anywhere">${_esc(c.phone)}${c.phone2 ? ` <span style="color:var(--text2);font-weight:600">· ${_esc(c.phone2)}</span>` : ''}</div>` : ''}
+      ${c.note ? `<div data-t style="font-size:12px;color:var(--text2);line-height:1.35;overflow-wrap:anywhere">${_esc(c.note)}</div>` : ''}
+      ${digits ? `<div style="display:flex;gap:8px;flex-wrap:wrap" onclick="event.stopPropagation()">
+        <a href="tel:${digits}" title="Call" style="${btn}background:var(--indigo-bg);color:#4338CA"><i class="ti ti-phone" style="font-size:15px"></i>Call</a>
+        <a href="https://wa.me/91${digits}" target="_blank" rel="noopener" title="WhatsApp" style="${btn}background:#D1FAE5;color:#065F46"><i class="ti ti-brand-whatsapp" style="font-size:16px"></i>WhatsApp</a>
+      </div>` : ''}
     </div>`;
   }).join('');
 };
@@ -4856,6 +4860,8 @@ window._sContact = async function() {
       await updateDoc(contactRef(id), payload);
     } else {
       payload.createdAt = serverTimestamp();
+      payload.createdByUid = auth.currentUser?.uid || null;
+      payload.addedBy = isMember() ? `${MY_NAME}${MY_FLAT ? ' (' + MY_FLAT + ')' : ''}` : 'Admin';
       await addDoc(contactsColl(), payload);
     }
     sync('live'); toast(id ? 'Contact updated ✓' : 'Contact added ✓');
@@ -4964,7 +4970,7 @@ window._issSubTab = function(which) {
 // Add a handler name here if you add a new write feature.
 const ADMIN_ONLY_HANDLERS = [
   '_oA','_oAFor','_oAF','_sNF','_sE','_oPresExp','_sPresExp','_oPresM','_sPres',
-  '_oContact','_sContact','_delContact','_delIssue','_saveIss','_delExp','_delCat',
+  '_oContact(?=\\s*\\(\\s*[^)\\s])','_delContact','_delIssue','_saveIss','_delExp','_delCat',
   '_addCat','_addInlineCat','_oVehM','_oVehFor','_sVeh','_delVeh',
   '_delPresHist','_editPresHist','_savePresHistEdit','_delSEModal','_openSEModal','_saveSEModal',
   '_deletePayment','_deleteStayPeriod','_addPayment','_addStayPeriod','_addNewFlatRow','_editPayment',
@@ -5024,7 +5030,7 @@ function showMemberBanner() {
   const nav = document.querySelector('.navbar'); if (!nav) return;
   nav.insertAdjacentHTML('afterend',
     `<div style="background:#CCFBF1;color:#115E59;padding:9px 24px;font-size:13px;font-weight:600;display:flex;gap:8px;align-items:center">
-       <i class="ti ti-eye"></i>View-only access${MY_FLAT ? ' · Flat ' + _esc(MY_FLAT) : ''}. You can see all details and raise issues from the Services tab. Only the admin can make changes.
+       <i class="ti ti-eye"></i>View-only access${MY_FLAT ? ' · Flat ' + _esc(MY_FLAT) : ''}. You can see all details, raise issues and add service contacts from the Services tab. Only the admin can make other changes.
      </div>`);
 }
 
