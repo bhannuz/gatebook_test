@@ -4282,14 +4282,14 @@ function renderAnPayTable(filterType, selMonth, selYear, selBlock) {
       style="cursor:pointer;transition:background .12s"
       onmouseover="this.style.background='var(--indigo-bg)'"
       onmouseout="this.style.background=''">
-      <td style="padding:10px 12px;font-weight:800;color:var(--indigo);font-size:12px;border-bottom:1px solid var(--border);vertical-align:middle;white-space:nowrap">${f.flatId}</td>
-      <td style="padding:10px 12px;border-bottom:1px solid var(--border);overflow:hidden;vertical-align:middle">
+      <td class="c-flat" style="font-weight:800;color:var(--indigo);font-size:12px">${f.flatId}</td>
+      <td class="c-owner">
         <div style="font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${f.owner||'<em style="color:var(--muted);font-weight:400">Vacant</em>'}</div>
         <div style="margin-top:2px">${typeBadge}</div>
       </td>
-      <td style="padding:10px 12px;text-align:center;border-bottom:1px solid var(--border);vertical-align:middle;font-size:12px">${vehCell}</td>
-      <td style="padding:10px 12px;text-align:right;font-weight:800;color:${balColor};font-size:13px;border-bottom:1px solid var(--border);white-space:nowrap;vertical-align:middle">${f.due?inr(Math.abs(bal)):'—'}</td>
-      <td style="padding:10px 12px;text-align:center;border-bottom:1px solid var(--border);vertical-align:middle;position:relative" class="status-col">
+      <td class="c-veh" style="font-size:12px">${vehCell}</td>
+      <td class="c-bal" style="font-weight:800;color:${balColor};font-size:13px">${f.due?inr(Math.abs(bal)):'—'}</td>
+      <td class="c-st status-col" style="position:relative">
         <span class="status-text" style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:4px 8px;border-radius:6px;${s==='paid'?'background:#dcfce7;color:#16a34a':s==='partial'?'background:#fef9c3;color:#d97706':s==='pending'?'background:#fee2e2;color:#dc2626':'background:#f3f4f6;color:#9ca3af'}">${statusText}</span>
         <span class="status-icon" style="display:none;font-size:20px;${s==='paid'?'color:#16a34a':s==='partial'?'color:#d97706':'color:#dc2626'}" title="${statusText}">
           <i class="ti ti-circle-filled"></i>
@@ -4303,10 +4303,10 @@ function renderAnPayTable(filterType, selMonth, selYear, selBlock) {
   const totTw  = rows.reduce((s,f)=>s+(parseInt((vehicles.get(f.flatId)||{}).tw)||0),0);
   const totFw  = rows.reduce((s,f)=>s+(parseInt((vehicles.get(f.flatId)||{}).fw)||0),0);
   tbody.innerHTML += `<tr style="background:var(--surface3);border-top:2px solid var(--border2)">
-    <td style="padding:10px 12px;font-size:11px;font-weight:800;color:var(--text2)" colspan="2">Total — ${rows.length} flats</td>
-    <td style="padding:10px 12px;text-align:center;font-size:12px;font-weight:700;color:var(--text)">${totTw>0?`${totTw}`:''} ${totTw>0&&totFw>0?'/ ':''} ${totFw>0?`${totFw}`:''}</td>
-    <td style="padding:10px 12px;text-align:right;font-weight:800;color:${totBal>0?'var(--red)':'var(--green)'};font-size:13px;white-space:nowrap">${inr(Math.abs(totBal))}</td>
-    <td style="padding:10px 12px;text-align:center;font-size:10px;color:var(--muted)">—</td>
+    <td style="padding-left:18px;font-size:11px;font-weight:800;color:var(--text2)" colspan="2">Total — ${rows.length} flats</td>
+    <td class="c-veh" style="font-size:12px;font-weight:700;color:var(--text)">${totTw>0?`${totTw}`:''} ${totTw>0&&totFw>0?'/ ':''} ${totFw>0?`${totFw}`:''}</td>
+    <td class="c-bal" style="font-weight:800;color:${totBal>0?'var(--red)':'var(--green)'};font-size:13px">${inr(Math.abs(totBal))}</td>
+    <td class="c-st" style="font-size:10px;color:var(--muted)">—</td>
   </tr>`;
 }
 
