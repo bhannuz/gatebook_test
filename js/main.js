@@ -4967,7 +4967,7 @@ const ADMIN_ONLY_HANDLERS = [
   '_addCat','_addInlineCat','_oVehM','_oVehFor','_sVeh','_delVeh',
   '_delPresHist','_editPresHist','_savePresHistEdit','_delSEModal','_openSEModal','_saveSEModal',
   '_deletePayment','_deleteStayPeriod','_addPayment','_addStayPeriod','_addNewFlatRow','_editPayment',
-  '_editCorpusFund','_saveFlat','oFlEdit','_oFlEdit','_saveResEdit','_saveExpEdit','_openExpEdit',
+  '_editCorpusFund','_saveFlat','_saveResEdit','_saveExpEdit','_openExpEdit',
   '_saveNewStructure','_openStructureManager','_renameBlockPrompt','_toggleResEdit','_setResidentStatus',
   '_toggleStayingEdit','_updateStayingDates','_togglePaymentEdit','_phSave','_phEdit','_phDelete','_wizLaunch',
   '_deleteBlock','_deleteFlat','_wizAddBlock','wizRemoveBlock',
@@ -4987,6 +4987,15 @@ function applyRoleUI() {
       else el.style.setProperty('display', 'none', 'important');
     });
     document.querySelectorAll('[id^="redit_"] input, [id^="redit_"] select').forEach(el => { el.disabled = true; });
+    // Flat details window: show everything, allow nothing to be typed or changed
+    const dBody = document.getElementById('dBody');
+    if (dBody) {
+      dBody.querySelectorAll('input, select, textarea').forEach(el => {
+        if (!el.classList.contains('hist-search') && !el.classList.contains('hist-cat-sel')) el.disabled = true;
+      });
+      if (dBody.firstElementChild && !dBody.querySelector('.ro-note'))
+        dBody.insertAdjacentHTML('afterbegin', '<div class="ro-note" style="background:#CCFBF1;color:#115E59;border-radius:8px;padding:8px 12px;margin:0 0 10px;font-size:12px;font-weight:700;display:flex;gap:6px;align-items:center"><i class="ti ti-eye"></i>View only. Only the admin can make changes.</div>');
+    }
   };
   sweep();
   let raf = 0;
