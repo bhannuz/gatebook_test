@@ -4118,20 +4118,9 @@ function _anRender() {
   if (cardsDiv) {
     const currentMonthLabel = new Date(AM + '-01').toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
     cardsDiv.innerHTML = `
-    <div class="vscard indigo">
-      <div>
-        <div class="vscard-label" style="color:#000">${currentMonthLabel}</div>
-        <div class="vscard-val" style="color:#000">${inr(currentMonthCollected)}</div>
-        <div style="font-size:10px;color:#000;margin-top:4px">${currentMonthRecords} record${currentMonthRecords!==1?'s':''}</div>
-      </div>
-    </div>
-    <div class="vscard indigo" style="position:relative">
-      <div>
-        <div class="vscard-label" style="color:#000">Outstanding Balance</div>
-        <div class="vscard-val" style="color:#000">${inr(Math.max(0, outstandingBalance))}</div>
-        <div style="font-size:10px;color:#000;margin-top:4px">Corpus: ${inr(APT_CORPUS_FUND)}</div>
-      </div>
-      <button onclick="window._editCorpusFund()" style="position:absolute;top:8px;right:8px;background:none;border:none;cursor:pointer;color:#000;font-size:16px;padding:4px"><i class="ti ti-edit"></i></button>
+    <div class="fcard2 indigo"><div><div class="fcard2-label">${currentMonthLabel}</div><div class="fcard2-val">${inr(currentMonthCollected)}</div><div class="fcard2-sub">${currentMonthRecords} record${currentMonthRecords!==1?'s':''}</div></div></div>
+    <div class="fcard2 indigo"><div><div class="fcard2-label">Outstanding Balance</div><div class="fcard2-val">${inr(Math.max(0, outstandingBalance))}</div><div class="fcard2-sub">Corpus: ${inr(APT_CORPUS_FUND)}</div></div>
+      <button onclick="window._editCorpusFund()" style="position:absolute;top:8px;right:8px;background:none;border:none;cursor:pointer;color:var(--text2);font-size:16px;padding:4px"><i class="ti ti-edit"></i></button>
     </div>`;
   }
 
