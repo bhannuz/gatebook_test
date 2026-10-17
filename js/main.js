@@ -63,6 +63,7 @@ onAuthStateChanged(auth, async user => {
   MY_FLAT = r.flatId || null;
   MY_NAME = r.name || user.displayName || '';
   MY_PHONE = r.phone || '';
+  console.info('Gatebook roles build r7 · role:', ROLE);
   applyRoleUI();
   boot();
 });
@@ -4984,7 +4985,15 @@ function applyRoleUI() {
       // A whole row or card that is clickable to edit (expense row, contact card): keep it
       // visible so members can read it, just make it non-clickable. Buttons are hidden.
       if (['TR', 'TD', 'LI', 'DIV'].includes(el.tagName)) { el.removeAttribute('onclick'); el.style.cursor = 'default'; }
-      else el.style.setProperty('display', 'none', 'important');
+      else {
+        el.style.setProperty('display', 'none', 'important');
+        if (/_oPresM\s*\(/.test(el.getAttribute('onclick') || '') && !el.dataset.roHist) {
+          el.dataset.roHist = '1';
+          el.insertAdjacentHTML('afterend', el.classList.contains('pres-chip-edit')
+            ? '<button class="pres-chip-edit" onclick="window._viewPresHistory()" title="President history"><i class="ti ti-history"></i></button>'
+            : '<button class="btn btn-white btn-sm" onclick="window._viewPresHistory()"><i class="ti ti-history"></i> President history</button>');
+        }
+      }
     });
     document.querySelectorAll('[id^="redit_"] input, [id^="redit_"] select').forEach(el => { el.disabled = true; });
     // Flat details window: show everything, allow nothing to be typed or changed
@@ -5002,6 +5011,14 @@ function applyRoleUI() {
   new MutationObserver(() => { if (raf) return; raf = requestAnimationFrame(() => { raf = 0; sweep(); }); })
     .observe(document.body, { childList: true, subtree: true });
 }
+
+// Flat members: open the Society President window on the History tab only (no Elect tab)
+window._viewPresHistory = () => {
+  const t1 = document.getElementById('presTab1'); if (t1) t1.style.display = 'none';
+  const sub = document.querySelector('#presM .msub'); if (sub) sub.textContent = 'Past presidents (view only)';
+  window._presSwTab(2);
+  document.getElementById('presM').classList.add('open');
+};
 
 function showMemberBanner() {
   const nav = document.querySelector('.navbar'); if (!nav) return;
