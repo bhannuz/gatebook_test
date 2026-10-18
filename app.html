@@ -10,7 +10,29 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"/>
 <meta http-equiv="Cache-Control" content="no-cache, must-revalidate"/>
-<link rel="stylesheet" href="style.css?v=r8"/>
+<!-- NAVBAR-MOBILE-FIX -->
+<style>
+/* Top bar on phones: keep everything inside the screen.
+   - long apartment names are cut with "…" instead of wrapping onto several lines
+   - the flat-count badge and the "Live" text are hidden (the green dot stays)
+   - extra buttons (Flat members / Change code) become icon-only
+   - the user chip shows just the avatar and the logout icon */
+@media (max-width:640px){
+  .navbar{padding:0 .75rem;gap:8px}
+  .nav-brand{min-width:0;flex:1 1 auto}
+  .nav-name-wrap{min-width:0;flex:1 1 auto}
+  .nav-name{display:block;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .flat-count-badge{display:none!important}
+  .nav-right{flex:0 0 auto;gap:6px}
+  .nav-right .sync-chip #slbl{display:none}
+  .nav-right .btn{font-size:0;gap:0;padding:0;width:34px;min-width:34px;height:34px;justify-content:center}
+  .nav-right .btn i{font-size:16px;margin:0}
+  .user-chip{padding:2px 4px;gap:4px}
+}
+</style>
+<!-- /NAVBAR-MOBILE-FIX -->
+
+<link rel="stylesheet" href="style.css?v=r9"/>
 </head>
 <body>
 
@@ -804,8 +826,8 @@
 <div id="toast"><i id="tIco" class="ti ti-check"></i><span id="tMsg"></span></div>
 
 
-<script>console.info("Gatebook app.html build r8 · fixed payment columns");</script>
-<script type="module" src="js/main.js?v=r8"></script>
+<script>console.info("Gatebook app.html build r9 · fixed payment columns + mobile top bar");</script>
+<script type="module" src="js/main.js?v=r9"></script>
 <!-- PENDING FLATS MODAL -->
 <div id="pendingModal" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.45);align-items:flex-end;justify-content:center" onclick="if(event.target===this)window._closePending()">
   <div style="background:var(--surface);border-radius:20px 20px 0 0;width:100%;max-width:600px;max-height:80vh;display:flex;flex-direction:column;overflow:hidden">
