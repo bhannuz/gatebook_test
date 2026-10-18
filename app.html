@@ -10,6 +10,32 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"/>
 <meta http-equiv="Cache-Control" content="no-cache, must-revalidate"/>
+<!-- FILTER-UI -->
+<style>
+/* Filter toolbars (Payments + Expenses): status buttons, search box, summary line, removable tags */
+.ftb{padding:10px 14px 6px;display:flex;flex-direction:column;gap:8px}
+.fpills{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.fpills::-webkit-scrollbar{display:none}
+.fpill{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 12px;border-radius:99px;border:1.5px solid var(--border2);background:#fff;color:var(--text2);font:700 12px var(--font);cursor:pointer;white-space:nowrap}
+.fpill b{font-weight:800;color:var(--text)}
+.fpill:hover{border-color:var(--indigo)}
+.fpill.on{background:var(--indigo);border-color:var(--indigo);color:#fff}
+.fpill.on b{color:#fff}
+.frow{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.fsearch{position:relative;flex:1 1 200px;min-width:0;display:block}
+.fsearch i{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:14px;pointer-events:none}
+.fsearch input{width:100%;height:36px;padding:0 12px 0 32px;border:1.5px solid var(--border2);border-radius:var(--r-md);background:#fff;font:600 13px var(--font);color:var(--text);outline:none;box-sizing:border-box}
+.fsearch input:focus{border-color:var(--indigo)}
+.fsum{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:12px;color:var(--text2);font-weight:600;padding:2px 14px 10px;border-bottom:1px solid var(--border)}
+.fsum b{color:var(--text)}
+.ftag{display:inline-flex;align-items:center;gap:2px;height:24px;padding:0 3px 0 9px;border-radius:99px;background:var(--indigo-bg);color:#4338CA;font-size:11px;font-weight:700}
+.ftag button{border:0;background:none;color:inherit;cursor:pointer;width:18px;height:18px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:11px;padding:0}
+.ftag button:hover{background:rgba(67,56,202,.15)}
+.fclear{border:0;background:none;color:var(--indigo);font:700 12px var(--font);cursor:pointer;text-decoration:underline;padding:2px 4px}
+.fempty{padding:28px 16px;text-align:center;color:var(--text2);font-size:13px;line-height:1.7}
+@media (max-width:480px){.fsearch{flex-basis:100%}}
+</style>
+<!-- /FILTER-UI -->
 <!-- NAVBAR-MOBILE-FIX -->
 <style>
 /* Top bar on phones: keep everything inside the screen.
@@ -32,7 +58,7 @@
 </style>
 <!-- /NAVBAR-MOBILE-FIX -->
 
-<link rel="stylesheet" href="style.css?v=r9"/>
+<link rel="stylesheet" href="style.css?v=r12"/>
 </head>
 <body>
 
@@ -287,6 +313,12 @@
           <div style="padding:10px 14px;border-bottom:1px solid var(--border2);font-size:11px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.4px;">
             <i class="ti ti-receipt" style="color:var(--indigo)"></i> Expense Records
           </div>
+          <div class="ftb">
+            <div class="frow">
+              <label class="fsearch"><i class="ti ti-search"></i><input id="expSearch" type="search" placeholder="Search title, paid by or category…" aria-label="Search expenses" autocomplete="off" oninput="window._expSearch(this.value)"/></label>
+            </div>
+          </div>
+          <div id="expSummary" class="fsum" aria-live="polite"></div>
           <div style="max-height:420px;overflow-x:auto;overflow-y:auto;">
             <div id="presExpList"></div>
           </div>
@@ -344,14 +376,33 @@
       #analyticsView .an-table .c-veh{white-space:nowrap;text-align:center}
       #analyticsView .an-table .c-bal{white-space:nowrap;text-align:right}
       #analyticsView .an-table .c-st{white-space:nowrap;text-align:center;padding-right:18px}
+      /* Tablets (601-768px): the status shows its full label, so its column is wider */
       @media(max-width:768px){
-        #analyticsView .an-table .k-flat{width:58px!important}
-        #analyticsView .an-table .k-veh{width:54px!important}
-        #analyticsView .an-table .k-bal{width:78px!important}
-        #analyticsView .an-table .k-st{width:52px!important}
+        #analyticsView .an-table .k-flat{width:64px!important}
+        #analyticsView .an-table .k-veh{width:70px!important}
+        #analyticsView .an-table .k-bal{width:88px!important}
+        #analyticsView .an-table .c-veh > span{gap:3px!important}
+        #analyticsView .an-table .k-st{width:96px!important}
         #analyticsView .an-table .c-bal{text-align:right!important}
         #analyticsView .an-table .c-veh,#analyticsView .an-table .c-st{text-align:center!important}
       }
+      /* Phones (up to 600px): style.css turns the status into a small coloured dot,
+         and the column headings use a smaller font so none of them gets cut off */
+      @media(max-width:600px){
+        #analyticsView .an-table .k-flat{width:52px!important}
+        #analyticsView .an-table .k-veh{width:54px!important}
+        #analyticsView .an-table .k-bal{width:74px!important}
+        #analyticsView .an-table .k-st{width:60px!important}
+        #analyticsView .an-table th{font-size:9px!important;letter-spacing:.2px!important;padding-left:3px!important;padding-right:3px!important}
+      }
+      /* Very small phones (up to 360px): slightly narrower fixed columns so Owner keeps enough room */
+      @media(max-width:360px){
+        #analyticsView .an-table .k-flat{width:46px!important}
+        #analyticsView .an-table .k-veh{width:54px!important}
+        #analyticsView .an-table .k-bal{width:76px!important}
+        #analyticsView .an-table .k-st{width:54px!important}
+      }
+      #analyticsView .an-table .status-text{white-space:nowrap}
     </style>
 
     <div class="an-layout-grid">
@@ -364,6 +415,13 @@
         <div style="padding:10px 14px;border-bottom:1px solid var(--border2);font-size:11px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.4px;">
           <i class="ti ti-table" style="color:var(--indigo)"></i> Payment Records <span id="anPayCount" style="font-size:10px;color:var(--muted);font-weight:600;text-transform:none;letter-spacing:0"></span>
         </div>
+        <div class="ftb">
+          <div id="anPills" class="fpills" role="group" aria-label="Filter by payment status"></div>
+          <div class="frow">
+            <label class="fsearch"><i class="ti ti-search"></i><input id="anSearch" type="search" placeholder="Search flat or owner…" aria-label="Search flat or owner" autocomplete="off" oninput="window._anSearch(this.value)"/></label>
+          </div>
+        </div>
+        <div id="anSummary" class="fsum" aria-live="polite"></div>
         <div style="max-height:460px;overflow-x:auto;overflow-y:auto;">
           <table class="an-table" style="width:100%;border-collapse:collapse;table-layout:fixed">
             <colgroup>
@@ -380,6 +438,7 @@
             </thead>
             <tbody id="anPayTable"></tbody>
           </table>
+          <div id="anPayEmpty" class="fempty" style="display:none"></div>
         </div>
       </div>
       </div><!-- /left col -->
@@ -826,8 +885,8 @@
 <div id="toast"><i id="tIco" class="ti ti-check"></i><span id="tMsg"></span></div>
 
 
-<script>console.info("Gatebook app.html build r9 · fixed payment columns + mobile top bar");</script>
-<script type="module" src="js/main.js?v=r9"></script>
+<script>console.info("Gatebook app.html build r12 · fixed payment columns on all screens");</script>
+<script type="module" src="js/main.js?v=r12"></script>
 <!-- PENDING FLATS MODAL -->
 <div id="pendingModal" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.45);align-items:flex-end;justify-content:center" onclick="if(event.target===this)window._closePending()">
   <div style="background:var(--surface);border-radius:20px 20px 0 0;width:100%;max-width:600px;max-height:80vh;display:flex;flex-direction:column;overflow:hidden">
