@@ -9,7 +9,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"/>
-<link rel="stylesheet" href="style.css"/>
+<meta http-equiv="Cache-Control" content="no-cache, must-revalidate"/>
+<link rel="stylesheet" href="style.css?v=r8"/>
 </head>
 <body>
 
@@ -306,19 +307,26 @@
       .an-layout-grid{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:12px;align-items:start}
       #analyticsTotals{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:stretch}
 
-      /* Payment Records table: columns are sized to their content. The Owner column takes the
-         spare width, so the Vehicles / Balance / Status columns stay close together. */
-      #analyticsView .an-table{width:100%;border-collapse:collapse}
-      #analyticsView .an-table th,#analyticsView .an-table td{padding:12px 14px;vertical-align:middle}
+      /* Payment Records table: FIXED column widths (they never change with the data).
+         Flat / Vehicles / Balance / Status have set widths; Owner takes the remaining space. */
+      #analyticsView .an-table{width:100%;border-collapse:collapse;table-layout:fixed}
+      #analyticsView .an-table .k-flat{width:84px}
+      #analyticsView .an-table .k-veh{width:92px}
+      #analyticsView .an-table .k-bal{width:116px}
+      #analyticsView .an-table .k-st{width:104px}
+      #analyticsView .an-table th,#analyticsView .an-table td{padding:12px 14px;vertical-align:middle;overflow:hidden}
       #analyticsView .an-table th{padding-top:9px;padding-bottom:9px;font-size:10px;font-weight:800;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;border-bottom:1.5px solid var(--border2);white-space:nowrap;text-align:left}
       #analyticsView .an-table td{border-bottom:1px solid var(--border)}
       #analyticsView .an-table tbody tr:last-child td{border-bottom:0}
-      #analyticsView .an-table .c-flat{width:1%;white-space:nowrap;padding-left:18px}
-      #analyticsView .an-table .c-owner{width:100%;max-width:0}
-      #analyticsView .an-table .c-veh{width:1%;white-space:nowrap;text-align:center}
-      #analyticsView .an-table .c-bal{width:1%;white-space:nowrap;text-align:right}
-      #analyticsView .an-table .c-st{width:1%;white-space:nowrap;text-align:center;padding-right:18px}
+      #analyticsView .an-table .c-flat{white-space:nowrap;padding-left:18px}
+      #analyticsView .an-table .c-veh{white-space:nowrap;text-align:center}
+      #analyticsView .an-table .c-bal{white-space:nowrap;text-align:right}
+      #analyticsView .an-table .c-st{white-space:nowrap;text-align:center;padding-right:18px}
       @media(max-width:768px){
+        #analyticsView .an-table .k-flat{width:58px!important}
+        #analyticsView .an-table .k-veh{width:54px!important}
+        #analyticsView .an-table .k-bal{width:78px!important}
+        #analyticsView .an-table .k-st{width:52px!important}
         #analyticsView .an-table .c-bal{text-align:right!important}
         #analyticsView .an-table .c-veh,#analyticsView .an-table .c-st{text-align:center!important}
       }
@@ -335,7 +343,10 @@
           <i class="ti ti-table" style="color:var(--indigo)"></i> Payment Records <span id="anPayCount" style="font-size:10px;color:var(--muted);font-weight:600;text-transform:none;letter-spacing:0"></span>
         </div>
         <div style="max-height:460px;overflow-x:auto;overflow-y:auto;">
-          <table class="an-table">
+          <table class="an-table" style="width:100%;border-collapse:collapse;table-layout:fixed">
+            <colgroup>
+              <col class="k-flat" style="width:84px"/><col class="k-owner"/><col class="k-veh" style="width:92px"/><col class="k-bal" style="width:116px"/><col class="k-st" style="width:104px"/>
+            </colgroup>
             <thead style="position:sticky;top:0;z-index:2;">
               <tr style="background:var(--surface3)">
                 <th class="c-flat">Flat</th>
@@ -793,7 +804,8 @@
 <div id="toast"><i id="tIco" class="ti ti-check"></i><span id="tMsg"></span></div>
 
 
-<script type="module" src="js/main.js"></script>
+<script>console.info("Gatebook app.html build r8 · fixed payment columns");</script>
+<script type="module" src="js/main.js?v=r8"></script>
 <!-- PENDING FLATS MODAL -->
 <div id="pendingModal" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.45);align-items:flex-end;justify-content:center" onclick="if(event.target===this)window._closePending()">
   <div style="background:var(--surface);border-radius:20px 20px 0 0;width:100%;max-width:600px;max-height:80vh;display:flex;flex-direction:column;overflow:hidden">
