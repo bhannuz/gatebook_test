@@ -100,6 +100,7 @@ const contacts = [];          // service contacts (plumber, electrician etc)
 
 let AB='', FS='all', SQ='', RTF='all', FLF='all', MF='all', AM=new Date().toISOString().slice(0,7), AV='analytics', IF='all', STRVIEW='floor';
 // Analytics tab state — declared here to avoid TDZ errors
+let _anQ='', _expQ='', _expQT=0;   // search text for Payments / Expenses
 let _anStatus='all', _anFilterType='month', _anSelMonth=AM, _anSelYear=new Date().getFullYear().toString(), _anBlock='all';
 const _pieSegs={};
 let eu=null, iu=null, vu=null, pu=null;
@@ -2513,6 +2514,30 @@ const CAT_CLR = {
   Gardening:'var(--green)', Painting:'var(--amber)', Other:'var(--text2)'
 };
 
+/* Expenses: summary line + removable tags + search/clear handlers */
+function _expRenderSummary(vis, total, f) {
+  const el = document.getElementById('expSummary'); if (!el) return;
+  const tag = (label, key) => `<span class="ftag">${_esc(label)}<button type="button" aria-label="Remove filter ${_esc(label)}" onclick="window._expClear('${key}')">✕</button></span>`;
+  const tags = [];
+  if (f.yf !== 'all') tags.push(tag(f.yf, 'year'));
+  if (f.mf !== 'all') tags.push(tag(new Date(f.mf + '-01').toLocaleDateString('en-IN', { month: 'short', year: 'numeric' }), 'month'));
+  if (f.cf !== 'all') tags.push(tag(f.cf, 'cat'));
+  const q = (_expQ || '').trim();
+  if (q) tags.push(tag(`“${q}”`, 'q'));
+  const tot = vis.reduce((t, e) => t + (e.amt || 0), 0);
+  el.innerHTML = `<span>Showing <b>${vis.length}</b> of ${total} record${total!==1?'s':''} · <b>${inr(tot)}</b></span>${tags.join('')}` +
+    (tags.length > 1 ? `<button type="button" class="fclear" onclick="window._expClear('all')">Clear all</button>` : '');
+}
+window._expSearch = v => { _expQ = v || ''; clearTimeout(_expQT); _expQT = setTimeout(() => rPresident(), 120); };
+window._expClear = key => {
+  const set = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; };
+  if (key === 'year' || key === 'all') { set('histYearFilter', 'all'); set('histMonthFilter', 'all'); }
+  if (key === 'month' || key === 'all') set('histMonthFilter', 'all');
+  if (key === 'cat'   || key === 'all') set('histCatFilter', 'all');
+  if (key === 'q'     || key === 'all') { _expQ = ''; set('expSearch', ''); }
+  rPresident();
+};
+
 function rPresident() {
   /* ── Save filter selections BEFORE rebuilding DOM ── */
   const _savedYear  = document.getElementById('histYearFilter')?.value  || 'all';
@@ -2552,54 +2577,52 @@ function rPresident() {
   const catIcon = c => CAT_ICONS2[c]||'ti-clipboard';
   const allCatNames = [...new Set(socExps.map(e=>e.cat).filter(Boolean))].sort();
 
-  /* ── Filter dropdowns ── */
-  const allMonths = [...new Set(socExps.map(e=>e.month).filter(Boolean))].sort().reverse();
-  const allYears  = [...new Set(allMonths.map(m=>m.slice(0,4)))].sort().reverse();
-  const allCats   = [...new Set(socExps.map(e=>e.cat).filter(Boolean))].sort();
+  /* ── Filter dropdowns: dynamic — only values that have data, with counts ── */
+  const q = (_expQ || '').trim().toLowerCase();
+  const countBy = (rows, keyFn) => { const m = new Map(); rows.forEach(e => { const k = keyFn(e); if (k) m.set(k, (m.get(k) || 0) + 1); }); return m; };
+  const allMonths  = [...new Set(socExps.map(e=>e.month).filter(Boolean))].sort().reverse();
+  const allYears   = [...new Set(allMonths.map(m=>m.slice(0,4)))].sort().reverse();
+  const yearCounts = countBy(socExps, e => (e.month || '').slice(0, 4));
 
-  // Year dropdown — restore saved selection
+  // Year
   const ySel = document.getElementById('histYearFilter');
   if (ySel) {
     ySel.innerHTML = `<option value="all">All Years</option>` +
-      allYears.map(y => `<option value="${y}">${y}</option>`).join('');
-    if (_savedYear && allYears.includes(_savedYear)) ySel.value = _savedYear;
+      allYears.map(y => `<option value="${y}">${y} (${yearCounts.get(y) || 0})</option>`).join('');
+    if (allYears.includes(_savedYear)) ySel.value = _savedYear;
   }
+  const yf = ySel?.value || 'all';
 
-  // Month dropdown — cascade by selected year, restore saved selection
-  const selectedYear = ySel?.value || 'all';
-  const filteredMonths = selectedYear === 'all' ? allMonths : allMonths.filter(m => m.startsWith(selectedYear));
+  // Month — only the months of the chosen year
+  const filteredMonths = yf === 'all' ? allMonths : allMonths.filter(m => m.startsWith(yf));
+  const monthCounts = countBy(socExps, e => e.month);
   const mSel = document.getElementById('histMonthFilter');
   if (mSel) {
     mSel.innerHTML = `<option value="all">All Months</option>` +
       filteredMonths.map(m => {
         const lbl = new Date(m + '-01').toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
-        return `<option value="${m}">${lbl}</option>`;
+        return `<option value="${m}">${lbl} (${monthCounts.get(m) || 0})</option>`;
       }).join('');
-    // Default to current month (AM) if available
-    if (!_savedMonth) {
-      mSel.value = filteredMonths.includes(AM) ? AM : (filteredMonths[0] || 'all');
-    } else if (filteredMonths.includes(_savedMonth)) {
-      mSel.value = _savedMonth;
-    }
+    if (filteredMonths.includes(_savedMonth)) mSel.value = _savedMonth;
   }
+  const mf = mSel?.value || 'all';
 
-  // Category dropdown — restore saved selection
+  // Category — only the categories used in the chosen year / month
+  const scopeRows = socExps.filter(e => (yf === 'all' || (e.month || '').startsWith(yf)) && (mf === 'all' || e.month === mf));
+  const catCounts = countBy(scopeRows, e => e.cat);
+  const allCats = [...catCounts.keys()].sort();
   const cSel = document.getElementById('histCatFilter');
   if (cSel) {
     cSel.innerHTML = `<option value="all">All Categories</option>` +
-      allCats.map(c => `<option value="${c}">${c}</option>`).join('');
-    if (_savedCat && allCats.includes(_savedCat)) cSel.value = _savedCat;
+      allCats.map(c => `<option value="${_esc(c)}">${_esc(c)} (${catCounts.get(c)})</option>`).join('');
+    if (allCats.includes(_savedCat)) cSel.value = _savedCat;
   }
+  const cf = cSel?.value || 'all';
 
-  /* ── Filter expense rows using saved values ── */
-  const yf = _savedYear;
-  const mf = (_savedMonth && filteredMonths.includes(_savedMonth)) ? _savedMonth : (mSel?.value || 'all');
-  const cf = (_savedCat  && allCats.includes(_savedCat))           ? _savedCat  : (cSel?.value || 'all');
-
-  const vis = socExps.filter(e => {
-    if (yf !== 'all' && !(e.month||'').startsWith(yf)) return false;
-    if (mf !== 'all' && e.month !== mf)                return false;
-    if (cf !== 'all' && e.cat   !== cf)                return false;
+  /* ── Rows that pass every filter (year, month, category, search) ── */
+  const vis = scopeRows.filter(e => {
+    if (cf !== 'all' && e.cat !== cf) return false;
+    if (q && ![e.title, e.paidBy, e.cat, e.note].some(x => String(x || '').toLowerCase().includes(q))) return false;
     return true;
   });
 
@@ -2622,8 +2645,17 @@ function rPresident() {
     .flat()
     .reduce((s, e) => s + (e.amt || 0), 0);
 
+  // First card: the current month while nothing is filtered, otherwise exactly what is filtered
+  const anyFilter = yf !== 'all' || mf !== 'all' || cf !== 'all' || !!q;
+  const scopeLabel = anyFilter
+    ? [ mf !== 'all' ? new Date(mf + '-01').toLocaleDateString('en-IN', { month: 'long', year: 'numeric' }) : (yf !== 'all' ? `Year ${yf}` : null),
+        cf !== 'all' ? cf : null,
+        q ? `“${(_expQ || '').trim()}”` : null ].filter(Boolean).join(' · ')
+    : currentMonthLabel;
+  const card1Total = anyFilter ? vis.reduce((t, e) => t + (e.amt || 0), 0) : totalCurrentMonthExp;
+  const card1Count = anyFilter ? vis.length : currentMonthExpenses.length;
   document.getElementById('fundRow').innerHTML = `
-    <div class="fcard2 indigo"><div class="fcard2-label">${currentMonthLabel}</div><div class="fcard2-val">${inr(totalCurrentMonthExp)}</div><div class="fcard2-sub">${currentMonthExpenses.length} record${currentMonthExpenses.length!==1?'s':''}</div></div>
+    <div class="fcard2 indigo"><div class="fcard2-label">${_esc(scopeLabel)}</div><div class="fcard2-val">${inr(card1Total)}</div><div class="fcard2-sub">${card1Count} record${card1Count!==1?'s':''}</div></div>
     <div class="fcard2 indigo"><div class="fcard2-label">All Time</div><div class="fcard2-val">${inr(totalAllExp)}</div><div class="fcard2-sub">${socExps.length} records</div></div>`;
 
 
@@ -2644,8 +2676,11 @@ function rPresident() {
     }));
   }
 
+  _expRenderSummary(vis, socExps.length, { yf, mf, cf });
   if(!vis.length){
-    document.getElementById('presExpList').innerHTML=`<div class="exp-empty"><i class="ti ti-receipt-off"></i>No expenses recorded yet.</div>`;
+    document.getElementById('presExpList').innerHTML = socExps.length
+      ? `<div class="fempty">No expenses match these filters.<br><button type="button" class="btn btn-white btn-sm" onclick="window._expClear('all')">Clear filters</button></div>`
+      : `<div class="exp-empty"><i class="ti ti-receipt-off"></i>No expenses recorded yet.</div>`;
     return;
   }
 
@@ -3933,10 +3968,12 @@ function rAnalytics() {
   // Populate block dropdown
   const blkSel = document.getElementById('payFilterBlock');
   if (blkSel) {
-    const prevBlk = blkSel.value || '';
+    const prevBlk = (_anBlock && _anBlock !== 'all') ? _anBlock : '';
     const blks = [...new Set([...flats.values()].map(f=>f.block||'').filter(Boolean))].sort();
+    const flatsIn = b => [...flats.values()].filter(f => (f.block||'') === b).length;
     blkSel.innerHTML = '<option value="">All Blocks</option>' +
-      blks.map(b=>`<option value="${b}"${prevBlk===b?' selected':''}>Block ${b}</option>`).join('');
+      blks.map(b=>`<option value="${b}"${prevBlk===b?' selected':''}>Block ${b} (${flatsIn(b)})</option>`).join('');
+    if (prevBlk && !blks.includes(prevBlk)) _anBlock = 'all';
   }
 
   // Restore month selection
@@ -3978,11 +4015,13 @@ function _anPopulateMonths(sortedMonths) {
     ? sortedMonths.filter(m => m.startsWith(selectedYear))
     : sortedMonths;
 
+  const perMonth = {};
+  exps.forEach(rs => rs.forEach(e => { const k = e.month || (e.rawDate || '').slice(0, 7); if (k) perMonth[k] = (perMonth[k] || 0) + 1; }));
   mSel.innerHTML = `<option value="">All months</option>` +
     filtered.map(m => {
       const lbl = new Date(m + '-01').toLocaleDateString('en-IN',
         { month: 'long', year: 'numeric' });
-      return `<option value="${m}">${lbl}</option>`;
+      return `<option value="${m}">${lbl}${perMonth[m] ? ` (${perMonth[m]})` : ''}</option>`;
     }).join('');
 
   // Default to current month (AM) if available, otherwise first available month
@@ -4113,12 +4152,20 @@ function _anRender() {
     buildLegend('payLegend', segments.map(s => ({ ...s, count: s.value })), totalFlats);
   });
 
-  /* ── Summary cards: Current Month and Outstanding Balance ── */
+  /* ── Collected in the SELECTED period / block (drives the first summary card) ── */
+  let periodCollected = 0, periodRecords = 0;
+  flats.forEach((f, fid) => {
+    if (selBlock && f.block !== selBlock) return;
+    (exps.get(fid) || []).filter(inPeriod).forEach(e => { periodCollected += (e.amt || 0); periodRecords++; });
+  });
+  const cardLabel = periodLabel + (selBlock ? ` · Block ${selBlock}` : '');
+
+  /* ── Summary cards: selected period + Outstanding Balance ── */
   const cardsDiv = document.getElementById('analyticsTotals');
   if (cardsDiv) {
     const currentMonthLabel = new Date(AM + '-01').toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
     cardsDiv.innerHTML = `
-    <div class="fcard2 indigo"><div><div class="fcard2-label">${currentMonthLabel}</div><div class="fcard2-val">${inr(currentMonthCollected)}</div><div class="fcard2-sub">${currentMonthRecords} record${currentMonthRecords!==1?'s':''}</div></div></div>
+    <div class="fcard2 indigo"><div><div class="fcard2-label">${_esc(cardLabel)}</div><div class="fcard2-val">${inr(periodCollected)}</div><div class="fcard2-sub">${periodRecords} record${periodRecords!==1?'s':''}</div></div></div>
     <div class="fcard2 indigo"><div><div class="fcard2-label">Outstanding Balance</div><div class="fcard2-val">${inr(Math.max(0, outstandingBalance))}</div><div class="fcard2-sub">Corpus: ${inr(APT_CORPUS_FUND)}</div></div>
       <button onclick="window._editCorpusFund()" style="position:absolute;top:8px;right:8px;background:none;border:none;cursor:pointer;color:var(--text2);font-size:16px;padding:4px"><i class="ti ti-edit"></i></button>
     </div>`;
@@ -4220,6 +4267,30 @@ function anSetBlock(b) {
 }
 window.anSetBlock = anSetBlock;
 
+/* Status buttons (with live counts) + summary line + removable tags */
+function _anRenderToolbar(counts, shown, total, block, q) {
+  const names = { all:'All', paid:'Paid', partial:'Partial', pending:'Pending', vacant:'Vacant' };
+  const pills = document.getElementById('anPills');
+  if (pills) pills.innerHTML = Object.keys(names).map(k =>
+    `<button type="button" class="fpill${_anStatus===k?' on':''}" aria-pressed="${_anStatus===k}" onclick="window.anSetStatus('${k}')">${names[k]} <b>${counts[k]||0}</b></button>`).join('');
+  const sum = document.getElementById('anSummary'); if (!sum) return;
+  const tag = (label, key) => `<span class="ftag">${_esc(label)}<button type="button" aria-label="Remove filter ${_esc(label)}" onclick="window._anClear('${key}')">✕</button></span>`;
+  const tags = [];
+  if (block && block !== 'all') tags.push(tag(`Block ${block}`, 'block'));
+  if (_anStatus !== 'all')      tags.push(tag(names[_anStatus] || _anStatus, 'status'));
+  if (q)                        tags.push(tag(`“${(_anQ||'').trim()}”`, 'q'));
+  sum.innerHTML = `<span>Showing <b>${shown}</b> of ${total} flat${total!==1?'s':''}</span>${tags.join('')}` +
+    (tags.length > 1 ? `<button type="button" class="fclear" onclick="window._anClear('all')">Clear all</button>` : '');
+}
+window._anSearch = v => { _anQ = v || ''; renderAnPayTable(); };
+window._anClear = key => {
+  const blk = document.getElementById('payFilterBlock');
+  if (key === 'status' || key === 'all') _anStatus = 'all';
+  if (key === 'q' || key === 'all') { _anQ = ''; const i = document.getElementById('anSearch'); if (i) i.value = ''; }
+  if ((key === 'block' || key === 'all') && blk && blk.value) { blk.value = ''; window._anOnBlockChange(); return; }
+  renderAnPayTable();
+};
+
 function renderAnPayTable(filterType, selMonth, selYear, selBlock) {
   if (filterType !== undefined) _anFilterType = filterType;
   if (selMonth   !== undefined) _anSelMonth   = selMonth || AM;
@@ -4231,8 +4302,15 @@ function renderAnPayTable(filterType, selMonth, selYear, selBlock) {
   const sy = _anSelYear    || new Date().getFullYear().toString();
   const sb = _anBlock      || 'all';
 
-  let rows = _buildFlatSummary(ft, sm, sy, sb);
-  if (_anStatus !== 'all') rows = rows.filter(f => f._status === _anStatus);
+  const everyFlat = _buildFlatSummary(ft, sm, sy, sb);                 // block + period
+  const q = (_anQ || '').trim().toLowerCase();
+  const searched = q
+    ? everyFlat.filter(f => (f.flatId || '').toLowerCase().includes(q) || (f.owner || '').toLowerCase().includes(q))
+    : everyFlat;
+  const counts = { all: searched.length, paid: 0, partial: 0, pending: 0, vacant: 0 };
+  searched.forEach(f => { counts[f._status] = (counts[f._status] || 0) + 1; });
+  const rows = _anStatus !== 'all' ? searched.filter(f => f._status === _anStatus) : searched;
+  _anRenderToolbar(counts, rows.length, everyFlat.length, sb, q);
 
   const tbody   = document.getElementById('anPayTable');
   const empty   = document.getElementById('anPayEmpty');
@@ -4241,12 +4319,17 @@ function renderAnPayTable(filterType, selMonth, selYear, selBlock) {
 
   if (!rows.length) {
     tbody.innerHTML = '';
-    if (empty)   empty.style.display   = 'block';
-    if (counter) counter.textContent   = '';
+    if (empty) {
+      empty.style.display = 'block';
+      empty.innerHTML = everyFlat.length
+        ? 'No flats match these filters.<br><button type="button" class="btn btn-white btn-sm" onclick="window._anClear(\'all\')">Clear filters</button>'
+        : 'No flats found for this period.';
+    }
+    if (counter) counter.textContent = '';
     return;
   }
   if (empty)   empty.style.display   = 'none';
-  if (counter) counter.textContent   = `(${rows.length} flats)`;
+  if (counter) counter.textContent   = rows.length === everyFlat.length ? `(${rows.length} flats)` : `(${rows.length} of ${everyFlat.length} flats)`;
 
   tbody.innerHTML = rows.map((f,i) => {
     const s        = f._status || 'pending';
