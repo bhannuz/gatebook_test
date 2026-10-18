@@ -58,7 +58,7 @@
 </style>
 <!-- /NAVBAR-MOBILE-FIX -->
 
-<link rel="stylesheet" href="style.css?v=r12"/>
+<link rel="stylesheet" href="style.css?v=r13"/>
 </head>
 <body>
 
@@ -376,6 +376,16 @@
       #analyticsView .an-table .c-veh{white-space:nowrap;text-align:center}
       #analyticsView .an-table .c-bal{white-space:nowrap;text-align:right}
       #analyticsView .an-table .c-st{white-space:nowrap;text-align:center;padding-right:18px}
+      /* Laptops and desktops (769px and up): each column keeps a FIXED SHARE of the table width, so the
+         spare space is spread evenly instead of piling up between Owner and Vehicles.
+         13 + 31 + 17 + 20 + 19 = 100% (the narrowest case, 593px, still fits every column). */
+      @media(min-width:769px){
+        #analyticsView .an-table .k-flat{width:13%!important}
+        #analyticsView .an-table .k-owner{width:31%!important}
+        #analyticsView .an-table .k-veh{width:17%!important}
+        #analyticsView .an-table .k-bal{width:20%!important}
+        #analyticsView .an-table .k-st{width:19%!important}
+      }
       /* Tablets (601-768px): the status shows its full label, so its column is wider */
       @media(max-width:768px){
         #analyticsView .an-table .k-flat{width:64px!important}
@@ -885,8 +895,8 @@
 <div id="toast"><i id="tIco" class="ti ti-check"></i><span id="tMsg"></span></div>
 
 
-<script>console.info("Gatebook app.html build r12 · fixed payment columns on all screens");</script>
-<script type="module" src="js/main.js?v=r12"></script>
+<script>console.info("Gatebook app.html build r13 · balanced payment columns");</script>
+<script type="module" src="js/main.js?v=r13"></script>
 <!-- PENDING FLATS MODAL -->
 <div id="pendingModal" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.45);align-items:flex-end;justify-content:center" onclick="if(event.target===this)window._closePending()">
   <div style="background:var(--surface);border-radius:20px 20px 0 0;width:100%;max-width:600px;max-height:80vh;display:flex;flex-direction:column;overflow:hidden">
