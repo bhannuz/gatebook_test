@@ -3988,6 +3988,7 @@ function rAnalytics() {
 
 /* Called when year dropdown changes */
 window._anOnYearChange = function () {
+  _anExpandOnMobile();
   const monthSet = new Set();
   exps.forEach(records => records.forEach(e => { if (e.month) monthSet.add(e.month); }));
   monthSet.add(AM);
@@ -3996,9 +3997,10 @@ window._anOnYearChange = function () {
 };
 
 /* Called when month dropdown changes */
-window._anOnMonthChange = function () { _anRender(); };
+window._anOnMonthChange = function () { _anExpandOnMobile(); _anRender(); };
 
 window._anOnBlockChange = function () {
+  _anExpandOnMobile();
   const b = document.getElementById('payFilterBlock')?.value || '';
   _anBlock = b || 'all';
   ['anBlockFilter','anBlockFilter2'].forEach(id => { const el=document.getElementById(id); if(el) el.value=_anBlock; });
@@ -4029,6 +4031,29 @@ function _anPopulateMonths(sortedMonths) {
 }
 
 /* Core render: reads exps Map, no paymentHistory needed */
+/* Payment records + chart: collapsed by default on mobile (up to 768px), always open on desktop */
+const _anMobile = () => window.matchMedia('(max-width:768px)').matches;
+function _anSyncColl() {
+  ['anRecPanel', 'anChartPanel'].forEach(id => {
+    const p = document.getElementById(id); const h = p && p.querySelector('.coll-head'); if (!h) return;
+    if (_anMobile()) {
+      h.setAttribute('role', 'button'); h.setAttribute('tabindex', '0');
+      h.setAttribute('aria-expanded', String(!p.classList.contains('is-collapsed')));
+    } else { h.removeAttribute('role'); h.removeAttribute('tabindex'); h.removeAttribute('aria-expanded'); }
+  });
+}
+window._anToggle = id => {
+  if (!_anMobile()) return;                          // desktop: nothing to collapse
+  const p = document.getElementById(id); if (!p) return;
+  p.classList.toggle('is-collapsed');
+  _anSyncColl();
+  if (id === 'anChartPanel' && !p.classList.contains('is-collapsed')) _anRender();   // redraw the chart now that it is visible
+};
+function _anExpandOnMobile() {                       // choosing a filter means "show me the results"
+  const p = document.getElementById('anRecPanel');
+  if (_anMobile() && p && p.classList.contains('is-collapsed')) { p.classList.remove('is-collapsed'); _anSyncColl(); }
+}
+
 function _anRender() {
   const selectedYear  = document.getElementById('payFilterYear')?.value  || '';
   const selectedMonth = document.getElementById('payFilterMonth')?.value || '';
@@ -4165,7 +4190,7 @@ function _anRender() {
   if (cardsDiv) {
     const currentMonthLabel = new Date(AM + '-01').toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
     cardsDiv.innerHTML = `
-    <div class="fcard2 indigo"><div><div class="fcard2-label">${_esc(cardLabel)}</div><div class="fcard2-val">${inr(periodCollected)}</div><div class="fcard2-sub">${periodRecords} record${periodRecords!==1?'s':''}</div></div></div>
+    <div class="fcard2 indigo"><div><div class="fcard2-label">${_esc(cardLabel)}</div><div class="fcard2-val dual"><span style="color:var(--green)">${inr(totalCollected)}</span><span class="sep">/</span><span style="color:var(--red)">${inr(outstanding)}</span></div><div class="fcard2-sub"><b style="color:var(--green)">Paid</b> / <b style="color:var(--red)">Pending</b> · ${periodRecords} record${periodRecords!==1?'s':''}</div></div></div>
     <div class="fcard2 indigo"><div><div class="fcard2-label">Outstanding Balance</div><div class="fcard2-val">${inr(Math.max(0, outstandingBalance))}</div><div class="fcard2-sub">Corpus: ${inr(APT_CORPUS_FUND)}</div></div>
       <button onclick="window._editCorpusFund()" style="position:absolute;top:8px;right:8px;background:none;border:none;cursor:pointer;color:var(--text2);font-size:16px;padding:4px"><i class="ti ti-edit"></i></button>
     </div>`;
@@ -4173,6 +4198,7 @@ function _anRender() {
 
   /* ── Payment records table ── */
   renderAnPayTable('month', selectedMonth || AM, selectedYear, selBlock || 'all');
+  _anSyncColl();
 }
 window.rAnalytics = rAnalytics;
 
