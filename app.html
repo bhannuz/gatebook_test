@@ -10,6 +10,30 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"/>
 <meta http-equiv="Cache-Control" content="no-cache, must-revalidate"/>
+<!-- PAY-TAB-UX -->
+<style>
+/* 1) A small gap between the Add Payment / Add Expense buttons and what sits below them */
+#phAct{gap:12px!important}
+#phAct > div > div:first-child{gap:12px!important}   /* between Add Payment and Add Expense */
+#phAct:not(:empty){margin-bottom:12px!important}
+/* 2) First summary card: Paid (green) / Pending (red) */
+.fcard2-val.dual{display:flex;flex-wrap:wrap;align-items:baseline;gap:0 6px;font-size:20px}
+.fcard2-val.dual .sep{color:var(--muted);font-weight:600}
+@media (max-width:480px){   /* narrow phones: green amount over red amount, so nothing wraps awkwardly */
+  .fcard2-val.dual{flex-direction:column;align-items:flex-start;gap:0;font-size:17px;line-height:1.25}
+  .fcard2-val.dual .sep{display:none}
+}
+/* 3) Payment records + chart: collapsible on mobile only (up to 768px). Always open on desktop. */
+.coll-head .chev{display:none;margin-left:auto;font-size:16px;color:var(--text2);transition:transform .2s}
+@media (max-width:768px){
+  .coll-head{display:flex!important;align-items:center;gap:6px;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent}
+  .coll-head .chev{display:inline-block}
+  .collapsible:not(.is-collapsed) .coll-head .chev{transform:rotate(180deg)}
+  .collapsible.is-collapsed .coll-body{display:none}
+  .collapsible.is-collapsed .coll-head{margin-bottom:0!important}
+}
+</style>
+<!-- /PAY-TAB-UX -->
 <!-- FILTER-UI -->
 <style>
 /* Filter toolbars (Payments + Expenses): status buttons, search box, summary line, removable tags */
@@ -58,7 +82,7 @@
 </style>
 <!-- /NAVBAR-MOBILE-FIX -->
 
-<link rel="stylesheet" href="style.css?v=r13"/>
+<link rel="stylesheet" href="style.css?v=r14"/>
 </head>
 <body>
 
@@ -421,10 +445,11 @@
       <div style="display:flex;flex-direction:column;gap:10px;min-width:0;">
         <div id="analyticsTotals"></div>
 
-        <div class="exp-records-panel tab-table-wrap">
-        <div style="padding:10px 14px;border-bottom:1px solid var(--border2);font-size:11px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.4px;">
-          <i class="ti ti-table" style="color:var(--indigo)"></i> Payment Records <span id="anPayCount" style="font-size:10px;color:var(--muted);font-weight:600;text-transform:none;letter-spacing:0"></span>
+        <div id="anRecPanel" class="exp-records-panel tab-table-wrap collapsible is-collapsed">
+        <div class="coll-head" onclick="window._anToggle('anRecPanel')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();window._anToggle('anRecPanel')}" style="padding:10px 14px;border-bottom:1px solid var(--border2);font-size:11px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.4px;">
+          <i class="ti ti-table" style="color:var(--indigo)"></i> Payment Records <span id="anPayCount" style="font-size:10px;color:var(--muted);font-weight:600;text-transform:none;letter-spacing:0"></span><i class="ti ti-chevron-down chev"></i>
         </div>
+        <div class="coll-body" id="anRecBody">
         <div class="ftb">
           <div id="anPills" class="fpills" role="group" aria-label="Filter by payment status"></div>
           <div class="frow">
@@ -450,20 +475,23 @@
           </table>
           <div id="anPayEmpty" class="fempty" style="display:none"></div>
         </div>
+        </div><!-- /coll-body -->
       </div>
       </div><!-- /left col -->
 
       <!-- RIGHT: flats by payment status -->
       <div class="chart-col" style="display:flex;flex-direction:column;gap:10px;min-width:0;">
-        <div class="exp-pie-panel" style="background:var(--surface2);border-radius:8px;padding:14px;overflow:hidden;">
-          <div style="font-size:11px;font-weight:800;color:var(--text);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;">
-            <i class="ti ti-chart-pie" style="color:var(--indigo)"></i> By Status
+        <div id="anChartPanel" class="exp-pie-panel collapsible is-collapsed" style="background:var(--surface2);border-radius:8px;padding:14px;overflow:hidden;">
+          <div class="coll-head" onclick="window._anToggle('anChartPanel')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();window._anToggle('anChartPanel')}" style="font-size:11px;font-weight:800;color:var(--text);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;">
+            <i class="ti ti-chart-pie" style="color:var(--indigo)"></i> By Status<i class="ti ti-chevron-down chev"></i>
           </div>
+          <div class="coll-body">
           <div class="chart-wrap" style="width:100%;max-width:200px;aspect-ratio:1/1;height:auto;position:relative;margin:0 auto 20px;">
             <canvas id="payPie" style="position:absolute;inset:0;width:100%;height:100%;cursor:pointer;"></canvas>
           </div>
           <div id="payTooltip" style="display:none;position:fixed;background:rgba(0,0,0,0.82);color:#fff;font-size:11px;font-weight:700;padding:5px 10px;border-radius:8px;pointer-events:none;z-index:9999;white-space:nowrap;"></div>
           <div id="payLegend" style="display:flex;flex-direction:column;gap:8px;font-size:11px;max-height:200px;overflow-y:auto;"></div>
+          </div><!-- /coll-body -->
         </div>
       </div><!-- /right col -->
 
@@ -895,8 +923,8 @@
 <div id="toast"><i id="tIco" class="ti ti-check"></i><span id="tMsg"></span></div>
 
 
-<script>console.info("Gatebook app.html build r13 · balanced payment columns");</script>
-<script type="module" src="js/main.js?v=r13"></script>
+<script>console.info("Gatebook app.html build r14 · payments tab: spacing, paid/pending card, mobile collapse");</script>
+<script type="module" src="js/main.js?v=r14"></script>
 <!-- PENDING FLATS MODAL -->
 <div id="pendingModal" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.45);align-items:flex-end;justify-content:center" onclick="if(event.target===this)window._closePending()">
   <div style="background:var(--surface);border-radius:20px 20px 0 0;width:100%;max-width:600px;max-height:80vh;display:flex;flex-direction:column;overflow:hidden">
