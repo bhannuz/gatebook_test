@@ -16,7 +16,7 @@ import { resolveRole, pinToPassword, randomPin, isValidPin, isValidMobile, norma
 ════════════════════════════════ */
 let UID = null;          // apartment id (the admin's uid) — for members it is NOT their own uid
 let ROLE = 'admin';      // 'admin' | 'member'
-let MY_FLAT = null, MY_NAME = '', MY_PHONE = '';
+let MY_FLAT = null, MY_NAME = '', MY_PHONE = '', MY_REL = '';
 const isAdmin  = () => ROLE === 'admin';
 const isMember = () => ROLE === 'member';
 let _booted = false; // prevent duplicate boot on auth token refresh
@@ -63,6 +63,7 @@ onAuthStateChanged(auth, async user => {
   MY_FLAT = r.flatId || null;
   MY_NAME = r.name || user.displayName || '';
   MY_PHONE = r.phone || '';
+  MY_REL   = r.relation || '';
   console.info('Gatebook roles build r7 · role:', ROLE);
   applyRoleUI();
   boot();
@@ -5128,12 +5129,12 @@ function showMemberBanner() {
   const nav = document.querySelector('.navbar'); if (!nav) return;
   nav.insertAdjacentHTML('afterend',
     `<div style="background:#CCFBF1;color:#115E59;padding:9px 24px;font-size:13px;font-weight:600;display:flex;gap:8px;align-items:center">
-       <i class="ti ti-eye"></i>View-only access${MY_FLAT ? ' · Flat ' + _esc(MY_FLAT) : ''}. You can see all details, raise issues and add service contacts from the Services tab. Only the admin can make other changes.
+       <i class="ti ti-eye"></i>View-only access${MY_FLAT ? ' · Flat ' + _esc(MY_FLAT) + (MY_REL ? ' (' + (MY_REL === 'tenant' ? 'Tenant' : 'Owner') + ')' : '') : ''}. You can see all details, raise issues and add service contacts from the Services tab. Only the admin can make other changes.
      </div>`);
 }
 
 /* ── Admin: add / reset / remove flat members (mobile + 6-character code) ── */
-let MEMBERS = [], _deduping = false;
+let MEMBERS = [], _deduping = false, _memBusy = 0;   // _memBusy: pause duplicate clean-up while an add / reset is in progress
 
 async function initMembershipUI() {
   const right = document.querySelector('.nav-right'); if (!right) return;
@@ -5148,20 +5149,22 @@ async function initMembershipUI() {
     <div class="mhead">
       <div style="display:flex;align-items:center;gap:12px">
         <div class="micon detail"><i class="ti ti-users-group"></i></div>
-        <div><div class="mtitle">Flat members</div><div class="msub">Add a resident, then share their mobile number and code</div></div>
+        <div><div class="mtitle">Flat members</div><div class="msub">Owner and tenant can each have their own login for the same flat</div></div>
       </div>
       <button class="mclose" onclick="document.getElementById('memM').classList.remove('open');document.getElementById('memCode').innerHTML=''"><i class="ti ti-x"></i></button>
     </div>
     <div class="fg2">
-      <div class="fg"><label>Flat</label><select id="mmFlat" onchange="window._memPick()"></select></div>
-      <div class="fg"><label>Name</label><input type="text" id="mmName" placeholder="Resident name"/></div>
+      <div class="fg"><label>Flat</label><select id="mmFlat" onchange="window._memPick(true)"></select></div>
+      <div class="fg"><label>Login for</label><select id="mmRole" onchange="window._memPick()"><option value="owner">Owner</option><option value="tenant">Tenant</option></select></div>
     </div>
+    <div id="mmHint" style="font-size:11px;color:var(--text2);margin:-2px 0 10px;line-height:1.5"></div>
     <div class="fg2">
+      <div class="fg"><label>Name</label><input type="text" id="mmName" placeholder="Resident name"/></div>
       <div class="fg"><label>Mobile number</label><input type="tel" id="mmMobile" inputmode="numeric" maxlength="10" placeholder="10 digits"/></div>
-      <div class="fg"><label>6-character code</label>
-        <div style="display:flex;gap:6px"><input type="text" id="mmPin" maxlength="6" autocapitalize="characters" style="flex:1;text-transform:uppercase"/>
-        <button class="btn btn-white btn-sm" type="button" onclick="document.getElementById('mmPin').value=window._randomPin()" title="New random code"><i class="ti ti-refresh"></i></button></div></div>
     </div>
+    <div class="fg"><label>6-character code</label>
+      <div style="display:flex;gap:6px"><input type="text" id="mmPin" maxlength="6" autocapitalize="characters" style="flex:1;text-transform:uppercase"/>
+      <button class="btn btn-white btn-sm" type="button" onclick="document.getElementById('mmPin').value=window._randomPin()" title="New random code"><i class="ti ti-refresh"></i></button></div></div>
     <button class="btn btn-indigo" id="mmAdd" style="width:100%;justify-content:center;margin-bottom:12px" onclick="window._memAdd()"><i class="ti ti-user-plus"></i> Add member</button>
     <div id="memCode"></div>
     <div id="memList"></div></div>`;
@@ -5169,7 +5172,7 @@ async function initMembershipUI() {
   window._randomPin = randomPin;
 
   onSnapshot(collection(db, 'apartments', UID, 'members'), s => {
-    MEMBERS = s.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => String(a.flatId).localeCompare(String(b.flatId), undefined, { numeric: true }));
+    MEMBERS = s.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => String(a.flatId).localeCompare(String(b.flatId), undefined, { numeric: true }) || ((a.relation === 'tenant') - (b.relation === 'tenant')));
     renderMembers();
     dedupeMembers();
   }, e => console.error(e));
@@ -5179,17 +5182,35 @@ function fillMemberForm() {
   const sel = document.getElementById('mmFlat'); if (!sel) return;
   document.getElementById('memCode').innerHTML = '';
   const keep = sel.value;
-  sel.innerHTML = [...flats.keys()].sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))
-    .map(f => `<option value="${_esc(f)}">${_esc(f)}${flats.get(f)?.owner ? ' — ' + _esc(flats.get(f).owner) : ''}</option>`).join('');
+  sel.innerHTML = [...flats.keys()].sort((a, b) => a.localeCompare(b, undefined, { numeric: true })).map(id => {
+    const f = flats.get(id) || {};
+    const who = f.owner ? ' — ' + _esc(f.owner) + (f.resType === 'tenant' ? ' (Tenant)' : '') : '';
+    const n = MEMBERS.filter(m => m.flatId === id).length;
+    return `<option value="${_esc(id)}">${_esc(id)}${who}${n ? ` · ${n} login${n > 1 ? 's' : ''}` : ''}</option>`;
+  }).join('');
   if (keep && flats.has(keep)) sel.value = keep;
   document.getElementById('mmPin').value = randomPin();
-  window._memPick();
+  window._memPick(true);
 }
-// Pre-fill name and mobile from the flat's existing resident details
-window._memPick = () => {
-  const f = flats.get(document.getElementById('mmFlat').value) || {};
-  document.getElementById('mmName').value = f.owner || '';
-  document.getElementById('mmMobile').value = String(f.phone || '').replace(/\D/g, '').slice(-10);
+// Pre-fill name + mobile for the chosen flat and role. A tenant flat stores the tenant as the resident
+// and the real owner in ownerName / ownerPhone; an owner-occupied flat stores the owner as the resident.
+window._memPick = (flatChanged) => {
+  const fid = document.getElementById('mmFlat').value, f = flats.get(fid) || {};
+  const roleSel = document.getElementById('mmRole');
+  const here = MEMBERS.filter(m => m.flatId === fid);
+  if (flatChanged) roleSel.value = here.some(m => m.relation === 'owner') ? 'tenant' : 'owner';   // offer the one who has no login yet
+  const tenantFlat = (f.resType || 'owner') === 'tenant';
+  let name = '', phone = '', note = '';
+  if (roleSel.value === 'tenant') {
+    if (tenantFlat) { name = f.owner || ''; phone = f.phone || f.ownerPhone || ''; }
+    else note = 'No tenant is recorded for this flat. Type the tenant\'s details.';
+  } else if (tenantFlat) { name = f.ownerName || ''; phone = f.ownerPhone || ''; if (!name) note = 'The owner\'s details are not recorded for this flat. Type them in.'; }
+  else { name = f.owner || ''; phone = f.phone || f.ownerPhone || ''; }
+  document.getElementById('mmName').value = name;
+  document.getElementById('mmMobile').value = String(phone).replace(/\D/g, '').slice(-10);
+  const lab = r => r === 'tenant' ? 'Tenant' : r === 'owner' ? 'Owner' : 'Resident';
+  const hint = document.getElementById('mmHint');
+  if (hint) hint.innerHTML = (here.length ? 'Logins for this flat: ' + here.map(m => `<b>${_esc(m.name)}</b> (${lab(m.relation)})`).join(', ') + '. ' : 'No login for this flat yet. ') + _esc(note);
 };
 
 // Shows the code once, right after Add / Reset. It is never stored, so it cannot be viewed later.
@@ -5205,7 +5226,7 @@ function showCodeOnce(name, mobile, pin) {
 function renderMembers() {
   const list = document.getElementById('memList'); if (!list) return;
   const row = r => `<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--border)">
-      <div style="flex:1"><div style="font-size:13px;font-weight:700">${_esc(r.name || '—')}</div>
+      <div style="flex:1"><div style="font-size:13px;font-weight:700">${_esc(r.name || '—')} ${r.relation ? `<span class="fc-type ${r.relation === 'tenant' ? 'tenant' : 'owner'}" style="margin-left:4px">${r.relation === 'tenant' ? 'Tenant' : 'Owner'}</span>` : ''}</div>
       <div style="font-size:11px;color:var(--text2)">Flat ${_esc(r.flatId)} · ${_esc(r.phone || '')}</div></div>
       <button class="btn btn-white btn-sm" onclick="window._memReset('${_esc(r.id)}')">Reset code</button>
       <button class="btn btn-white btn-sm" onclick="window._memRemove('${_esc(r.id)}')">Remove</button></div>`;
@@ -5216,7 +5237,7 @@ function renderMembers() {
 // One mobile number = one member. If duplicates exist (e.g. from retries), keep the one that
 // the login lookup points to (otherwise the newest) and delete the rest.
 async function dedupeMembers() {
-  if (_deduping) return;
+  if (_deduping || _memBusy) return;
   const groups = {};
   MEMBERS.forEach(m => { if (m.phone) (groups[m.phone] = groups[m.phone] || []).push(m); });
   const dups = Object.entries(groups).filter(([, g]) => g.length > 1);
@@ -5262,26 +5283,31 @@ window._memAdd = async () => {
   const name = document.getElementById('mmName').value.trim();
   const mobile = document.getElementById('mmMobile').value.trim();
   const pin = normalizePin(document.getElementById('mmPin').value);
+  const relation = document.getElementById('mmRole').value === 'tenant' ? 'tenant' : 'owner';
   if (!flatId) { toast('Pick a flat.', 'error'); return; }
   if (!name) { toast('Enter the resident name.', 'error'); return; }
   if (!isValidMobile(mobile)) { toast('Enter a 10-digit mobile number.', 'error'); return; }
   if (!isValidPin(pin)) { toast('The code must be 6 letters or digits.', 'error'); return; }
   if (MEMBERS.some(m => m.phone === mobile)) { toast('This mobile number is already added. Use "Reset code" to change its code.', 'error'); return; }
+  if (MEMBERS.some(m => m.flatId === flatId && m.relation === relation) && !confirm(`Flat ${flatId} already has a ${relation} login. Add another ${relation} login anyway?`)) return;
   const btn = document.getElementById('mmAdd'); btn.disabled = true;
   let step = 'check the mobile number';
+  _memBusy++;
   try {
     if ((await getDoc(doc(db, 'phoneLogins', mobile))).exists()) { toast('This mobile number is already registered.', 'error'); return; }
     step = 'create the sign-in';
     const { uid, email } = await provisionMember(flatId, name, mobile, pin);
     step = 'save the member';
-    await setDoc(doc(db, 'apartments', UID, 'members', uid), { flatId, name, phone: mobile, email, createdAt: new Date().toISOString() });
+    await setDoc(doc(db, 'apartments', UID, 'members', uid), { flatId, name, phone: mobile, email, relation, createdAt: new Date().toISOString() });
     step = 'save the mobile lookup';
     await setDoc(doc(db, 'phoneLogins', mobile), { email, aptId: UID });
-    document.getElementById('mmPin').value = randomPin(); window._memPick();
+    document.getElementById('mmPin').value = randomPin();
+    document.getElementById('mmRole').value = relation === 'owner' ? 'tenant' : 'owner';   // next: the other person on this flat
+    window._memPick();
     toast(`${name} added ✓`);
     showCodeOnce(name, mobile, pin);
   } catch (e) { console.error('Add member failed at:', step, e); toast(memberErr(e, step), 'error'); }
-  finally { btn.disabled = false; }
+  finally { _memBusy--; btn.disabled = false; dedupeMembers(); }
 };
 
 window._memReset = async oldUid => {
@@ -5290,10 +5316,11 @@ window._memReset = async oldUid => {
   if (!pin) return;
   if (!isValidPin(pin)) { toast('The code must be 6 letters or digits.', 'error'); return; }
   let step = 'create the sign-in';
+  _memBusy++;
   try {
     const { uid, email } = await provisionMember(m.flatId, m.name, m.phone, pin);
     step = 'save the member';
-    await setDoc(doc(db, 'apartments', UID, 'members', uid), { flatId: m.flatId, name: m.name, phone: m.phone, email, createdAt: new Date().toISOString() });
+    await setDoc(doc(db, 'apartments', UID, 'members', uid), { flatId: m.flatId, name: m.name, phone: m.phone, email, relation: m.relation || '', createdAt: new Date().toISOString() });
     step = 'remove the old record';
     for (const x of MEMBERS.filter(x => x.phone === m.phone && x.id !== uid)) await deleteDoc(doc(db, 'apartments', UID, 'members', x.id));
     step = 'save the mobile lookup';
@@ -5301,6 +5328,7 @@ window._memReset = async oldUid => {
     toast(`Code reset for ${m.name} ✓`);
     showCodeOnce(m.name, m.phone, pin);
   } catch (e) { console.error('Reset code failed at:', step, e); toast(memberErr(e, step), 'error'); }
+  finally { _memBusy--; dedupeMembers(); }
 };
 
 window._memRemove = async uid => {
